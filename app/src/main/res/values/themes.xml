@@ -3,6 +3,7 @@
     <style name="Base.Theme.AppStreaming" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:windowBackground">@color/sea_blue_dark</item>
     </style>
 
     <style name="Theme.AppStreaming" parent="Base.Theme.AppStreaming" />

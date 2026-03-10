@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,7 @@ import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.compose.*
 import kotlinx.coroutines.delay
 import org.dam2.appstreaming.R
+import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
 class SplashFragment : Fragment() {
 
@@ -32,9 +34,10 @@ class SplashFragment : Fragment() {
             setContent {
                 MaterialTheme {
                     SplashScreenContent(onTimeout = {
-                        // Navegación (Solo se ejecutará en el móvil, no en el Preview)
+
                         try {
                             findNavController ().navigate(R.id.action_splashFragment_to_loginFragment)
+
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -76,7 +79,7 @@ fun SplashScreenContent(onTimeout: () -> Unit) {
         Text(
             text = "Cargando contenido...",
             style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary
+            color = Color.LightGray
         )
     }
 }
