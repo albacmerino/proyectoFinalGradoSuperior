@@ -30,12 +30,11 @@ class SplashFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                // Usamos el tema de tu aplicación para que se vea bien
                 MaterialTheme {
                     SplashScreenContent(onTimeout = {
                         // Navegación (Solo se ejecutará en el móvil, no en el Preview)
                         try {
-                           // findNavController().navigate(R.id.action_splashFragment_to_homeFragment)
+                            findNavController ().navigate(R.id.action_splashFragment_to_loginFragment)
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -57,7 +56,7 @@ fun SplashScreenContent(onTimeout: () -> Unit) {
     )
 
     LaunchedEffect(Unit) {
-        delay(3000)
+        delay(2000)
         onTimeout()
     }
 
@@ -82,7 +81,7 @@ fun SplashScreenContent(onTimeout: () -> Unit) {
     }
 }
 
-// ESTA ES LA PARTE QUE DEBES AÑADIR AL FINAL
+
 @Preview(
     showBackground = true,
     showSystemUi = true,
