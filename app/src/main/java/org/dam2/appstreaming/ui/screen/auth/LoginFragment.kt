@@ -47,7 +47,7 @@ class LoginFragment : Fragment() {
                         onLoginClick = { usuario, password ->
                             // findNavController().navigate(R.id.action_login_to_home)
                         },
-                        onForgotPasswordClick = { /* Navegar a recuperar */ },
+                        onForgotPasswordClick = {  findNavController().navigate(R.id.action_loginFragment_to_homeFragment)},
                         onCreateAccountClick = {
                             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
                         }

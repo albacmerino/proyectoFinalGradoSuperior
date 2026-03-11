@@ -56,4 +56,5 @@
             android:name="org.dam2.appstreaming.ui.screen.auth.RegisterFragment"
             android:label="Register" />
 
+
 </navigation>
