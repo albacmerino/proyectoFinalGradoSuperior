@@ -1,8 +1,13 @@
 package org.dam2.appstreaming.data
 
+import androidx.activity.result.launch
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.dam2.appstreaming.data.network.TmdbApiService
 import org.dam2.appstreaming.ui.component.FichaPelicula
 import okhttp3.OkHttpClient
+import org.dam2.appstreaming.ui.component.FichaSerie
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -18,7 +23,6 @@ object TmdbConfig {
 
 class TmdbRepository {
 
-    // Configuramos un cliente para añadir el Token de Acceso a todas las llamadas
     private val client = OkHttpClient.Builder().addInterceptor { chain ->
         val newRequest = chain.request().newBuilder()
             .addHeader("Authorization", "Bearer ${TmdbConfig.ACCESS_TOKEN}")
@@ -29,19 +33,17 @@ class TmdbRepository {
 
     private val api = Retrofit.Builder()
         .baseUrl(TmdbConfig.BASE_URL)
-        .client(client) // Usamos el cliente con el Token
+        .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(TmdbApiService::class.java)
 
-    suspend fun getPopularMovies(): List<FichaPelicula> {
-        return try {
-            // Ahora la llamada es más limpia porque el Token va en el 'client'
-            val response = api.getPopularMovies()
-            response.results
-        } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
-        }
-    }
+    // FUNCIONES PURAS DE RED
+    suspend fun getPopularMovies(): List<FichaPelicula> = try { api.getPopularMovies().results } catch (e: Exception) { emptyList() }
+    suspend fun getNowPlayingMovies(): List<FichaPelicula> = try { api.getNowPlayingMovies().results } catch (e: Exception) { emptyList() }
+    suspend fun getTopRatedMovies(): List<FichaPelicula> = try { api.getTopRatedMovies().results } catch (e: Exception) { emptyList() }
+
+    suspend fun getPopularSeries(): List<FichaSerie> = try { api.getPopularSeries().results } catch (e: Exception) { emptyList() }
+    suspend fun getTopRatedSeries(): List<FichaSerie> = try { api.getTopRatedSeries().results } catch (e: Exception) { emptyList() }
+    suspend fun getOnTheAirSeries(): List<FichaSerie> = try { api.getOnTheAirSeries().results } catch (e: Exception) { emptyList() }
 }

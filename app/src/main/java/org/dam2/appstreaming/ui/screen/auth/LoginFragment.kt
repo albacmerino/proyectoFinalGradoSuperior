@@ -19,15 +19,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navOptions
 import org.dam2.appstreaming.R
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.colors.SeaBlueDark
@@ -45,7 +48,13 @@ class LoginFragment : Fragment() {
                 MaterialTheme {
                     LoginScreen(
                         onLoginClick = { usuario, password ->
-                            // findNavController().navigate(R.id.action_login_to_home)
+                            // Forzamos el uso del ID del nav_graph.xml
+                            val actionId = R.id.action_loginFragment_to_homeFragment
+
+                            findNavController().navigate(actionId, null,
+                                navOptions {
+                                popUpTo(R.id.loginFragment) { inclusive = true }
+                            })
                         },
                         onForgotPasswordClick = {  findNavController().navigate(R.id.action_loginFragment_to_homeFragment)},
                         onCreateAccountClick = {
@@ -108,7 +117,9 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
                     .height(60.dp)
                     .border(
                         width = if (usuario.isNotEmpty()) 2.dp else 1.dp,
-                        brush = if (usuario.isNotEmpty()) SeaGradient else Brush.linearGradient(listOf(Color(0xFF1B263B), Color(0xFF1B263B))),
+                        brush = if (usuario.isNotEmpty()) SeaGradient else Brush.linearGradient(
+                            listOf(Color(0xFF1B263B), Color(0xFF1B263B))
+                        ),
                         shape = RoundedCornerShape(12.dp)
                     ),
                 shape = RoundedCornerShape(12.dp),
@@ -126,6 +137,8 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
 
             Spacer(modifier = Modifier.height(20.dp))
 
+            var passwordVisible by remember { mutableStateOf(false) } // Estado para la visibilidad
+
             // CAMPO CONTRASEÑA
             TextField(
                 value = password,
@@ -136,13 +149,27 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
                     .height(60.dp)
                     .border(
                         width = if (password.isNotEmpty()) 2.dp else 1.dp,
-                        brush = if (password.isNotEmpty()) SeaGradient else Brush.linearGradient(listOf(Color(0xFF1B263B), Color(0xFF1B263B))),
+                        brush = if (password.isNotEmpty()) SeaGradient else Brush.linearGradient(
+                            listOf(Color(0xFF1B263B), Color(0xFF1B263B))
+                        ),
                         shape = RoundedCornerShape(12.dp)
                     ),
                 shape = RoundedCornerShape(12.dp),
-                visualTransformation = PasswordVisualTransformation(),
+                // Lógica de transformación
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
+                // AÑADIMOS EL ICONO DEL OJO AQUÍ
+                trailingIcon = {
+                    val image = if (passwordVisible)
+                        painterResource(id = R.drawable.ic_visibility_on) // Necesitas estos iconos en res/drawable
+                    else
+                        painterResource(id = R.drawable.ic_visibility_off)
+
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(painter = image, contentDescription = "Mostrar contraseña", tint = SeaBlueLight)
+                    }
+                },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF001D3D),
                     unfocusedContainerColor = Color(0xFF001D3D),

@@ -32,7 +32,10 @@
                 app:enterAnim="@anim/slide_in_right"
                 app:exitAnim="@anim/slide_out_left"
                 app:popEnterAnim="@android:anim/slide_in_left"
-                app:popExitAnim="@android:anim/slide_out_right" />
+                app:popExitAnim="@android:anim/slide_out_right"
+                app:popUpTo="@id/loginFragment"
+                app:popUpToInclusive="true"
+                />
 
         <!-- Transición al Registro -->
         <action

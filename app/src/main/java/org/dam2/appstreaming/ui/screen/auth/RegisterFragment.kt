@@ -19,9 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -66,7 +68,7 @@ fun RegisterScreen(
     var nombre by remember { mutableStateOf("") }
     var usuario by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
+    var passwordVisible by remember { mutableStateOf(false) }
     // Validación simple de contraseña
     val isPasswordSafe = password.length >= 6
 
@@ -117,13 +119,26 @@ fun RegisterScreen(
                     .height(60.dp)
                     .border(
                         width = if (password.isNotEmpty()) 2.dp else 1.dp,
-                        brush = if (isPasswordSafe) SeaGradient else Brush.linearGradient(listOf(Color(0xFF1B263B), Color(0xFF1B263B))),
+                        brush = if (password.length >= 6) SeaGradient else Brush.linearGradient(
+                            listOf(Color(0xFF1B263B), Color(0xFF1B263B))
+                        ),
                         shape = RoundedCornerShape(12.dp)
                     ),
                 shape = RoundedCornerShape(12.dp),
-                visualTransformation = PasswordVisualTransformation(),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            painter = painterResource(
+                                id = if (passwordVisible) R.drawable.ic_visibility_on else R.drawable.ic_visibility_off
+                            ),
+                            contentDescription = null,
+                            tint = SeaBlueLight
+                        )
+                    }
+                },
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFF001D3D),
                     unfocusedContainerColor = Color(0xFF001D3D),
@@ -140,7 +155,9 @@ fun RegisterScreen(
                     text = "La contraseña es demasiado corta",
                     color = Color.Red.copy(alpha = 0.8f),
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
                     textAlign = TextAlign.Start
                 )
             }
@@ -150,7 +167,9 @@ fun RegisterScreen(
             // BOTÓN REGISTRO
             Button(
                 onClick = { if (isPasswordSafe) onRegisterClick(nombre, usuario, password) },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
                 contentPadding = PaddingValues(),
                 shape = RoundedCornerShape(12.dp),
                 enabled = nombre.isNotEmpty() && usuario.isNotEmpty() && isPasswordSafe,
@@ -162,7 +181,11 @@ fun RegisterScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(if (isPasswordSafe && usuario.isNotEmpty()) SeaGradient else Brush.linearGradient(listOf(Color.Gray, Color.Gray))),
+                        .background(
+                            if (isPasswordSafe && usuario.isNotEmpty()) SeaGradient else Brush.linearGradient(
+                                listOf(Color.Gray, Color.Gray)
+                            )
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Text("CREAR CUENTA", color = Color.White, fontWeight = FontWeight.ExtraBold)
@@ -192,7 +215,13 @@ fun SeaTextField(value: String, onValueChange: (String) -> Unit, label: String) 
             .height(60.dp)
             .border(
                 width = if (value.isNotEmpty()) 2.dp else 1.dp,
-                brush = if (value.isNotEmpty()) SeaGradient else Brush.linearGradient(listOf(Color(0xFF1B263B), Color(0xFF1B263B))),
+                brush = if (value.isNotEmpty()) SeaGradient else Brush.linearGradient(
+                    listOf(
+                        Color(
+                            0xFF1B263B
+                        ), Color(0xFF1B263B)
+                    )
+                ),
                 shape = RoundedCornerShape(12.dp)
             ),
         shape = RoundedCornerShape(12.dp),
@@ -204,7 +233,10 @@ fun SeaTextField(value: String, onValueChange: (String) -> Unit, label: String) 
             unfocusedIndicatorColor = Color.Transparent,
             focusedTextColor = Color.White,
             unfocusedTextColor = Color.White,
-            cursorColor = SeaBlueLight
+            cursorColor = SeaBlueLight,
+            focusedLabelColor = SeaBlueLight,
+            unfocusedLabelColor = Color.Gray,
+            focusedPlaceholderColor = Color.LightGray
         )
     )
 }
