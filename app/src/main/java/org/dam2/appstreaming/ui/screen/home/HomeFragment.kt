@@ -163,8 +163,17 @@ fun HomeScreen(
                         )
                     },
                     navigationIcon = {
-                        IconButton(onClick = { kotlinx.coroutines.MainScope().launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = SeaBlueLight)
+
+                        IconButton(onClick = {
+                            scope.launch {
+                                drawerState.open() // Esto abre el menú sin crashear
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menu",
+                                tint = SeaBlueLight
+                            )
                         }
                     },
                     actions = {
