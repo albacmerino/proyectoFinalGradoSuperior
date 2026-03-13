@@ -1,6 +1,7 @@
 package org.dam2.appstreaming.ui.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -17,7 +18,12 @@ import coil.compose.AsyncImage
 import org.dam2.appstreaming.data.TmdbConfig
 
 @Composable
-fun SerieCard(serie: FichaSerie) {
+fun SerieCard(serie: FichaSerie, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .width(130.dp)
+            .clickable { onClick() }
+    ) {
     val imageUrl = "https://image.tmdb.org/t/p/w500${serie.posterPath}"
 
     Column(modifier = Modifier.width(130.dp)) {
@@ -49,4 +55,5 @@ fun SerieCard(serie: FichaSerie) {
             modifier = Modifier.padding(top = 12.dp, start = 4.dp)
         )
     }
+}
 }

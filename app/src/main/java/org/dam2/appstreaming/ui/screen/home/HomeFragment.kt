@@ -24,19 +24,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.launch
+import org.dam2.appstreaming.R
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.component.MovieCard
 import org.dam2.appstreaming.ui.component.FichaPelicula
 import org.dam2.appstreaming.ui.component.FichaSerie
 import org.dam2.appstreaming.ui.component.SerieCard
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import org.dam2.appstreaming.ui.screen.pelicula.PeliculaViewModel
+import org.dam2.appstreaming.ui.screen.serie.SerieViewModel
 
 class HomeFragment : Fragment() {
 
     private val viewModel: HomeViewModel by viewModels()
+
+    // ViewModels compartidos para pasar datos a los detalles
+    private val peliculaViewModel: PeliculaViewModel by activityViewModels()
+    private val serieViewModel: SerieViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,23 +53,19 @@ class HomeFragment : Fragment() {
             setContent {
                 val selectedTab by viewModel.selectedTab.collectAsState()
 
-// Películas
-                val moviesNow by viewModel.movies.collectAsState() // Novedades
+                // Películas
+                val moviesNow by viewModel.movies.collectAsState()
                 val moviesPop by viewModel.popularMovies.collectAsState()
                 val moviesTop by viewModel.topRatedMovies.collectAsState()
 
-// Series
-                val seriesNow by viewModel.series.collectAsState() // Novedades
+                // Series
+                val seriesNow by viewModel.series.collectAsState()
                 val seriesPop by viewModel.popularSeries.collectAsState()
                 val seriesTop by viewModel.topRatedSeries.collectAsState()
 
-
                 MaterialTheme {
                     val seaBackgroundGradient = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF001D3D),
-                            Color(0xFF000814)
-                        )
+                        colors = listOf(Color(0xFF001D3D), Color(0xFF000814))
                     )
                     Surface(modifier = Modifier.fillMaxSize()) {
                         Box(
@@ -78,7 +81,17 @@ class HomeFragment : Fragment() {
                                 moviesTop = moviesTop,
                                 seriesNow = seriesNow,
                                 seriesPop = seriesPop,
-                                seriesTop = seriesTop)
+                                seriesTop = seriesTop,
+                                // Cambios necesarios para navegación
+                                onMovieClick = { movie ->
+                                    peliculaViewModel.setSelectedItem(movie)
+                                    findNavController().navigate(R.id.action_homeFragment_to_peliculaDetailFragment)
+                                },
+                                onSerieClick = { serie ->
+                                    serieViewModel.setSelectedItem(serie)
+                                    findNavController().navigate(R.id.action_homeFragment_to_serieDetailFragment)
+                                }
+                            )
                         }
                     }
                 }
@@ -97,7 +110,9 @@ fun HomeScreen(
     moviesTop: List<FichaPelicula>,
     seriesNow: List<FichaSerie>,
     seriesPop: List<FichaSerie>,
-    seriesTop: List<FichaSerie>
+    seriesTop: List<FichaSerie>,
+    onMovieClick: (FichaPelicula) -> Unit,
+    onSerieClick: (FichaSerie) -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -123,13 +138,13 @@ fun HomeScreen(
                 NavigationDrawerItem(
                     label = { Text("Perfil", color = Color.White) },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } },
+                    onClick = { /* Navegar a Perfil */ },
                     colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent)
                 )
                 NavigationDrawerItem(
                     label = { Text("Favoritos", color = Color.White) },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } },
+                    onClick = { /* Navegar a Favoritos */ },
                     colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent)
                 )
             }
@@ -148,7 +163,7 @@ fun HomeScreen(
                         )
                     },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                        IconButton(onClick = { kotlinx.coroutines.MainScope().launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu", tint = SeaBlueLight)
                         }
                     },
@@ -157,16 +172,12 @@ fun HomeScreen(
                             Icon(Icons.Default.Search, contentDescription = "Search", tint = SeaBlueLight)
                         }
                     },
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Color.Transparent
-                    )
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
                 )
             },
             containerColor = Color.Transparent
         ) { padding ->
             Column(modifier = Modifier.padding(padding)) {
-
-                // --- SELECTOR NEÓN (PELÍCULAS VS SERIES) ---
                 TabRow(
                     selectedTabIndex = selectedTab,
                     containerColor = Color.Transparent,
@@ -186,42 +197,27 @@ fun HomeScreen(
                     Tab(
                         selected = selectedTab == 0,
                         onClick = { onTabSelected(0) },
-                        text = {
-                            Text(
-                                "PELÍCULAS",
-                                color = if(selectedTab == 0) Color.White else Color.Gray,
-                                fontWeight = if(selectedTab == 0) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
+                        text = { Text("PELÍCULAS", color = if(selectedTab == 0) Color.White else Color.Gray) }
                     )
                     Tab(
                         selected = selectedTab == 1,
                         onClick = { onTabSelected(1) },
-                        text = {
-                            Text(
-                                "SERIES",
-                                color = if(selectedTab == 1) Color.White else Color.Gray,
-                                fontWeight = if(selectedTab == 1) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
+                        text = { Text("SERIES", color = if(selectedTab == 1) Color.White else Color.Gray) }
                     )
                 }
 
-                // --- LISTADO DINÁMICO SEGÚN LA PESTAÑA SELECCIONADA ---
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
                     if (selectedTab == 0) {
-                        // SECCIONES DE PELÍCULAS
-                        item { MovieSection("Novedades en Cine", moviesNow) }
-                        item { MovieSection("Populares ahora", moviesPop) }
-                        item { MovieSection("Mejor valoradas", moviesTop) }
+                        item { MovieSection("Novedades en Cine", moviesNow, onMovieClick) }
+                        item { MovieSection("Populares ahora", moviesPop, onMovieClick) }
+                        item { MovieSection("Mejor valoradas", moviesTop, onMovieClick) }
                     } else {
-                        // SECCIONES DE SERIES
-                        item { SerieSection("Novedades en TV", seriesNow) }
-                        item { SerieSection("Series del Momento", seriesPop) }
-                        item { SerieSection("Mejor valoradas", seriesTop) }
+                        item { SerieSection("Novedades en TV", seriesNow, onSerieClick) }
+                        item { SerieSection("Series del Momento", seriesPop, onSerieClick) }
+                        item { SerieSection("Mejor valoradas", seriesTop, onSerieClick) }
                     }
                 }
             }
@@ -230,7 +226,7 @@ fun HomeScreen(
 }
 
 @Composable
-fun MovieSection(title: String, movies: List<FichaPelicula>) {
+fun MovieSection(title: String, movies: List<FichaPelicula>, onMovieClick: (FichaPelicula) -> Unit) {
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
         Text(
             text = title,
@@ -244,14 +240,14 @@ fun MovieSection(title: String, movies: List<FichaPelicula>) {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(movies) { movie ->
-                MovieCard(movie = movie)
+                MovieCard(movie = movie, onClick = { onMovieClick(movie) })
             }
         }
     }
 }
 
 @Composable
-fun SerieSection(title: String, series: List<FichaSerie>) {
+fun SerieSection(title: String, series: List<FichaSerie>, onSerieClick: (FichaSerie) -> Unit) {
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
         Text(
             text = title,
@@ -265,7 +261,7 @@ fun SerieSection(title: String, series: List<FichaSerie>) {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(series) { serie ->
-                SerieCard(serie = serie)
+                SerieCard(serie = serie, onClick = { onSerieClick(serie) })
             }
         }
     }
