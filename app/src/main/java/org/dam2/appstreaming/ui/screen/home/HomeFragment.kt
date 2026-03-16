@@ -15,13 +15,13 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.fragment.app.activityViewModels
@@ -34,14 +34,17 @@ import org.dam2.appstreaming.ui.component.MovieCard
 import org.dam2.appstreaming.ui.component.FichaPelicula
 import org.dam2.appstreaming.ui.component.FichaSerie
 import org.dam2.appstreaming.ui.component.SerieCard
+import org.dam2.appstreaming.ui.component.Genero
 import org.dam2.appstreaming.ui.screen.pelicula.PeliculaViewModel
 import org.dam2.appstreaming.ui.screen.serie.SerieViewModel
 
+/**
+ * Fragmento principal de la aplicación.
+ * Gestiona el catálogo de películas y series mediante una arquitectura MVVM.
+ */
 class HomeFragment : Fragment() {
 
     private val viewModel: HomeViewModel by viewModels()
-
-    // ViewModels compartidos para pasar datos a los detalles
     private val peliculaViewModel: PeliculaViewModel by activityViewModels()
     private val serieViewModel: SerieViewModel by activityViewModels()
 
@@ -51,17 +54,23 @@ class HomeFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
+                // Observamos la pestaña actual (0: Pelis, 1: Series)
                 val selectedTab by viewModel.selectedTab.collectAsState()
 
-                // Películas
+                // Datos de Películas
                 val moviesNow by viewModel.movies.collectAsState()
                 val moviesPop by viewModel.popularMovies.collectAsState()
                 val moviesTop by viewModel.topRatedMovies.collectAsState()
 
-                // Series
+                // Datos de Series (Aseguramos observación activa)
                 val seriesNow by viewModel.series.collectAsState()
                 val seriesPop by viewModel.popularSeries.collectAsState()
                 val seriesTop by viewModel.topRatedSeries.collectAsState()
+
+                // Catálogo de géneros y filtro actual
+                val movieGenres by viewModel.movieGenres.collectAsState()
+                val tvGenres by viewModel.tvGenres.collectAsState()
+                val selectedGenreId by viewModel.selectedGenreId.collectAsState()
 
                 MaterialTheme {
                     val seaBackgroundGradient = Brush.verticalGradient(
@@ -82,13 +91,18 @@ class HomeFragment : Fragment() {
                                 seriesNow = seriesNow,
                                 seriesPop = seriesPop,
                                 seriesTop = seriesTop,
-                                // Cambios necesarios para navegación
+                                // Pasamos los géneros según la pestaña
+                                generos = if (selectedTab == 0) movieGenres else tvGenres,
+                                selectedGenreId = selectedGenreId,
+                                onGeneroClick = { viewModel.onGeneroSelected(it) },
                                 onMovieClick = { movie ->
                                     peliculaViewModel.setSelectedItem(movie)
+                                    peliculaViewModel.setGenres(movieGenres)
                                     findNavController().navigate(R.id.action_homeFragment_to_peliculaDetailFragment)
                                 },
                                 onSerieClick = { serie ->
                                     serieViewModel.setSelectedItem(serie)
+                                    serieViewModel.setGenres(tvGenres)
                                     findNavController().navigate(R.id.action_homeFragment_to_serieDetailFragment)
                                 }
                             )
@@ -111,6 +125,9 @@ fun HomeScreen(
     seriesNow: List<FichaSerie>,
     seriesPop: List<FichaSerie>,
     seriesTop: List<FichaSerie>,
+    generos: List<Genero>,
+    selectedGenreId: Int?,
+    onGeneroClick: (Int?) -> Unit,
     onMovieClick: (FichaPelicula) -> Unit,
     onSerieClick: (FichaSerie) -> Unit
 ) {
@@ -126,60 +143,24 @@ fun HomeScreen(
                 modifier = Modifier.width(300.dp)
             ) {
                 Spacer(modifier = Modifier.height(48.dp))
-                Text(
-                    text = "SeaStream Menu",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = SeaBlueLight,
-                    fontWeight = FontWeight.Bold
-                )
+                Text("SeaStream Menu", modifier = Modifier.padding(16.dp), color = SeaBlueLight, fontWeight = FontWeight.Bold)
                 HorizontalDivider(color = SeaBlueLight.copy(alpha = 0.2f))
-
-                NavigationDrawerItem(
-                    label = { Text("Perfil", color = Color.White) },
-                    selected = false,
-                    onClick = { /* Navegar a Perfil */ },
-                    colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent)
-                )
-                NavigationDrawerItem(
-                    label = { Text("Favoritos", color = Color.White) },
-                    selected = false,
-                    onClick = { /* Navegar a Favoritos */ },
-                    colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent)
-                )
+                NavigationDrawerItem(label = { Text("Perfil", color = Color.White) }, selected = false, onClick = {}, colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent))
+                NavigationDrawerItem(label = { Text("Favoritos", color = Color.White) }, selected = false, onClick = {}, colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent))
             }
         }
     ) {
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            "SeaStream",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                brush = SeaGradient,
-                                fontWeight = FontWeight.ExtraBold
-                            )
-                        )
-                    },
+                    title = { Text("SeaStream", style = MaterialTheme.typography.titleLarge.copy(brush = SeaGradient, fontWeight = FontWeight.ExtraBold)) },
                     navigationIcon = {
-
-                        IconButton(onClick = {
-                            scope.launch {
-                                drawerState.open() // Esto abre el menú sin crashear
-                            }
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Menu,
-                                contentDescription = "Menu",
-                                tint = SeaBlueLight
-                            )
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = null, tint = SeaBlueLight)
                         }
                     },
                     actions = {
-                        IconButton(onClick = { /* Navegar a búsqueda */ }) {
-                            Icon(Icons.Default.Search, contentDescription = "Search", tint = SeaBlueLight)
-                        }
+                        IconButton(onClick = { }) { Icon(Icons.Default.Search, contentDescription = null, tint = SeaBlueLight) }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
                 )
@@ -187,46 +168,56 @@ fun HomeScreen(
             containerColor = Color.Transparent
         ) { padding ->
             Column(modifier = Modifier.padding(padding)) {
+                // Selector de Películas/Series
                 TabRow(
                     selectedTabIndex = selectedTab,
                     containerColor = Color.Transparent,
                     contentColor = SeaBlueLight,
                     indicator = { tabPositions ->
-                        if (selectedTab < tabPositions.size) {
-                            Box(
-                                modifier = Modifier
-                                    .tabIndicatorOffset(tabPositions[selectedTab])
-                                    .height(3.dp)
-                                    .background(brush = SeaGradient)
-                            )
-                        }
+                        Box(Modifier.tabIndicatorOffset(tabPositions[selectedTab]).height(3.dp).background(brush = SeaGradient))
                     },
                     divider = {}
                 ) {
-                    Tab(
-                        selected = selectedTab == 0,
-                        onClick = { onTabSelected(0) },
-                        text = { Text("PELÍCULAS", color = if(selectedTab == 0) Color.White else Color.Gray) }
-                    )
-                    Tab(
-                        selected = selectedTab == 1,
-                        onClick = { onTabSelected(1) },
-                        text = { Text("SERIES", color = if(selectedTab == 1) Color.White else Color.Gray) }
-                    )
+                    Tab(selected = selectedTab == 0, onClick = { onTabSelected(0) }, text = { Text("PELÍCULAS", color = if(selectedTab == 0) Color.White else Color.Gray) })
+                    Tab(selected = selectedTab == 1, onClick = { onTabSelected(1) }, text = { Text("SERIES", color = if(selectedTab == 1) Color.White else Color.Gray) })
                 }
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 16.dp)
+                // Selector de Géneros
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    item {
+                        FilterChip(
+                            selected = selectedGenreId == null,
+                            onClick = { onGeneroClick(null) },
+                            label = { Text("Todo") },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = SeaBlueLight, selectedLabelColor = Color.Black, labelColor = Color.LightGray)
+                        )
+                    }
+                    items(generos) { genero ->
+                        FilterChip(
+                            selected = selectedGenreId == genero.id,
+                            onClick = { onGeneroClick(genero.id) },
+                            label = { Text(genero.name) },
+                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = SeaBlueLight, selectedLabelColor = Color.Black, labelColor = Color.LightGray)
+                        )
+                    }
+                }
+
+                // Catálogo Dinámico
+                LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 16.dp)) {
                     if (selectedTab == 0) {
-                        item { MovieSection("Novedades en Cine", moviesNow, onMovieClick) }
-                        item { MovieSection("Populares ahora", moviesPop, onMovieClick) }
-                        item { MovieSection("Mejor valoradas", moviesTop, onMovieClick) }
+                        // Usa 'generos', que es el parámetro que recibe la función HomeScreen
+                        item { MovieSection("Novedades", moviesNow, generos, onMovieClick) }
+                        item { MovieSection("Populares", moviesPop, generos, onMovieClick) }
+                        item { MovieSection("Mejor valoradas", moviesTop, generos, onMovieClick) }
                     } else {
-                        item { SerieSection("Novedades en TV", seriesNow, onSerieClick) }
-                        item { SerieSection("Series del Momento", seriesPop, onSerieClick) }
-                        item { SerieSection("Mejor valoradas", seriesTop, onSerieClick) }
+                        // Aquí también usa 'generos'
+                        item { SerieSection("Novedades TV", seriesNow, generos, onSerieClick) }
+                        item { SerieSection("Populares en TV", seriesPop, generos, onSerieClick) }
+                        item { SerieSection("Mejor valoradas", seriesTop, generos, onSerieClick) }
                     }
                 }
             }
@@ -235,42 +226,24 @@ fun HomeScreen(
 }
 
 @Composable
-fun MovieSection(title: String, movies: List<FichaPelicula>, onMovieClick: (FichaPelicula) -> Unit) {
+fun MovieSection(title: String, movies: List<FichaPelicula>, allGenres: List<Genero>, onMovieClick: (FichaPelicula) -> Unit) {
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
-        )
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
+        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(movies) { movie ->
-                MovieCard(movie = movie, onClick = { onMovieClick(movie) })
+                MovieCard(movie = movie, allGenres = allGenres, onClick = { onMovieClick(movie) })
             }
         }
     }
 }
 
 @Composable
-fun SerieSection(title: String, series: List<FichaSerie>, onSerieClick: (FichaSerie) -> Unit) {
+fun SerieSection(title: String, series: List<FichaSerie>, allGenres: List<Genero>, onSerieClick: (FichaSerie) -> Unit) {
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
-        )
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+        Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
+        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(series) { serie ->
-                SerieCard(serie = serie, onClick = { onSerieClick(serie) })
+                SerieCard(serie = serie, allGenres = allGenres, onClick = { onSerieClick(serie) })
             }
         }
     }

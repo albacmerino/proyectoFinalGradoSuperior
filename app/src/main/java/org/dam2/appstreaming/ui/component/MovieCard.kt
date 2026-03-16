@@ -15,47 +15,57 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
 @Composable
-fun MovieCard(movie: FichaPelicula, onClick: () -> Unit) { // Añadimos onClick
+fun MovieCard(movie: FichaPelicula, allGenres: List<Genero>, onClick: () -> Unit) {
+    // 1. Protección de URL: Si posterPath es null, usamos un string vacío para que Coil no falle
+    val imageUrl = "https://image.tmdb.org/t/p/w500${movie.posterPath ?: ""}"
+
+    // 2. Búsqueda del género: Si la lista está vacía o no encuentra el ID, pone "Cine"
+    val nombreGenero = allGenres.find { it.id == movie.genreIds?.firstOrNull() }?.name ?: "Cine"
+
     Column(
         modifier = Modifier
             .width(130.dp)
-            .clickable { onClick() } // Hacemos toda la tarjeta clickeable
-    ) { // IMPORTANTE: Asegúrate de que posterPath no sea nulo
-        val imageUrl = "https://image.tmdb.org/t/p/w500${movie.posterPath}"
+            .clickable { onClick() }
+    ) {
+        Box(modifier = Modifier.height(180.dp)) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = movie.title,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFF001D3D)),
+                contentScale = ContentScale.Crop
+            )
 
-        Column(modifier = Modifier.width(130.dp)) {
-            Box(modifier = Modifier.height(180.dp)) {
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = movie.title,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFF001D3D)),
-                    contentScale = ContentScale.Crop
-                )
-
-                // Llamamos a ScoreRing que ahora está en su propio archivo
-                ScoreRing(
-                    score = movie.voteAverage,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(4.dp)
-                        // Importante: Asegúrate de tener importado androidx.compose.foundation.layout.offset
-                        .offset(x = 6.dp, y = 6.dp)
-                )
-            }
-
-            Text(
-                text = movie.title,
-                color = Color.White,
-                fontSize = 12.sp,
-                maxLines = 1,
-                fontWeight = FontWeight.Medium,
-                modifier = Modifier.padding(top = 12.dp, start = 4.dp)
+            // Asegúrate de que ScoreRing sea accesible aquí
+            ScoreRing(
+                score = movie.voteAverage,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(4.dp)
+                    .offset(x = 6.dp, y = 6.dp)
             )
         }
+
+        Text(
+            text = movie.title,
+            color = Color.White,
+            maxLines = 1,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(top = 12.dp, start = 4.dp)
+        )
+
+        Text(
+            text = nombreGenero,
+            color = SeaBlueLight.copy(alpha = 0.7f),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(start = 4.dp)
+        )
     }
 }

@@ -15,18 +15,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import org.dam2.appstreaming.data.TmdbConfig
+import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
 @Composable
-fun SerieCard(serie: FichaSerie, onClick: () -> Unit) {
+fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
+    // Construcción de la URL y búsqueda del nombre del género
+    val imageUrl = "https://image.tmdb.org/t/p/w500${serie.posterPath}"
+    val nombreGenero = allGenres.find { it.id == serie.genreIds?.firstOrNull() }?.name ?: "Serie"
+
     Column(
         modifier = Modifier
             .width(130.dp)
             .clickable { onClick() }
     ) {
-    val imageUrl = "https://image.tmdb.org/t/p/w500${serie.posterPath}"
-
-    Column(modifier = Modifier.width(130.dp)) {
+        // Contenedor de Imagen + Puntuación
         Box(modifier = Modifier.height(180.dp)) {
             AsyncImage(
                 model = imageUrl,
@@ -38,6 +40,7 @@ fun SerieCard(serie: FichaSerie, onClick: () -> Unit) {
                 contentScale = ContentScale.Crop
             )
 
+            // Anillo de puntuación neón posicionado abajo a la derecha
             ScoreRing(
                 score = serie.voteAverage,
                 modifier = Modifier
@@ -46,14 +49,24 @@ fun SerieCard(serie: FichaSerie, onClick: () -> Unit) {
                     .offset(x = 6.dp, y = 6.dp)
             )
         }
+
+        // Título de la serie (Fuera del Box para que aparezca debajo)
         Text(
             text = serie.title,
             color = Color.White,
-            fontSize = 12.sp,
             maxLines = 1,
-            fontWeight = FontWeight.Medium,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 12.dp, start = 4.dp)
         )
+
+        // Nombre del Género con estética SeaStream
+        Text(
+            text = nombreGenero,
+            color = SeaBlueLight.copy(alpha = 0.7f),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(start = 4.dp)
+        )
     }
-}
 }

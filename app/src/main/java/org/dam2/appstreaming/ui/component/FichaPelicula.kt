@@ -5,10 +5,10 @@ import com.google.gson.annotations.SerializedName
 data class FichaPelicula(
     @SerializedName("id") val id: Int,
     @SerializedName("title") val title: String,
-    @SerializedName("overview") val overview: String,
     @SerializedName("poster_path") val posterPath: String?,
+    @SerializedName("vote_average") val voteAverage: Double,
+    @SerializedName("genre_ids") val genreIds: List<Int>?,
     @SerializedName("backdrop_path") val backdropPath: String?,
     @SerializedName("release_date") val releaseDate: String?,
-    @SerializedName("vote_average") val voteAverage: Double,
-    @SerializedName("adult") val adult: Boolean = false
+    @SerializedName("overview") val overview: String
 )

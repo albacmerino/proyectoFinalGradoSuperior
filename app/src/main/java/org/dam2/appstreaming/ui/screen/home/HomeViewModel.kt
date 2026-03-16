@@ -8,8 +8,13 @@ import kotlinx.coroutines.launch
 import org.dam2.appstreaming.data.TmdbRepository
 import org.dam2.appstreaming.ui.component.FichaPelicula
 import org.dam2.appstreaming.ui.component.FichaSerie
+import org.dam2.appstreaming.ui.component.Genero
 
 class HomeViewModel : ViewModel() {
+
+
+    val selectedGenreId = MutableStateFlow<Int?>(null) // null significa "Todo"
+
     private val repository = TmdbRepository()
 
     // Control de la pestaña seleccionada (0: Películas, 1: Series)
@@ -38,6 +43,9 @@ class HomeViewModel : ViewModel() {
     private val _topRatedSeries = MutableStateFlow<List<FichaSerie>>(emptyList())
     val topRatedSeries: StateFlow<List<FichaSerie>> = _topRatedSeries
 
+    val movieGenres = MutableStateFlow<List<Genero>>(emptyList())
+    val tvGenres = MutableStateFlow<List<Genero>>(emptyList())
+
     init {
         cargarTodo()
     }
@@ -55,6 +63,10 @@ class HomeViewModel : ViewModel() {
                 _popularSeries.value = repository.getPopularSeries()
                 _topRatedSeries.value = repository.getTopRatedSeries()
 
+                //Cargar Generos
+                movieGenres.value = repository.getMovieGenres()
+                tvGenres.value = repository.getTvGenres()
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -63,5 +75,11 @@ class HomeViewModel : ViewModel() {
 
     fun onTabSelected(index: Int) {
         _selectedTab.value = index
+    }
+
+
+    fun onGeneroSelected(id: Int?) {
+        selectedGenreId.value = id
+        // Aquí podrías filtrar las listas llamando a la API con discover/movie?with_genres=id
     }
 }

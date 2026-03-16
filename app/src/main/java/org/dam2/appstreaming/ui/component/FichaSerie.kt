@@ -11,5 +11,6 @@ data class FichaSerie(
     @SerializedName("first_air_date") val firstAirDate: String?,
     @SerializedName("vote_average") val voteAverage: Double,
     @SerializedName("origin_country") val originCountry: List<String>? = null,
-    @SerializedName("original_name") val originalName: String? = null
+    @SerializedName("original_name") val originalName: String? = null,
+    @SerializedName("genre_ids") val genreIds: List<Int>? = emptyList()
 )

@@ -33,14 +33,13 @@ import androidx.navigation.fragment.findNavController
 import coil.compose.AsyncImage
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.ui.colors.SeaGradient
-
 import org.dam2.appstreaming.ui.component.SeaRatingBar
 import org.dam2.appstreaming.ui.component.FichaSerie
+import org.dam2.appstreaming.ui.component.Genero
+
 class SerieDetailFragment : Fragment() {
 
-    // Usamos activityViewModels para que Home y Detail vean la misma película seleccionada
     private val viewModel: SerieViewModel by activityViewModels()
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,11 +48,13 @@ class SerieDetailFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 val selectedItem by viewModel.selectedItem.collectAsState()
+                val allGenres by viewModel.allGenres.collectAsState()
 
                 MaterialTheme {
                     selectedItem?.let { item ->
                         SerieDetailScreen(
                             item = item,
+                            allGenres = allGenres, // Pasamos los géneros aquí
                             onBackClick = { findNavController().popBackStack() }
                         )
                     } ?: Box(
@@ -70,21 +71,16 @@ class SerieDetailFragment : Fragment() {
 
 @Composable
 fun SerieDetailScreen(
-    item: FichaSerie, // CAMBIADO: De FichaPelicula a FichaSerie
+    item: FichaSerie,
+    allGenres: List<Genero>,
     onBackClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
+    // Buscamos el nombre del género
+    val nombreGenero = allGenres.find { it.id == item.genreIds?.firstOrNull() }?.name ?: "General"
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF000814))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-        ) {
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF000814))) {
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
             // 1. IMAGEN DE CABECERA
             Box(modifier = Modifier.height(350.dp).fillMaxWidth()) {
                 AsyncImage(
@@ -93,45 +89,27 @@ fun SerieDetailScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color.Transparent, Color(0xFF000814)),
-                                startY = 400f
-                            )
-                        )
-                )
+                Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xFF000814)), startY = 400f)))
             }
 
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                // 2. TÍTULO NEÓN
                 Text(
                     text = item.title,
-                    style = MaterialTheme.typography.displaySmall.copy(
-                        brush = SeaGradient,
-                        fontWeight = FontWeight.ExtraBold
-                    ),
+                    style = MaterialTheme.typography.displaySmall.copy(brush = SeaGradient, fontWeight = FontWeight.ExtraBold),
                     lineHeight = 40.sp
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // METADATOS
+                // METADATOS ACTUALIZADOS (Año • Género • Etiqueta)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        // CAMBIADO: De releaseDate a firstAirDate
-                        text = item.firstAirDate?.take(4) ?: "N/A",
-                        color = Color.Gray,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Text(text = item.firstAirDate?.take(4) ?: "N/A", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
 
-                    Text(
-                        text = " • ",
-                        color = SeaBlueLight,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
+                    Text(text = " • ", color = SeaBlueLight, modifier = Modifier.padding(horizontal = 6.dp))
+
+                    Text(text = nombreGenero, color = SeaBlueLight.copy(alpha = 0.8f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+
+                    Text(text = " • ", color = SeaBlueLight, modifier = Modifier.padding(horizontal = 6.dp))
 
                     Surface(
                         color = SeaBlueLight.copy(alpha = 0.1f),
@@ -150,73 +128,28 @@ fun SerieDetailScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 3. VALORACIÓN EN ESTRELLAS
+                // 3. VALORACIÓN, BOTÓN Y SINOPSIS (Igual que antes)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    SeaRatingBar(
-                        rating = (item.voteAverage / 2).toInt(),
-                        onRatingChange = {}
-                    )
-                    Text(
-                        text = "  ${String.format("%.1f", item.voteAverage)}",
-                        color = SeaBlueLight,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
+                    SeaRatingBar(rating = (item.voteAverage / 2).toInt())
+                    Text(text = "  ${String.format("%.1f", item.voteAverage)}", color = SeaBlueLight, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 }
-
                 Spacer(modifier = Modifier.height(32.dp))
-
-                // 4. BOTÓN ACCIÓN
                 Button(
-                    onClick = { /* TODO */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .border(2.dp, SeaGradient, RoundedCornerShape(16.dp)),
+                    onClick = { },
+                    modifier = Modifier.fillMaxWidth().height(56.dp).border(2.dp, SeaGradient, RoundedCornerShape(16.dp)),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text(
-                        text = "AÑADIR A MI LISTA",
-                        color = Color.White,
-                        fontWeight = FontWeight.ExtraBold,
-                        letterSpacing = 1.sp
-                    )
+                    Text("AÑADIR A MI LISTA", color = Color.White, fontWeight = FontWeight.ExtraBold)
                 }
-
                 Spacer(modifier = Modifier.height(32.dp))
-
-                // 5. SINOPSIS
-                Text(
-                    text = "Sinopsis",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = SeaBlueLight,
-                    fontWeight = FontWeight.Bold
-                )
+                Text("Sinopsis", style = MaterialTheme.typography.titleLarge, color = SeaBlueLight, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = item.overview.ifEmpty { "No hay descripción disponible." },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White.copy(alpha = 0.8f),
-                    lineHeight = 26.sp,
-                    modifier = Modifier.padding(bottom = 40.dp)
-                )
+                Text(text = item.overview.ifEmpty { "No hay descripción disponible." }, style = MaterialTheme.typography.bodyLarge, color = Color.White.copy(alpha = 0.8f), lineHeight = 26.sp, modifier = Modifier.padding(bottom = 40.dp))
             }
         }
-
-        // 6. BOTÓN ATRÁS FLOTANTE
-        IconButton(
-            onClick = onBackClick,
-            modifier = Modifier
-                .padding(top = 48.dp, start = 16.dp)
-                .size(45.dp)
-                .background(Color.Black.copy(alpha = 0.6f), CircleShape)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Volver",
-                tint = Color.White
-            )
+        IconButton(onClick = onBackClick, modifier = Modifier.padding(top = 48.dp, start = 16.dp).size(45.dp).background(Color.Black.copy(alpha = 0.6f), CircleShape)) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
         }
     }
 }

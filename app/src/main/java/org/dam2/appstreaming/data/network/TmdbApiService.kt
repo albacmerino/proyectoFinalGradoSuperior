@@ -1,7 +1,9 @@
 package org.dam2.appstreaming.data.network
 
+
 import org.dam2.appstreaming.ui.component.FichaPelicula
 import org.dam2.appstreaming.ui.component.FichaSerie
+import org.dam2.appstreaming.ui.component.GeneroResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -32,4 +34,10 @@ interface TmdbApiService {
 
     @GET("tv/on_the_air")
     suspend fun getOnTheAirSeries(): SeriesResponse
+
+    @GET("genre/movie/list")
+    suspend fun getMovieGenres(@Query("language") lang: String = "es-ES"): GeneroResponse
+
+    @GET("genre/tv/list")
+    suspend fun getTvGenres(@Query("language") lang: String = "es-ES"): GeneroResponse
 }
