@@ -15,29 +15,50 @@ data class SeriesResponse(
     val results: List<FichaSerie>
 )
 interface TmdbApiService {
-    // PELÍCULAS
+
+    // --- PELÍCULAS ---
+
     @GET("movie/popular")
-    suspend fun getPopularMovies(): MovieResponse
+    suspend fun getPopularMovies(
+        @Query("language") lang: String = "es-ES"
+    ): MovieResponse
 
     @GET("movie/now_playing")
-    suspend fun getNowPlayingMovies(): MovieResponse
+    suspend fun getNowPlayingMovies(
+        @Query("language") lang: String = "es-ES"
+    ): MovieResponse
 
     @GET("movie/top_rated")
-    suspend fun getTopRatedMovies(): MovieResponse
+    suspend fun getTopRatedMovies(
+        @Query("language") lang: String = "es-ES"
+    ): MovieResponse
 
-    // SERIES
+    // --- SERIES ---
+
     @GET("tv/popular")
-    suspend fun getPopularSeries(): SeriesResponse
+    suspend fun getPopularSeries(
+        @Query("language") lang: String = "es-ES"
+    ): SeriesResponse
 
     @GET("tv/top_rated")
-    suspend fun getTopRatedSeries(): SeriesResponse
+    suspend fun getTopRatedSeries(
+        @Query("language") lang: String = "es-ES"
+    ): SeriesResponse
 
     @GET("tv/on_the_air")
-    suspend fun getOnTheAirSeries(): SeriesResponse
+    suspend fun getOnTheAirSeries(
+        @Query("language") lang: String = "es-ES"
+    ): SeriesResponse
+
+    // --- GÉNEROS ---
 
     @GET("genre/movie/list")
-    suspend fun getMovieGenres(@Query("language") lang: String = "es-ES"): GeneroResponse
+    suspend fun getMovieGenres(
+        @Query("language") lang: String = "es-ES"
+    ): GeneroResponse
 
     @GET("genre/tv/list")
-    suspend fun getTvGenres(@Query("language") lang: String = "es-ES"): GeneroResponse
+    suspend fun getTvGenres(
+        @Query("language") lang: String = "es-ES"
+    ): GeneroResponse
 }

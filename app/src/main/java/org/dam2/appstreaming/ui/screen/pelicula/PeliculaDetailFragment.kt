@@ -58,7 +58,9 @@ class PeliculaDetailFragment : Fragment() {
                             onBackClick = { findNavController().popBackStack() }
                         )
                     } ?: Box(
-                        modifier = Modifier.fillMaxSize().background(Color(0xFF000814)),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF000814)),
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(color = SeaBlueLight)
@@ -76,18 +78,33 @@ fun PeliculaDetailScreen(
     onBackClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
-    val nombreGenero = allGenres.find { it.id == item.genreIds?.firstOrNull() }?.name ?: "General"
+    val nombreGenero = item.genreIds?.mapNotNull { id ->
+        allGenres.find { it.id == id }?.name
+    }?.joinToString(" • ") ?: "General"
 
-    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF000814))) {
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-            Box(modifier = Modifier.height(350.dp).fillMaxWidth()) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color(0xFF000814))) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(scrollState)) {
+            Box(modifier = Modifier
+                .height(350.dp)
+                .fillMaxWidth()) {
                 AsyncImage(
                     model = "https://image.tmdb.org/t/p/w1280${item.backdropPath}",
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-                Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xFF000814)), startY = 400f)))
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color.Transparent, Color(0xFF000814)),
+                            startY = 400f
+                        )
+                    ))
             }
 
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
@@ -105,8 +122,13 @@ fun PeliculaDetailScreen(
 
                     Text(text = " • ", color = SeaBlueLight, modifier = Modifier.padding(horizontal = 6.dp))
 
-                    Text(text = nombreGenero, color = SeaBlueLight.copy(alpha = 0.8f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-
+                    Text(
+                        text = nombreGenero,
+                        color = SeaBlueLight.copy(alpha = 0.7f),
+                        fontSize = 11.sp,
+                        maxLines = 1, // Importante para que no rompa el diseño si el nombre es largo
+                        fontWeight = FontWeight.Medium
+                    )
                     Text(text = " • ", color = SeaBlueLight, modifier = Modifier.padding(horizontal = 6.dp))
 
                     Surface(
@@ -133,7 +155,10 @@ fun PeliculaDetailScreen(
                 Spacer(modifier = Modifier.height(32.dp))
                 Button(
                     onClick = { },
-                    modifier = Modifier.fillMaxWidth().height(56.dp).border(2.dp, SeaGradient, RoundedCornerShape(16.dp)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .border(2.dp, SeaGradient, RoundedCornerShape(16.dp)),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -145,7 +170,10 @@ fun PeliculaDetailScreen(
                 Text(text = item.overview.ifEmpty { "No hay descripción disponible." }, style = MaterialTheme.typography.bodyLarge, color = Color.White.copy(alpha = 0.8f), lineHeight = 26.sp, modifier = Modifier.padding(bottom = 40.dp))
             }
         }
-        IconButton(onClick = onBackClick, modifier = Modifier.padding(top = 48.dp, start = 16.dp).size(45.dp).background(Color.Black.copy(alpha = 0.6f), CircleShape)) {
+        IconButton(onClick = onBackClick, modifier = Modifier
+            .padding(top = 48.dp, start = 16.dp)
+            .size(45.dp)
+            .background(Color.Black.copy(alpha = 0.6f), CircleShape)) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
         }
     }
