@@ -1,9 +1,6 @@
 package org.dam2.appstreaming.ui.component
 
-<<<<<<< Updated upstream
-class FichaSerie {
-}
-=======
+
 import com.google.gson.annotations.SerializedName
 
 data class FichaSerie(
@@ -20,4 +17,4 @@ data class FichaSerie(
     //enlace oficial de la serie (netflix, amazon, etc)
     @SerializedName("homepage") val homepage: String? = null
 )
->>>>>>> Stashed changes
+

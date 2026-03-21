@@ -12,8 +12,6 @@ import org.dam2.appstreaming.data.network.Review
 import org.dam2.appstreaming.ui.component.FichaPelicula
 import org.dam2.appstreaming.ui.component.Genero
 
-
-/* ----- CEREBRO QUE CORDIINA LAS PETICIONES ----- */
 class PeliculaViewModel : ViewModel() {
     private val repository = TmdbRepository()
 
@@ -35,14 +33,14 @@ class PeliculaViewModel : ViewModel() {
     private val _mainProvider = MutableStateFlow<Provider?>(null)
     val mainProvider: StateFlow<Provider?> = _mainProvider
 
-    private val _certification = MutableStateFlow<String?>(null)
-    val certification: StateFlow<String?> = _certification
+    private val _certificacion = MutableStateFlow<String?>(null)
+    val certificacion: StateFlow<String?> = _certificacion
 
-    private val _cast = MutableStateFlow<List<CastMember>>(emptyList())
-    val cast: StateFlow<List<CastMember>> = _cast
+    private val _reparto = MutableStateFlow<List<CastMember>>(emptyList())
+    val reparto: StateFlow<List<CastMember>> = _reparto
 
-    private val _reviews = MutableStateFlow<List<Review>>(emptyList())
-    val reviews: StateFlow<List<Review>> = _reviews
+    private val _resenas = MutableStateFlow<List<Review>>(emptyList())
+    val resenas: StateFlow<List<Review>> = _resenas
 
     fun setSelectedItem(pelicula: FichaPelicula) {
         _selectedPelicula.value = pelicula
@@ -50,9 +48,9 @@ class PeliculaViewModel : ViewModel() {
         _watchLink.value = null
         _directPlatformLink.value = null
         _mainProvider.value = null
-        _certification.value = null
-        _cast.value = emptyList()
-        _reviews.value = emptyList()
+        _certificacion.value = null
+        _reparto.value = emptyList()
+        _resenas.value = emptyList()
         loadDetails(pelicula.id)
     }
 
@@ -62,33 +60,23 @@ class PeliculaViewModel : ViewModel() {
 
     private fun loadDetails(movieId: Int) {
         viewModelScope.launch {
-            // 1. Cargar trailer
             _trailerKey.value = repository.getMovieTrailer(movieId)
             
-            // 2. Cargar detalles extendidos (para el homepage/link directo)
             val details = repository.getMovieDetails(movieId)
             details?.let {
                 _selectedPelicula.value = it
                 _directPlatformLink.value = it.homepage
             }
 
-            // 3. Cargar proveedores (para el logo y el link de respaldo)
             try {
                 val watchInfo = repository.getMovieWatchProvidersData(movieId)
                 _watchLink.value = watchInfo?.link
                 _mainProvider.value = watchInfo?.flatrate?.firstOrNull()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            } catch (e: Exception) { }
 
-            // 4. Cargar certificacion PEGI
-            _certification.value = repository.getMovieCertification(movieId)
-
-            // 5. Cargar reparto
-            _cast.value = repository.getMovieCast(movieId)
-
-            // 6. Cargar resenas (Social)
-            _reviews.value = repository.getMovieReviews(movieId)
+            _certificacion.value = repository.getMovieCertification(movieId)
+            _reparto.value = repository.getMovieCast(movieId)
+            _resenas.value = repository.getMovieReviews(movieId)
         }
     }
 }

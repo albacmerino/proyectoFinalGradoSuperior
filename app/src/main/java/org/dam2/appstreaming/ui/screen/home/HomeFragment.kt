@@ -1,8 +1,5 @@
 package org.dam2.appstreaming.ui.screen.home
 
-<<<<<<< Updated upstream
-class HomeFragment {
-=======
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -249,5 +246,4 @@ fun SerieSection(title: String, series: List<FichaSerie>, allGenres: List<Genero
             }
         }
     }
->>>>>>> Stashed changes
 }

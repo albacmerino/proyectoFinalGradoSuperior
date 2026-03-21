@@ -1,6 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/nav_graph.xml">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/nav_graph"
+        app:startDestination="@id/splashFragment">
+
+    <!-- Pantalla 1: SPLASH -->
+    <fragment
+            android:id="@+id/splashFragment"
+            android:name="org.dam2.appstreaming.ui.screen.splash.SplashFragment"
+            android:label="Splash">
+        <action
+                android:id="@+id/action_splashFragment_to_loginFragment"
+                app:destination="@id/loginFragment"
+                app:enterAnim="@anim/slide_in_right"
+                app:exitAnim="@anim/slide_out_left"
+                app:popUpTo="@id/splashFragment"
+                app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- Pantalla 2: LOGIN -->
+    <fragment
+            android:id="@+id/loginFragment"
+            android:name="org.dam2.appstreaming.ui.screen.auth.LoginFragment"
+            android:label="Login">
+
+        <!-- Transición al Home -->
+        <action
+                android:id="@+id/action_loginFragment_to_homeFragment"
+                app:destination="@id/homeFragment"
+                app:enterAnim="@anim/slide_in_right"
+                app:exitAnim="@anim/slide_out_left"
+                app:popEnterAnim="@android:anim/slide_in_left"
+                app:popExitAnim="@android:anim/slide_out_right"
+                app:popUpTo="@id/loginFragment"
+                app:popUpToInclusive="true"
+                />
+
+        <!-- Transición al Registro -->
+        <action
+                android:id="@+id/action_loginFragment_to_registerFragment"
+                app:destination="@id/registerFragment"
+                app:enterAnim="@anim/slide_in_right"
+                app:exitAnim="@anim/slide_out_left"
+                app:popEnterAnim="@android:anim/slide_in_left"
+                app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
+    <!-- Pantalla 3: HOME -->
+    <fragment
+            android:id="@+id/homeFragment"
+            android:name="org.dam2.appstreaming.ui.screen.home.HomeFragment"
+            android:label="Home">
+
+        <!-- ESTA ES LA ACCIÓN QUE TE FALTA -->
+        <action
+                android:id="@+id/action_homeFragment_to_peliculaDetailFragment"
+                app:destination="@id/peliculaDetailFragment"
+                app:enterAnim="@anim/slide_in_right"
+                app:exitAnim="@anim/slide_out_left"
+                app:popEnterAnim="@android:anim/slide_in_left"
+                app:popExitAnim="@android:anim/slide_out_right"/>
+
+        <action
+                android:id="@+id/action_homeFragment_to_serieDetailFragment"
+                app:destination="@id/serieDetailFragment"
+                app:enterAnim="@anim/slide_in_right"
+                app:exitAnim="@anim/slide_out_left"
+                app:popEnterAnim="@android:anim/slide_in_left"
+                app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
+
+    <fragment
+            android:id="@+id/peliculaDetailFragment"
+            android:name="org.dam2.appstreaming.ui.screen.pelicula.PeliculaDetailFragment" />
+
+    <fragment
+            android:id="@+id/serieDetailFragment"
+            android:name="org.dam2.appstreaming.ui.screen.serie.SerieDetailFragment" />
+    <!-- Pantalla 4: REGISTER -->
+    <fragment
+            android:id="@+id/registerFragment"
+            android:name="org.dam2.appstreaming.ui.screen.auth.RegisterFragment"
+            android:label="Register" />
 
 </navigation>

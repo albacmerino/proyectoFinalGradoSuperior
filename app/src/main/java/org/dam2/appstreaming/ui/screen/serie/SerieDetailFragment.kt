@@ -1,8 +1,4 @@
 package org.dam2.appstreaming.ui.screen.serie
-
-<<<<<<< Updated upstream
-class SerieDetailFragment {
-=======
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -183,5 +179,4 @@ fun SerieDetailScreen(
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = Color.White)
         }
     }
->>>>>>> Stashed changes
 }

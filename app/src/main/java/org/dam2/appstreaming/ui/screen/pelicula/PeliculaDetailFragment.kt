@@ -1,8 +1,5 @@
 package org.dam2.appstreaming.ui.screen.pelicula
 
-<<<<<<< Updated upstream
-class PeliculaDetailFragment {
-=======
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -84,9 +81,9 @@ fun ContenidoDetallePelicula(
     val enlacePlataformas by viewModel.watchLink.collectAsState()
     val enlaceDirecto by viewModel.directPlatformLink.collectAsState()
     val proveedorPrincipal by viewModel.mainProvider.collectAsState()
-    val certificacion by viewModel.certification.collectAsState()
-    val reparto by viewModel.cast.collectAsState()
-    val resenas by viewModel.reviews.collectAsState()
+    val certificacion by viewModel.certificacion.collectAsState()
+    val reparto by viewModel.reparto.collectAsState()
+    val resenas by viewModel.resenas.collectAsState()
 
     peliculaSeleccionada?.let { datosPelicula ->
         PantallaDetallePelicula(
@@ -105,6 +102,10 @@ fun ContenidoDetallePelicula(
             onWatchNowClick = {
                 val urlFinal = if (!enlaceDirecto.isNullOrBlank()) enlaceDirecto else enlacePlataformas
                 urlFinal?.let { url -> abrirUrl(url) }
+            },
+            onSeeAllReviewsClick = {
+                // Forzamos el idioma español tanto para el contenido como para la interfaz del sitio web
+                abrirUrl("https://www.themoviedb.org/movie/${datosPelicula.id}/reviews?language=es-ES")
             }
         )
     } ?: PantallaCargando()
@@ -129,7 +130,8 @@ fun PantallaDetallePelicula(
     resenas: List<Review>,
     onBackClick: () -> Unit,
     onPlayTrailerClick: () -> Unit,
-    onWatchNowClick: () -> Unit
+    onWatchNowClick: () -> Unit,
+    onSeeAllReviewsClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -150,8 +152,7 @@ fun PantallaDetallePelicula(
                 SinopsisSeccion(item.overview)
                 
                 RepartoSeccion(cast)
-
-                SeccionSocial(resenas)
+                SeccionSocial(resenas, onSeeAllReviewsClick)
             }
         }
         BotonIrAtras(onBackClick)
@@ -238,7 +239,7 @@ fun SeccionOpinion() {
 }
 
 @Composable
-fun SeccionSocial(resenas: List<Review>) {
+fun SeccionSocial(resenas: List<Review>, onSeeAllReviewsClick: () -> Unit) {
     Column(modifier = Modifier.padding(top = 24.dp, bottom = 40.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -257,12 +258,7 @@ fun SeccionSocial(resenas: List<Review>) {
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Box(
-                    modifier = Modifier
-                        .width(60.dp)
-                        .height(3.dp)
-                        .background(SeaBlueLight)
-                )
+                Box(modifier = Modifier.width(60.dp).height(3.dp).background(SeaBlueLight))
             }
         }
         
@@ -297,10 +293,7 @@ fun SeccionSocial(resenas: List<Review>) {
                             )
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 if (resena.authorDetails.rating != null) {
-                                    Surface(
-                                        color = Color.Black,
-                                        shape = RoundedCornerShape(4.dp)
-                                    ) {
+                                    Surface(color = Color.Black, shape = RoundedCornerShape(4.dp)) {
                                         Text(
                                             text = "★ ${resena.authorDetails.rating.toInt()}",
                                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
@@ -312,7 +305,7 @@ fun SeccionSocial(resenas: List<Review>) {
                                     Spacer(modifier = Modifier.width(8.dp))
                                 }
                                 Text(
-                                    text = "Escrito por ${resena.author} el ${resena.createdAt.take(10)}",
+                                    text = "Escrito el ${resena.createdAt.take(10)}",
                                     color = Color.White.copy(alpha = 0.5f),
                                     fontSize = 11.sp
                                 )
@@ -331,22 +324,17 @@ fun SeccionSocial(resenas: List<Review>) {
                 }
             }
             
-            // Enlace "Leer todas las reseñas" (Añadido ahora)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Leer todas las reseñas",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
-                modifier = Modifier.clickable { /* Aquí iría la navegación */ }
+                modifier = Modifier.clickable { onSeeAllReviewsClick() }
             )
 
         } else {
-            Text(
-                text = "No hay reseñas todavía.",
-                color = Color.White.copy(alpha = 0.5f),
-                fontSize = 13.sp
-            )
+            Text("No hay reseñas todavía.", color = Color.White.copy(alpha = 0.5f), fontSize = 13.sp)
         }
     }
 }
@@ -355,17 +343,9 @@ fun SeccionSocial(resenas: List<Review>) {
 fun RepartoSeccion(reparto: List<CastMember>) {
     if (reparto.isNotEmpty()) {
         Column(modifier = Modifier.padding(top = 24.dp)) {
-            Text(
-                text = "Reparto principal",
-                style = MaterialTheme.typography.titleLarge,
-                color = SeaBlueLight,
-                fontWeight = FontWeight.Bold
-            )
+            Text("Reparto principal", style = MaterialTheme.typography.titleLarge, color = SeaBlueLight, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
-            LazyRow(
-                contentPadding = PaddingValues(end = 20.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            LazyRow(contentPadding = PaddingValues(end = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(reparto.take(15)) { actor ->
                     CardActor(actor)
                 }
@@ -376,34 +356,12 @@ fun RepartoSeccion(reparto: List<CastMember>) {
 
 @Composable
 fun CardActor(actor: CastMember) {
-    Card(
-        modifier = Modifier.width(120.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF032541))
-    ) {
+    Card(modifier = Modifier.width(120.dp), shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF032541))) {
         Column {
-            AsyncImage(
-                model = "https://image.tmdb.org/t/p/w185${actor.profilePath}",
-                contentDescription = actor.name,
-                modifier = Modifier.height(150.dp).fillMaxWidth(),
-                contentScale = ContentScale.Crop
-            )
+            AsyncImage(model = "https://image.tmdb.org/t/p/w185${actor.profilePath}", contentDescription = null, modifier = Modifier.height(150.dp).fillMaxWidth(), contentScale = ContentScale.Crop)
             Column(modifier = Modifier.padding(8.dp)) {
-                Text(
-                    text = actor.name,
-                    color = Color.White,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = actor.character,
-                    color = Color.White.copy(alpha = 0.6f),
-                    fontSize = 11.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Text(actor.name, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(actor.character, color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
         }
     }
@@ -472,35 +430,21 @@ fun MetadatosPelicula(fecha: String?, idsGeneros: List<Int>?, listaGeneros: List
         ?.joinToString(" • ") ?: "General"
 
     Row(verticalAlignment = Alignment.CenterVertically) {
-        
-        // Etiqueta PEGI / Clasificación
         if (!certification.isNullOrEmpty()) {
             Surface(
                 color = Color.Transparent,
                 shape = RoundedCornerShape(4.dp),
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f))
             ) {
-                Text(
-                    text = certification,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                    color = Color.Gray,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(text = certification, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), color = Color.Gray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.width(8.dp))
         }
-
         Text(fecha?.take(4) ?: "N/A", color = Color.Gray, style = MaterialTheme.typography.bodyMedium)
         Text(" • ", color = SeaBlueLight, modifier = Modifier.padding(horizontal = 6.dp))
         Text(nombres, color = SeaBlueLight.copy(alpha = 0.7f), fontSize = 11.sp, maxLines = 1, fontWeight = FontWeight.Medium)
         Text(" • ", color = SeaBlueLight, modifier = Modifier.padding(horizontal = 6.dp))
-
-        Surface(
-            color = SeaBlueLight.copy(alpha = 0.1f),
-            shape = RoundedCornerShape(4.dp),
-            border = androidx.compose.foundation.BorderStroke(1.dp, SeaBlueLight.copy(alpha = 0.5f))
-        ) {
+        Surface(color = SeaBlueLight.copy(alpha = 0.1f), shape = RoundedCornerShape(4.dp), border = androidx.compose.foundation.BorderStroke(1.dp, SeaBlueLight.copy(alpha = 0.5f))) {
             Text(
                 text = "PELÍCULA",
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
@@ -519,12 +463,7 @@ fun PuntuacionYAcciones(nota: Double) {
         Text("  ${String.format("%.1f", nota)}", color = SeaBlueLight, fontWeight = FontWeight.Bold, fontSize = 18.sp)
     }
     Spacer(modifier = Modifier.height(32.dp))
-    Button(
-        onClick = { },
-        modifier = Modifier.fillMaxWidth().height(56.dp).border(2.dp, SeaGradient, RoundedCornerShape(16.dp)),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-        shape = RoundedCornerShape(16.dp)
-    ) {
+    Button(onClick = { }, modifier = Modifier.fillMaxWidth().height(56.dp).border(2.dp, SeaGradient, RoundedCornerShape(16.dp)), colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), shape = RoundedCornerShape(16.dp)) {
         Text("AÑADIR A MI LISTA", color = Color.White, fontWeight = FontWeight.ExtraBold)
     }
 }
@@ -538,11 +477,7 @@ fun SinopsisSeccion(texto: String) {
 
 @Composable
 fun BotonIrAtras(alPulsar: () -> Unit) {
-    IconButton(
-        onClick = alPulsar,
-        modifier = Modifier.padding(top = 48.dp, start = 16.dp).size(45.dp).background(Color.Black.copy(alpha = 0.6f), CircleShape)
-    ) {
+    IconButton(onClick = alPulsar, modifier = Modifier.padding(top = 48.dp, start = 16.dp).size(45.dp).background(Color.Black.copy(alpha = 0.6f), CircleShape)) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
     }
->>>>>>> Stashed changes
 }

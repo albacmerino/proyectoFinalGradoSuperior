@@ -1,8 +1,6 @@
 package org.dam2.appstreaming.ui.screen.serie
 
-<<<<<<< Updated upstream
-class SerieViewModel {
-=======
+
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,5 +21,4 @@ class SerieViewModel : ViewModel() {
     fun setGenres(list: List<Genero>) {
         _allGenres.value = list
     }
->>>>>>> Stashed changes
 }
