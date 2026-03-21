@@ -13,6 +13,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import org.dam2.appstreaming.R
 
 /**
  * Fragmento que actúa como contenedor para la pantalla de detalle de película.
@@ -49,10 +50,12 @@ class PeliculaDetailFragment : Fragment() {
                             val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                             startActivity(intent)
                         },
-                        onSeeAllReviewsClick = { movieId ->
-                            // Abre la web de TMDB para ver todas las reseñas
-                            val url = "https://www.themoviedb.org/movie/$movieId/reviews?language=es-ES"
-                            startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                        onSeeAllReviewsClick = {
+                            // Navegamos a la pantalla de reseñas propia en lugar de abrir la web
+                            val bundle = Bundle().apply {
+                                putString("mediaType", "pelicula")
+                            }
+                            findNavController().navigate(R.id.action_peliculaDetailFragment_to_reviewsFragment, bundle)
                         },
                         onRecommendationClick = { movie ->
                             // Al pulsar una recomendación, actualizamos el ViewModel con la nueva película

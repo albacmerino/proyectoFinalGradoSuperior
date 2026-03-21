@@ -64,10 +64,10 @@ class HomeFragment : Fragment() {
                             HomeScreen(
                                 selectedTab = state.tab, // Pestaña actual (Pelis/Series)
                                 onTabSelected = { viewModel.onTab(it) }, // Acción al cambiar pestaña
-                                moviesNow = state.moviesNow, // Datos de películas
+                                moviesNow = state.moviesNow, // Ahora usamos las listas directas del state, ya que el VM las carga filtradas
                                 moviesPop = state.moviesPop,
                                 moviesTop = state.moviesTop,
-                                seriesNow = state.seriesNow, // Datos de series
+                                seriesNow = state.seriesNow,
                                 seriesPop = state.seriesPop,
                                 seriesTop = state.seriesTop,
                                 generos = state.currentGenres, // Géneros según la pestaña activa

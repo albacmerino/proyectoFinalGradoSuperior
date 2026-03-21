@@ -53,7 +53,6 @@
             android:name="org.dam2.appstreaming.ui.screen.home.HomeFragment"
             android:label="Home">
 
-        <!-- ESTA ES LA ACCIÓN QUE TE FALTA -->
         <action
                 android:id="@+id/action_homeFragment_to_peliculaDetailFragment"
                 app:destination="@id/peliculaDetailFragment"
@@ -74,11 +73,36 @@
 
     <fragment
             android:id="@+id/peliculaDetailFragment"
-            android:name="org.dam2.appstreaming.ui.screen.pelicula.PeliculaDetailFragment" />
+            android:name="org.dam2.appstreaming.ui.screen.pelicula.PeliculaDetailFragment">
+        <action
+                android:id="@+id/action_peliculaDetailFragment_to_reviewsFragment"
+                app:destination="@id/reviewsFragment"
+                app:enterAnim="@anim/slide_in_right"
+                app:exitAnim="@anim/slide_out_left"
+                app:popEnterAnim="@android:anim/slide_in_left"
+                app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
 
     <fragment
             android:id="@+id/serieDetailFragment"
-            android:name="org.dam2.appstreaming.ui.screen.serie.SerieDetailFragment" />
+            android:name="org.dam2.appstreaming.ui.screen.serie.SerieDetailFragment">
+        <action
+                android:id="@+id/action_serieDetailFragment_to_reviewsFragment"
+                app:destination="@id/reviewsFragment"
+                app:enterAnim="@anim/slide_in_right"
+                app:exitAnim="@anim/slide_out_left"
+                app:popEnterAnim="@android:anim/slide_in_left"
+                app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
+
+    <fragment
+            android:id="@+id/reviewsFragment"
+            android:name="org.dam2.appstreaming.ui.screen.reviews.ReviewsFragment">
+        <argument
+                android:name="mediaType"
+                app:argType="string" />
+    </fragment>
+
     <!-- Pantalla 4: REGISTER -->
     <fragment
             android:id="@+id/registerFragment"

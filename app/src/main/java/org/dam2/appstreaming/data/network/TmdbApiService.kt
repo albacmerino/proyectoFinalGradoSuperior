@@ -163,6 +163,14 @@ interface TmdbApiService {
         @Path("movie_id") movieId: Int
     ): KeywordResponse
 
+    // Descubrir películas por género
+    @GET("discover/movie")
+    suspend fun discoverMovies(
+        @Query("with_genres") genreId: Int,
+        @Query("sort_by") sortBy: String = "popularity.desc",
+        @Query("language") lang: String = "es-ES"
+    ): MovieResponse
+
     // --- SERIES ---
 
     @GET("tv/popular")
@@ -219,6 +227,14 @@ interface TmdbApiService {
     suspend fun getSeriesKeywords(
         @Path("series_id") seriesId: Int
     ): KeywordResponse
+
+    // Descubrir series por género
+    @GET("discover/tv")
+    suspend fun discoverSeries(
+        @Query("with_genres") genreId: Int,
+        @Query("sort_by") sortBy: String = "popularity.desc",
+        @Query("language") lang: String = "es-ES"
+    ): SeriesResponse
 
     // --- GENEROS ---
 

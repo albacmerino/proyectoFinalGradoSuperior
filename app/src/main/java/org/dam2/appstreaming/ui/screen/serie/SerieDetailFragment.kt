@@ -13,6 +13,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import org.dam2.appstreaming.R
 
 /**
  * Fragmento que actúa como contenedor para la pantalla de detalle de serie.
@@ -46,9 +47,12 @@ class SerieDetailFragment : Fragment() {
                             val intent = Intent(Intent.ACTION_VIEW, url.toUri())
                             startActivity(intent)
                         },
-                        onSeeAllReviewsClick = { serieId ->
-                            val url = "https://www.themoviedb.org/tv/$serieId/reviews?language=es-ES"
-                            startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                        onSeeAllReviewsClick = {
+                            // Navegamos a la pantalla de reseñas propia en lugar de abrir la web
+                            val bundle = Bundle().apply {
+                                putString("mediaType", "serie")
+                            }
+                            findNavController().navigate(R.id.action_serieDetailFragment_to_reviewsFragment, bundle)
                         },
                         onRecommendationClick = { serie ->
                             viewModel.establecerItemSeleccionado(serie)

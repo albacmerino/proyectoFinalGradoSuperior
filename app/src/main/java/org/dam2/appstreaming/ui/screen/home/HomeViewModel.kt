@@ -12,60 +12,90 @@ import org.dam2.appstreaming.ui.component.*
  * Utiliza un patrón de estado único (HomeState) para simplificar la UI.
  */
 class HomeViewModel : ViewModel() {
-    // Repositorio para obtener los datos de la API de TMDB
     private val repo = TmdbRepository()
 
-    /**
-     * Representa todo el estado de la pantalla en un solo objeto.
-     */
     data class HomeState(
         val tab: Int = 0, // 0 para Cine, 1 para TV
-        val moviesNow: List<FichaPelicula> = emptyList(), // Estrenos de cine
-        val moviesPop: List<FichaPelicula> = emptyList(), // Películas populares
-        val moviesTop: List<FichaPelicula> = emptyList(), // Películas mejor valoradas
-        val seriesNow: List<FichaSerie> = emptyList(),   // Estrenos de TV
-        val seriesPop: List<FichaSerie> = emptyList(),   // Series populares
-        val seriesTop: List<FichaSerie> = emptyList(),   // Series mejor valoradas
-        val movieGenres: List<Genero> = emptyList(),     // Lista de géneros para cine
-        val tvGenres: List<Genero> = emptyList(),        // Lista de géneros para TV
-        val selectedGenreId: Int? = null                 // ID del género seleccionado (null = todos)
+        val moviesNow: List<FichaPelicula> = emptyList(),
+        val moviesPop: List<FichaPelicula> = emptyList(),
+        val moviesTop: List<FichaPelicula> = emptyList(),
+        val seriesNow: List<FichaSerie> = emptyList(),
+        val seriesPop: List<FichaSerie> = emptyList(),
+        val seriesTop: List<FichaSerie> = emptyList(),
+        val movieGenres: List<Genero> = emptyList(),
+        val tvGenres: List<Genero> = emptyList(),
+        val selectedGenreId: Int? = null,
+        val isLoading: Boolean = false
     ) {
-        // Propiedad calculada que devuelve los géneros correspondientes a la pestaña activa
         val currentGenres get() = if (tab == 0) movieGenres else tvGenres
     }
 
-    // Flujo de estado privado (mutable) y público (solo lectura)
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
     init {
-        // Al inicializar el ViewModel, cargamos todos los datos necesarios en una corrutina
+        // Carga inicial de géneros y datos generales
         viewModelScope.launch {
             try {
-                // Actualizamos el estado con la información recibida del repositorio
-                _state.update { it.copy(
-                    moviesNow = repo.obtenerPeliculasEnCine(),
-                    moviesPop = repo.obtenerPeliculasPopulares(),
-                    moviesTop = repo.obtenerPeliculasMejorValoradas(),
-                    seriesNow = repo.obtenerSeriesEnCine(),
-                    seriesPop = repo.obtenerSeriesPopulares(),
-                    seriesTop = repo.obtenerSeriesMejorValoradas(),
-                    movieGenres = repo.obtenerGenerosPelicula(),
-                    tvGenres = repo.obtenerGenerosTv()
-                )}
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+                val mGenres = repo.obtenerGenerosPelicula()
+                val tGenres = repo.obtenerGenerosTv()
+                _state.update { it.copy(movieGenres = mGenres, tvGenres = tGenres) }
+                loadData(null)
+            } catch (e: Exception) { e.printStackTrace() }
         }
     }
 
     /**
-     * Cambia la pestaña actual entre Películas (0) y Series (1).
+     * Carga los datos dependiendo de si hay un género seleccionado o no.
+     * Si hay un género, utiliza el servicio 'discover' para obtener muchos más resultados reales de ese género.
      */
-    fun onTab(i: Int) = _state.update { it.copy(tab = i) }
+    private fun loadData(genreId: Int?) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            try {
+                if (genreId == null) {
+                    // Modo "Todo": Carga las listas generales
+                    _state.update { it.copy(
+                        moviesNow = repo.obtenerPeliculasEnCine(),
+                        moviesPop = repo.obtenerPeliculasPopulares(),
+                        moviesTop = repo.obtenerPeliculasMejorValoradas(),
+                        seriesNow = repo.obtenerSeriesEnCine(),
+                        seriesPop = repo.obtenerSeriesPopulares(),
+                        seriesTop = repo.obtenerSeriesMejorValoradas()
+                    )}
+                } else {
+                    // Modo "Género": Carga contenido específico de ese género usando discover
+                    if (_state.value.tab == 0) {
+                        val filteredMovies = repo.descubrirPeliculasPorGenero(genreId)
+                        _state.update { it.copy(
+                            moviesNow = filteredMovies,
+                            moviesPop = filteredMovies,
+                            moviesTop = filteredMovies
+                        )}
+                    } else {
+                        val filteredSeries = repo.descubrirSeriesPorGenero(genreId)
+                        _state.update { it.copy(
+                            seriesNow = filteredSeries,
+                            seriesPop = filteredSeries,
+                            seriesTop = filteredSeries
+                        )}
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _state.update { it.copy(isLoading = false) }
+            }
+        }
+    }
 
-    /**
-     * Actualiza el filtro de género seleccionado.
-     */
-    fun onGenre(id: Int?) = _state.update { it.copy(selectedGenreId = id) }
+    fun onTab(i: Int) {
+        _state.update { it.copy(tab = i, selectedGenreId = null) }
+        loadData(null)
+    }
+
+    fun onGenre(id: Int?) {
+        _state.update { it.copy(selectedGenreId = id) }
+        loadData(id)
+    }
 }

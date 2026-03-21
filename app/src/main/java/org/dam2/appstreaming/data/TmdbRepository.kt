@@ -124,6 +124,12 @@ class TmdbRepository {
         emptyList()
     }
 
+    suspend fun descubrirPeliculasPorGenero(genreId: Int): List<FichaPelicula> = try {
+        api.discoverMovies(genreId).listaPeliculas
+    } catch (_: Exception) {
+        emptyList()
+    }
+
     // --- SERIES ---
     suspend fun obtenerSeriesPopulares(): List<FichaSerie> = try {
         api.getPopularSeries().listaSeries
@@ -172,8 +178,6 @@ class TmdbRepository {
         }
     }
 
-    //falta certificacion serie
-
     suspend fun obtenerRepartoSerie(seriesId: Int): List<CastMember> = try {
         api.getSeriesCredits(seriesId).cast
     } catch (_: Exception) {
@@ -194,6 +198,12 @@ class TmdbRepository {
 
     suspend fun obtenerPalabrasClaveSerie(seriesId: Int): List<Keyword> = try {
         api.getSeriesKeywords(seriesId).results ?: emptyList()
+    } catch (_: Exception) {
+        emptyList()
+    }
+
+    suspend fun descubrirSeriesPorGenero(genreId: Int): List<FichaSerie> = try {
+        api.discoverSeries(genreId).listaSeries
     } catch (_: Exception) {
         emptyList()
     }
