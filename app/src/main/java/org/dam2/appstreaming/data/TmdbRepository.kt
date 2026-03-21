@@ -20,7 +20,6 @@ object TmdbConfig {
 
 class TmdbRepository {
 
-    // chain -> funcion lambda que recibe un objeto de tipo Interceptor.Chain y devuelve un objeto de tipo Response
     private val client = OkHttpClient.Builder().addInterceptor { chain ->
         val newRequest = chain.request().newBuilder()
             .addHeader("Authorization", "Bearer ${TmdbConfig.ACCESS_TOKEN}")
@@ -36,7 +35,7 @@ class TmdbRepository {
         .build()
         .create(TmdbApiService::class.java)
 
-    // PELÍCULAS
+    // --- PELÍCULAS ---
     suspend fun getPopularMovies(): List<FichaPelicula> = try { api.getPopularMovies().listaPeliculas } catch (e: Exception) { emptyList() }
     suspend fun getNowPlayingMovies(): List<FichaPelicula> = try { api.getNowPlayingMovies().listaPeliculas } catch (e: Exception) { emptyList() }
     suspend fun getTopRatedMovies(): List<FichaPelicula> = try { api.getTopRatedMovies().listaPeliculas } catch (e: Exception) { emptyList() }
@@ -75,60 +74,21 @@ class TmdbRepository {
     suspend fun getMovieCertification(movieId: Int): String? {
         return try {
             val response = api.getMovieReleaseDates(movieId)
-
-            // 1. Intentamos buscar específicamente España (ES)
             val spainResults = response.results.find { it.iso_3166_1 == "ES" }
-
-            // 2. Corregido: Usamos releaseDates (el nombre de la variable en tu data class)
-            val certificationES = spainResults?.releaseDates?.find { it.certification.isNotBlank() }?.certification
-
-            // 3. Corregido: Usamos releaseDates aquí también
-            val certificationUS = response.results.find { it.iso_3166_1 == "US" }
-                ?.releaseDates?.find { it.certification.isNotBlank() }?.certification
-
-            // 4. Corregido: Usamos releaseDates en el flatMap
-            val fallbackCertification = response.results
-                .flatMap { it.releaseDates }
-                .find { it.certification.isNotBlank() }?.certification
-
-            // Prioridad: ES > US > Cualquiera > null
-            certificationES ?: certificationUS ?: fallbackCertification
-
-        } catch (e: Exception) {
-            android.util.Log.e("TMDB_REPO", "Error al obtener certificación: ${e.message}")
-            null
-        }
-    }
-    /*suspend fun getMovieCertification(movieId: Int): String? {
-        return try {
-            val response = api.getMovieReleaseDates(movieId)
-            // Buscamos la certificación en España (ES) o en su defecto la primera disponible
-            val spainResults = response.results.find { it.iso_3166_1 == "ES" }
-            val certification = spainResults?.release_dates?.find { it.certification.isNotEmpty() }?.certification
-                ?: response.results.flatMap { it.release_dates }.find { it.certification.isNotEmpty() }?.certification
+            // Usamos .releaseDates (el nombre nuevo en español/camelCase)
+            val certification = spainResults?.releaseDates?.find { it.certification.isNotEmpty() }?.certification
+                ?: response.results.flatMap { it.releaseDates }.find { it.certification.isNotEmpty() }?.certification
             certification
         } catch (e: Exception) {
             null
         }
-    }*/
-
-    suspend fun getMovieCast(movieId: Int): List<CastMember> {
-        return try {
-            api.getMovieCredits(movieId).cast
-        } catch (e: Exception) {
-            emptyList()
-        }
     }
 
-    suspend fun getMovieReviews(movieId: Int): List<Review> {
-        return try {
-            api.getMovieReviews(movieId).results
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
+    suspend fun getMovieCast(movieId: Int): List<CastMember> = try { api.getMovieCredits(movieId).cast } catch (e: Exception) { emptyList() }
 
-    // SERIES
+    suspend fun getMovieReviews(movieId: Int): List<Review> = try { api.getMovieReviews(movieId).results } catch (e: Exception) { emptyList() }
+
+    // --- SERIES ---
     suspend fun getPopularSeries(): List<FichaSerie> = try { api.getPopularSeries().listaSeries } catch (e: Exception) { emptyList() }
     suspend fun getTopRatedSeries(): List<FichaSerie> = try { api.getTopRatedSeries().listaSeries } catch (e: Exception) { emptyList() }
     suspend fun getOnTheAirSeries(): List<FichaSerie> = try { api.getOnTheAirSeries().listaSeries } catch (e: Exception) { emptyList() }
@@ -162,23 +122,11 @@ class TmdbRepository {
         }
     }
 
-    suspend fun getSeriesCast(seriesId: Int): List<CastMember> {
-        return try {
-            api.getSeriesCredits(seriesId).cast
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
+    suspend fun getSeriesCast(seriesId: Int): List<CastMember> = try { api.getSeriesCredits(seriesId).cast } catch (e: Exception) { emptyList() }
 
-    suspend fun getSeriesReviews(seriesId: Int): List<Review> {
-        return try {
-            api.getSeriesReviews(seriesId).results
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
+    suspend fun getSeriesReviews(seriesId: Int): List<Review> = try { api.getSeriesReviews(seriesId).results } catch (e: Exception) { emptyList() }
 
-    // GÉNEROS
+    // --- GÉNEROS ---
     suspend fun getMovieGenres(): List<Genero> = try { api.getMovieGenres().genres } catch (e: Exception) { emptyList() }
     suspend fun getTvGenres(): List<Genero> = try { api.getTvGenres().genres } catch (e: Exception) { emptyList() }
 }

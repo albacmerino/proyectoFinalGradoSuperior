@@ -1,8 +1,5 @@
 package org.dam2.appstreaming.ui.screen.pelicula
 
-<<<<<<< Updated upstream
-class PeliculaViewModel {
-=======
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,17 +13,16 @@ import org.dam2.appstreaming.ui.component.FichaPelicula
 import org.dam2.appstreaming.ui.component.Genero
 
 
-/* ----- CEREBRO QUE CORDINA LAS PETICIONES ----- */
+/* ----- CEREBRO QUE CORDIINA LAS PETICIONES ----- */
 class PeliculaViewModel : ViewModel() {
     private val repository = TmdbRepository()
 
     private val _selectedPelicula = MutableStateFlow<FichaPelicula?>(null)
-    val selectedPelicula: MutableStateFlow<FichaPelicula?> = _selectedPelicula
+    val selectedPelicula: StateFlow<FichaPelicula?> = _selectedPelicula
 
     private val _allGenres = MutableStateFlow<List<Genero>>(emptyList())
     val allGenres: StateFlow<List<Genero>> = _allGenres
 
-    // StateFlow ->
     private val _trailerKey = MutableStateFlow<String?>(null)
     val trailerKey: StateFlow<String?> = _trailerKey
 
@@ -85,15 +81,14 @@ class PeliculaViewModel : ViewModel() {
                 e.printStackTrace()
             }
 
-            // 4. Cargar certificación PEGI
+            // 4. Cargar certificacion PEGI
             _certification.value = repository.getMovieCertification(movieId)
 
             // 5. Cargar reparto
             _cast.value = repository.getMovieCast(movieId)
 
-            // 6. Cargar reseñas (Social)
+            // 6. Cargar resenas (Social)
             _reviews.value = repository.getMovieReviews(movieId)
         }
     }
->>>>>>> Stashed changes
 }
