@@ -35,11 +35,27 @@ class TmdbRepository {
         .create(TmdbApiService::class.java)
 
     // --- PELÍCULAS ---
-    suspend fun getPopularMovies(): List<FichaPelicula> = try { api.getPopularMovies().listaPeliculas } catch (_: Exception) { emptyList() }
-    suspend fun getNowPlayingMovies(): List<FichaPelicula> = try { api.getNowPlayingMovies().listaPeliculas } catch (_: Exception) { emptyList() }
-    suspend fun getTopRatedMovies(): List<FichaPelicula> = try { api.getTopRatedMovies().listaPeliculas } catch (_: Exception) { emptyList() }
+    suspend fun getPopularMovies(): List<FichaPelicula> = try {
+        api.getPopularMovies().listaPeliculas
+    } catch (_: Exception) {
+        emptyList()
+    }
+    suspend fun getNowPlayingMovies(): List<FichaPelicula> = try {
+        api.getNowPlayingMovies().listaPeliculas
+    } catch (_: Exception) {
+        emptyList()
+    }
+    suspend fun getTopRatedMovies(): List<FichaPelicula> = try {
+        api.getTopRatedMovies().listaPeliculas
+    } catch (_: Exception) {
+        emptyList()
+    }
 
-    suspend fun getMovieDetails(movieId: Int): FichaPelicula? = try { api.getMovieDetails(movieId) } catch (_: Exception) { null }
+    suspend fun getMovieDetails(movieId: Int): FichaPelicula? = try {
+        api.getMovieDetails(movieId)
+    } catch (_: Exception) {
+        null
+    }
 
     suspend fun getMovieTrailer(movieId: Int): String? {
         return try {
@@ -73,18 +89,46 @@ class TmdbRepository {
         }
     }
 
-    suspend fun getMovieCast(movieId: Int): List<CastMember> = try { api.getMovieCredits(movieId).cast } catch (_: Exception) { emptyList() }
+    suspend fun getMovieCast(movieId: Int): List<CastMember> = try {
+        api.getMovieCredits(movieId).cast
+    } catch (_: Exception) {
+        emptyList()
+    }
 
-    suspend fun getMovieReviews(movieId: Int): List<Review> = try { api.getMovieReviews(movieId).results } catch (_: Exception) { emptyList() }
+    suspend fun getMovieReviews(movieId: Int): List<Review> = try {
+        api.getMovieReviews(movieId).results
+    } catch (_: Exception) {
+        emptyList()
+    }
 
-    suspend fun getMovieRecommendations(movieId: Int): List<FichaPelicula> = try { api.getMovieRecommendations(movieId).listaPeliculas } catch (_: Exception) { emptyList() }
+    suspend fun getMovieRecommendations(movieId: Int): List<FichaPelicula> = try {
+        api.getMovieRecommendations(movieId).listaPeliculas
+    } catch (_: Exception) {
+        emptyList()
+    }
 
-    suspend fun getMovieKeywords(movieId: Int): List<Keyword> = try { api.getMovieKeywords(movieId).keywords ?: emptyList() } catch (_: Exception) { emptyList() }
+    suspend fun getMovieKeywords(movieId: Int): List<Keyword> = try {
+        api.getMovieKeywords(movieId).keywords ?: emptyList()
+    } catch (_: Exception) {
+        emptyList()
+    }
 
     // --- SERIES ---
-    suspend fun getPopularSeries(): List<FichaSerie> = try { api.getPopularSeries().listaSeries } catch (_: Exception) { emptyList() }
-    suspend fun getTopRatedSeries(): List<FichaSerie> = try { api.getTopRatedSeries().listaSeries } catch (_: Exception) { emptyList() }
-    suspend fun getOnTheAirSeries(): List<FichaSerie> = try { api.getOnTheAirSeries().listaSeries } catch (_: Exception) { emptyList() }
+    suspend fun getPopularSeries(): List<FichaSerie> = try {
+        api.getPopularSeries().listaSeries
+    } catch (_: Exception) {
+        emptyList()
+    }
+    suspend fun getTopRatedSeries(): List<FichaSerie> = try {
+        api.getTopRatedSeries().listaSeries
+    } catch (_: Exception) {
+        emptyList()
+    }
+    suspend fun getOnTheAirSeries(): List<FichaSerie> = try {
+        api.getOnTheAirSeries().listaSeries
+    } catch (_: Exception) {
+        emptyList()
+    }
 
     suspend fun getSeriesTrailer(seriesId: Int): String? {
         return try {
@@ -106,16 +150,46 @@ class TmdbRepository {
         }
     }
 
-    suspend fun getSeriesCast(seriesId: Int): List<CastMember> = try { api.getSeriesCredits(seriesId).cast } catch (_: Exception) { emptyList() }
+    suspend fun getSeriesCast(seriesId: Int): List<CastMember> = try {
+        api.getSeriesCredits(seriesId).cast
+    } catch (_: Exception) {
+        emptyList()
+    }
 
-    suspend fun getSeriesReviews(seriesId: Int): List<Review> = try { api.getSeriesReviews(seriesId).results } catch (_: Exception) { emptyList() }
+    suspend fun getSeriesReviews(seriesId: Int): List<Review> = try {
+        api.getSeriesReviews(seriesId).results
+    } catch (_: Exception) {
+        emptyList()
+    }
 
-    suspend fun getSeriesRecommendations(seriesId: Int): List<FichaSerie> = try { api.getSeriesRecommendations(seriesId).listaSeries } catch (_: Exception) { emptyList() }
+    suspend fun getSeriesRecommendations(seriesId: Int): List<FichaSerie> = try {
+        api.getSeriesRecommendations(seriesId).listaSeries
+    } catch (_: Exception) {
+        emptyList()
+    }
 
-    suspend fun getSeriesKeywords(seriesId: Int): List<Keyword> = try { api.getSeriesKeywords(seriesId).results ?: emptyList() } catch (_: Exception) { emptyList() }
+    suspend fun getSeriesKeywords(seriesId: Int): List<Keyword> = try {
+        api.getSeriesKeywords(seriesId).results ?: emptyList()
+    } catch (_: Exception) {
+        emptyList()
+    }
 
-    suspend fun getSeriesDetails(serieId: Int): FichaSerie? = try { api.getSeriesDetails(serieId) } catch (_: Exception) { null }
+    suspend fun getSeriesDetails(serieId: Int): FichaSerie? = try {
+        api.getSeriesDetails(serieId)
+    } catch (_: Exception) {
+        null
+    }
+
+
     // --- GÉNEROS ---
-    suspend fun getMovieGenres(): List<Genero> = try { api.getMovieGenres().genres } catch (_: Exception) { emptyList() }
-    suspend fun getTvGenres(): List<Genero> = try { api.getTvGenres().genres } catch (_: Exception) { emptyList() }
+    suspend fun getMovieGenres(): List<Genero> = try {
+        api.getMovieGenres().genres
+    } catch (_: Exception) {
+        emptyList()
+    }
+    suspend fun getTvGenres(): List<Genero> = try {
+        api.getTvGenres().genres
+    } catch (_: Exception) {
+        emptyList()
+    }
 }
