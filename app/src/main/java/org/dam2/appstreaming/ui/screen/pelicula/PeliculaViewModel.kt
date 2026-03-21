@@ -9,6 +9,7 @@ import org.dam2.appstreaming.data.TmdbRepository
 import org.dam2.appstreaming.data.network.CastMember
 import org.dam2.appstreaming.data.network.Provider
 import org.dam2.appstreaming.data.network.Review
+import org.dam2.appstreaming.data.network.Keyword
 import org.dam2.appstreaming.ui.component.FichaPelicula
 import org.dam2.appstreaming.ui.component.Genero
 
@@ -42,6 +43,12 @@ class PeliculaViewModel : ViewModel() {
     private val _resenas = MutableStateFlow<List<Review>>(emptyList())
     val resenas: StateFlow<List<Review>> = _resenas
 
+    private val _recomendaciones = MutableStateFlow<List<FichaPelicula>>(emptyList())
+    val recomendaciones: StateFlow<List<FichaPelicula>> = _recomendaciones
+
+    private val _palabrasClave = MutableStateFlow<List<Keyword>>(emptyList())
+    val palabrasClave: StateFlow<List<Keyword>> = _palabrasClave
+
     fun setSelectedItem(pelicula: FichaPelicula) {
         _selectedPelicula.value = pelicula
         _trailerKey.value = null
@@ -51,6 +58,8 @@ class PeliculaViewModel : ViewModel() {
         _certificacion.value = null
         _reparto.value = emptyList()
         _resenas.value = emptyList()
+        _recomendaciones.value = emptyList()
+        _palabrasClave.value = emptyList()
         loadDetails(pelicula.id)
     }
 
@@ -77,6 +86,8 @@ class PeliculaViewModel : ViewModel() {
             _certificacion.value = repository.getMovieCertification(movieId)
             _reparto.value = repository.getMovieCast(movieId)
             _resenas.value = repository.getMovieReviews(movieId)
+            _recomendaciones.value = repository.getMovieRecommendations(movieId)
+            _palabrasClave.value = repository.getMovieKeywords(movieId)
         }
     }
 }

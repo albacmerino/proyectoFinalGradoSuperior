@@ -82,6 +82,16 @@ data class AuthorDetails(
     val rating: Double?
 )
 
+data class KeywordResponse(
+    val id: Int,
+    val keywords: List<Keyword>
+)
+
+data class Keyword(
+    val id: Int,
+    val name: String
+)
+
 interface TmdbApiService {
 
     // --- PELÍCULAS ---
@@ -138,6 +148,17 @@ interface TmdbApiService {
         @Query("language") lang: String = "es-ES"
     ): ReviewResponse
 
+    @GET("movie/{movie_id}/recommendations")
+    suspend fun getMovieRecommendations(
+        @Path("movie_id") movieId: Int,
+        @Query("language") lang: String = "es-ES"
+    ): MovieResponse
+
+    @GET("movie/{movie_id}/keywords")
+    suspend fun getMovieKeywords(
+        @Path("movie_id") movieId: Int
+    ): KeywordResponse
+
     // --- SERIES ---
 
     @GET("tv/popular")
@@ -177,6 +198,12 @@ interface TmdbApiService {
         @Path("series_id") seriesId: Int,
         @Query("language") lang: String = "es-ES"
     ): ReviewResponse
+
+    @GET("tv/{series_id}/recommendations")
+    suspend fun getSeriesRecommendations(
+        @Path("series_id") seriesId: Int,
+        @Query("language") lang: String = "es-ES"
+    ): SeriesResponse
 
     // --- GÉNEROS ---
 

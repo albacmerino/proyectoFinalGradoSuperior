@@ -38,6 +38,7 @@ import coil.compose.AsyncImage
 import org.dam2.appstreaming.data.network.CastMember
 import org.dam2.appstreaming.data.network.Provider
 import org.dam2.appstreaming.data.network.Review
+import org.dam2.appstreaming.data.network.Keyword
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.component.SeaRatingBar
@@ -61,6 +62,9 @@ class PeliculaDetailFragment : Fragment() {
                         alVolver = { findNavController().popBackStack() },
                         abrirUrl = { url ->
                             startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                        },
+                        onPeliculaClick = { pelicula ->
+                            viewModel.setSelectedItem(pelicula)
                         }
                     )
                 }
@@ -73,7 +77,8 @@ class PeliculaDetailFragment : Fragment() {
 fun ContenidoDetallePelicula(
     viewModel: PeliculaViewModel,
     alVolver: () -> Unit,
-    abrirUrl: (String) -> Unit
+    abrirUrl: (String) -> Unit,
+    onPeliculaClick: (FichaPelicula) -> Unit
 ) {
     val peliculaSeleccionada by viewModel.selectedPelicula.collectAsState()
     val todosLosGeneros by viewModel.allGenres.collectAsState()
@@ -84,6 +89,8 @@ fun ContenidoDetallePelicula(
     val certificacion by viewModel.certificacion.collectAsState()
     val reparto by viewModel.reparto.collectAsState()
     val resenas by viewModel.resenas.collectAsState()
+    val recomendaciones by viewModel.recomendaciones.collectAsState()
+    val palabrasClave by viewModel.palabrasClave.collectAsState()
 
     peliculaSeleccionada?.let { datosPelicula ->
         PantallaDetallePelicula(
@@ -95,6 +102,8 @@ fun ContenidoDetallePelicula(
             certification = certificacion,
             cast = reparto,
             resenas = resenas,
+            recomendaciones = recomendaciones,
+            palabrasClave = palabrasClave,
             onBackClick = alVolver,
             onPlayTrailerClick = {
                 claveTrailer?.let { clave -> abrirUrl("https://www.youtube.com/watch?v=$clave") }
@@ -104,9 +113,9 @@ fun ContenidoDetallePelicula(
                 urlFinal?.let { url -> abrirUrl(url) }
             },
             onSeeAllReviewsClick = {
-                // Forzamos el idioma español tanto para el contenido como para la interfaz del sitio web
                 abrirUrl("https://www.themoviedb.org/movie/${datosPelicula.id}/reviews?language=es-ES")
-            }
+            },
+            onRecommendationClick = onPeliculaClick
         )
     } ?: PantallaCargando()
 }
@@ -128,10 +137,13 @@ fun PantallaDetallePelicula(
     certification: String?,
     cast: List<CastMember>,
     resenas: List<Review>,
+    recomendaciones: List<FichaPelicula>,
+    palabrasClave: List<Keyword>,
     onBackClick: () -> Unit,
     onPlayTrailerClick: () -> Unit,
     onWatchNowClick: () -> Unit,
-    onSeeAllReviewsClick: () -> Unit
+    onSeeAllReviewsClick: () -> Unit,
+    onRecommendationClick: (FichaPelicula) -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -153,6 +165,8 @@ fun PantallaDetallePelicula(
                 
                 RepartoSeccion(cast)
                 SeccionSocial(resenas, onSeeAllReviewsClick)
+                PalabrasClaveSeccion(palabrasClave)
+                RecomendacionesSeccion(recomendaciones, onRecommendationClick)
             }
         }
         BotonIrAtras(onBackClick)
@@ -240,12 +254,12 @@ fun SeccionOpinion() {
 
 @Composable
 fun SeccionSocial(resenas: List<Review>, onSeeAllReviewsClick: () -> Unit) {
-    Column(modifier = Modifier.padding(top = 24.dp, bottom = 40.dp)) {
+    Column(modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "Social",
                 style = MaterialTheme.typography.titleLarge,
-                color = Color.White,
+                color = SeaBlueLight,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.width(24.dp))
@@ -363,6 +377,110 @@ fun CardActor(actor: CastMember) {
                 Text(actor.name, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 Text(actor.character, color = Color.White.copy(alpha = 0.6f), fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun PalabrasClaveSeccion(palabrasClave: List<Keyword>) {
+    if (palabrasClave.isNotEmpty()) {
+        Column(modifier = Modifier.padding(top = 12.dp)) {
+            Text(
+                text = "Palabras clave",
+                style = MaterialTheme.typography.titleLarge,
+                color = SeaBlueLight,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                palabrasClave.forEach { keyword ->
+                    KeywordChip(keyword.name)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun KeywordChip(name: String) {
+    Surface(
+        color = SeaBlueLight.copy(alpha = 0.1f),
+        shape = RoundedCornerShape(4.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, SeaBlueLight.copy(alpha = 0.5f))
+    ) {
+        Text(
+            text = name,
+            color = SeaBlueLight,
+            fontSize = 13.sp,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+fun RecomendacionesSeccion(recomendaciones: List<FichaPelicula>, onPeliculaClick: (FichaPelicula) -> Unit) {
+    if (recomendaciones.isNotEmpty()) {
+        Column(modifier = Modifier.padding(top = 24.dp)) {
+            Text(
+                text = "Recomendaciones",
+                style = MaterialTheme.typography.titleLarge,
+                color = SeaBlueLight,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyRow(
+                contentPadding = PaddingValues(end = 20.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(recomendaciones) { pelicula ->
+                    CardRecomendacion(pelicula, onPeliculaClick)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CardRecomendacion(pelicula: FichaPelicula, onPeliculaClick: (FichaPelicula) -> Unit) {
+    Column(
+        modifier = Modifier
+            .width(250.dp)
+            .clickable { onPeliculaClick(pelicula) }
+    ) {
+        AsyncImage(
+            model = "https://image.tmdb.org/t/p/w500${pelicula.backdropPath}",
+            contentDescription = null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+                .clip(RoundedCornerShape(8.dp)),
+            contentScale = ContentScale.Crop
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = pelicula.title,
+                color = Color.White,
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = "${(pelicula.voteAverage * 10).toInt()}%",
+                color = Color.White.copy(alpha = 0.7f),
+                fontSize = 12.sp
+            )
         }
     }
 }

@@ -4,6 +4,7 @@ import org.dam2.appstreaming.data.network.CastMember
 import org.dam2.appstreaming.data.network.Review
 import org.dam2.appstreaming.data.network.TmdbApiService
 import org.dam2.appstreaming.data.network.WatchCountryInfo
+import org.dam2.appstreaming.data.network.Keyword
 import org.dam2.appstreaming.ui.component.FichaPelicula
 import org.dam2.appstreaming.ui.component.FichaSerie
 import org.dam2.appstreaming.ui.component.Genero
@@ -88,6 +89,10 @@ class TmdbRepository {
 
     suspend fun getMovieReviews(movieId: Int): List<Review> = try { api.getMovieReviews(movieId).results } catch (e: Exception) { emptyList() }
 
+    suspend fun getMovieRecommendations(movieId: Int): List<FichaPelicula> = try { api.getMovieRecommendations(movieId).listaPeliculas } catch (e: Exception) { emptyList() }
+
+    suspend fun getMovieKeywords(movieId: Int): List<Keyword> = try { api.getMovieKeywords(movieId).keywords } catch (e: Exception) { emptyList() }
+
     // --- SERIES ---
     suspend fun getPopularSeries(): List<FichaSerie> = try { api.getPopularSeries().listaSeries } catch (e: Exception) { emptyList() }
     suspend fun getTopRatedSeries(): List<FichaSerie> = try { api.getTopRatedSeries().listaSeries } catch (e: Exception) { emptyList() }
@@ -125,6 +130,8 @@ class TmdbRepository {
     suspend fun getSeriesCast(seriesId: Int): List<CastMember> = try { api.getSeriesCredits(seriesId).cast } catch (e: Exception) { emptyList() }
 
     suspend fun getSeriesReviews(seriesId: Int): List<Review> = try { api.getSeriesReviews(seriesId).results } catch (e: Exception) { emptyList() }
+
+    suspend fun getSeriesRecommendations(seriesId: Int): List<FichaSerie> = try { api.getSeriesRecommendations(seriesId).listaSeries } catch (e: Exception) { emptyList() }
 
     // --- GÉNEROS ---
     suspend fun getMovieGenres(): List<Genero> = try { api.getMovieGenres().genres } catch (e: Exception) { emptyList() }
