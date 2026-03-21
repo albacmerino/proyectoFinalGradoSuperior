@@ -130,15 +130,22 @@ class TmdbRepository {
     } catch (_: Exception) {
         emptyList()
     }
+
+    suspend fun obtenerSeriesEnCine(): List<FichaSerie> = try {
+        api.getOnTheAirSeries().listaSeries
+    } catch (_: Exception) {
+        emptyList()
+    }
     suspend fun obtenerSeriesMejorValoradas(): List<FichaSerie> = try {
         api.getTopRatedSeries().listaSeries
     } catch (_: Exception) {
         emptyList()
     }
-    suspend fun obtenerSeriesEnCine(): List<FichaSerie> = try {
-        api.getOnTheAirSeries().listaSeries
+
+    suspend fun obtenerDetallesSerie(serieId: Int): FichaSerie? = try {
+        api.getSeriesDetails(serieId)
     } catch (_: Exception) {
-        emptyList()
+        null
     }
 
     suspend fun obtenerTrailerSerie(seriesId: Int): String? {
@@ -165,6 +172,8 @@ class TmdbRepository {
         }
     }
 
+    //falta certificacion serie
+
     suspend fun obtenerRepartoSerie(seriesId: Int): List<CastMember> = try {
         api.getSeriesCredits(seriesId).cast
     } catch (_: Exception) {
@@ -187,12 +196,6 @@ class TmdbRepository {
         api.getSeriesKeywords(seriesId).results ?: emptyList()
     } catch (_: Exception) {
         emptyList()
-    }
-
-    suspend fun obtenerDetallesSerie(serieId: Int): FichaSerie? = try {
-        api.getSeriesDetails(serieId)
-    } catch (_: Exception) {
-        null
     }
 
 

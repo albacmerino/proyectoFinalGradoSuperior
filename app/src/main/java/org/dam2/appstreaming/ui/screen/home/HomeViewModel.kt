@@ -2,84 +2,70 @@ package org.dam2.appstreaming.ui.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.dam2.appstreaming.data.TmdbRepository
-import org.dam2.appstreaming.ui.component.FichaPelicula
-import org.dam2.appstreaming.ui.component.FichaSerie
-import org.dam2.appstreaming.ui.component.Genero
+import org.dam2.appstreaming.ui.component.*
 
+/**
+ * ViewModel que gestiona la lógica de la pantalla de inicio.
+ * Utiliza un patrón de estado único (HomeState) para simplificar la UI.
+ */
 class HomeViewModel : ViewModel() {
+    // Repositorio para obtener los datos de la API de TMDB
+    private val repo = TmdbRepository()
 
-
-    val selectedGenreId = MutableStateFlow<Int?>(null) // null significa "Todo"
-
-    private val repository = TmdbRepository()
-
-    // Control de la pestaña seleccionada (0: Películas, 1: Series)
-    private val _selectedTab = MutableStateFlow(0)
-    val selectedTab: StateFlow<Int> = _selectedTab
-
-    // --- ESTADOS DE PELÍCULAS ---
-    // Mantenemos 'movies' como la lista principal (Novedades)
-    private val _movies = MutableStateFlow<List<FichaPelicula>>(emptyList())
-    val movies: StateFlow<List<FichaPelicula>> = _movies
-
-    private val _popularMovies = MutableStateFlow<List<FichaPelicula>>(emptyList())
-    val popularMovies: StateFlow<List<FichaPelicula>> = _popularMovies
-
-    private val _topRatedMovies = MutableStateFlow<List<FichaPelicula>>(emptyList())
-    val topRatedMovies: StateFlow<List<FichaPelicula>> = _topRatedMovies
-
-    // --- ESTADOS DE SERIES ---
-    // Mantenemos 'series' como la lista principal (Novedades)
-    private val _series = MutableStateFlow<List<FichaSerie>>(emptyList())
-    val series: StateFlow<List<FichaSerie>> = _series
-
-    private val _popularSeries = MutableStateFlow<List<FichaSerie>>(emptyList())
-    val popularSeries: StateFlow<List<FichaSerie>> = _popularSeries
-
-    private val _topRatedSeries = MutableStateFlow<List<FichaSerie>>(emptyList())
-    val topRatedSeries: StateFlow<List<FichaSerie>> = _topRatedSeries
-
-    val movieGenres = MutableStateFlow<List<Genero>>(emptyList())
-    val tvGenres = MutableStateFlow<List<Genero>>(emptyList())
-
-    init {
-        cargarTodo()
+    /**
+     * Representa todo el estado de la pantalla en un solo objeto.
+     */
+    data class HomeState(
+        val tab: Int = 0, // 0 para Cine, 1 para TV
+        val moviesNow: List<FichaPelicula> = emptyList(), // Estrenos de cine
+        val moviesPop: List<FichaPelicula> = emptyList(), // Películas populares
+        val moviesTop: List<FichaPelicula> = emptyList(), // Películas mejor valoradas
+        val seriesNow: List<FichaSerie> = emptyList(),   // Estrenos de TV
+        val seriesPop: List<FichaSerie> = emptyList(),   // Series populares
+        val seriesTop: List<FichaSerie> = emptyList(),   // Series mejor valoradas
+        val movieGenres: List<Genero> = emptyList(),     // Lista de géneros para cine
+        val tvGenres: List<Genero> = emptyList(),        // Lista de géneros para TV
+        val selectedGenreId: Int? = null                 // ID del género seleccionado (null = todos)
+    ) {
+        // Propiedad calculada que devuelve los géneros correspondientes a la pestaña activa
+        val currentGenres get() = if (tab == 0) movieGenres else tvGenres
     }
 
-    private fun cargarTodo() {
+    // Flujo de estado privado (mutable) y público (solo lectura)
+    private val _state = MutableStateFlow(HomeState())
+    val state = _state.asStateFlow()
+
+    init {
+        // Al inicializar el ViewModel, cargamos todos los datos necesarios en una corrutina
         viewModelScope.launch {
             try {
-                // Carga de Películas (Cine)
-                _movies.value = repository.obtenerPeliculasEnCine() // Novedades
-                _popularMovies.value = repository.obtenerPeliculasPopulares()
-                _topRatedMovies.value = repository.obtenerPeliculasMejorValoradas()
-
-                // Carga de Series (TV)
-                _series.value = repository.obtenerSeriesEnCine() // Novedades
-                _popularSeries.value = repository.obtenerSeriesPopulares()
-                _topRatedSeries.value = repository.obtenerSeriesMejorValoradas()
-
-                //Cargar Generos
-                movieGenres.value = repository.obtenerGenerosPelicula()
-                tvGenres.value = repository.obtenerGenerosTv()
-
+                // Actualizamos el estado con la información recibida del repositorio
+                _state.update { it.copy(
+                    moviesNow = repo.obtenerPeliculasEnCine(),
+                    moviesPop = repo.obtenerPeliculasPopulares(),
+                    moviesTop = repo.obtenerPeliculasMejorValoradas(),
+                    seriesNow = repo.obtenerSeriesEnCine(),
+                    seriesPop = repo.obtenerSeriesPopulares(),
+                    seriesTop = repo.obtenerSeriesMejorValoradas(),
+                    movieGenres = repo.obtenerGenerosPelicula(),
+                    tvGenres = repo.obtenerGenerosTv()
+                )}
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
     }
 
-    fun onTabSelected(index: Int) {
-        _selectedTab.value = index
-    }
+    /**
+     * Cambia la pestaña actual entre Películas (0) y Series (1).
+     */
+    fun onTab(i: Int) = _state.update { it.copy(tab = i) }
 
-
-    fun onGeneroSelected(id: Int?) {
-        selectedGenreId.value = id
-        // Aquí podrías filtrar las listas llamando a la API con discover/movie?with_genres=id
-    }
+    /**
+     * Actualiza el filtro de género seleccionado.
+     */
+    fun onGenre(id: Int?) = _state.update { it.copy(selectedGenreId = id) }
 }

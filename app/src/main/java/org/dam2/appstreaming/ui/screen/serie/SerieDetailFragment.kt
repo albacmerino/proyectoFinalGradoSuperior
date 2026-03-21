@@ -63,8 +63,8 @@ class SerieDetailFragment : Fragment() {
                         abrirUrl = { url ->
                             startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
                         },
-                        onSerieClick = { serie ->
-                            viewModel.setSelectedItem(serie)
+                        alPulsarSerie = { serie ->
+                            viewModel.establecerItemSeleccionado(serie)
                         }
                     )
                 }
@@ -78,14 +78,14 @@ fun ContenidoDetalleSerie(
     viewModel: SerieViewModel,
     alVolver: () -> Unit,
     abrirUrl: (String) -> Unit,
-    onSerieClick: (FichaSerie) -> Unit
+    alPulsarSerie: (FichaSerie) -> Unit
 ) {
-    val serieSeleccionada by viewModel.selectedSerie.collectAsState()
-    val todosLosGeneros by viewModel.allGenres.collectAsState()
-    val claveTrailer by viewModel.trailerKey.collectAsState()
-    val enlacePlataformas by viewModel.watchLink.collectAsState()
-    val enlaceDirecto by viewModel.directPlatformLink.collectAsState()
-    val proveedorPrincipal by viewModel.mainProvider.collectAsState()
+    val serieSeleccionada by viewModel.serieSeleccionada.collectAsState()
+    val todosLosGeneros by viewModel.todosLosGeneros.collectAsState()
+    val claveTrailer by viewModel.claveTrailer.collectAsState()
+    val enlaceVer by viewModel.enlaceVer.collectAsState()
+    val enlaceDirecto by viewModel.enlaceDirectoPlataforma.collectAsState()
+    val proveedorPrincipal by viewModel.proveedorPrincipal.collectAsState()
     val reparto by viewModel.reparto.collectAsState()
     val resenas by viewModel.resenas.collectAsState()
     val recomendaciones by viewModel.recomendaciones.collectAsState()
@@ -94,26 +94,26 @@ fun ContenidoDetalleSerie(
     serieSeleccionada?.let { datosSerie ->
         PantallaDetalleSerie(
             item = datosSerie,
-            allGenres = todosLosGeneros,
-            watchLink = enlacePlataformas,
-            directLink = enlaceDirecto,
-            mainProvider = proveedorPrincipal,
-            cast = reparto,
+            todosLosGeneros = todosLosGeneros,
+            enlaceVer = enlaceVer,
+            enlaceDirecto = enlaceDirecto,
+            proveedorPrincipal = proveedorPrincipal,
+            reparto = reparto,
             resenas = resenas,
             recomendaciones = recomendaciones,
             palabrasClave = palabrasClave,
-            onBackClick = alVolver,
-            onPlayTrailerClick = {
+            alVolver = alVolver,
+            alReproducirTrailer = {
                 claveTrailer?.let { clave -> abrirUrl("https://www.youtube.com/watch?v=$clave") }
             },
-            onWatchNowClick = {
-                val urlFinal = if (!enlaceDirecto.isNullOrBlank()) enlaceDirecto else enlacePlataformas
+            alVerAhora = {
+                val urlFinal = if (!enlaceDirecto.isNullOrBlank()) enlaceDirecto else enlaceVer
                 urlFinal?.let { url -> abrirUrl(url) }
             },
-            onSeeAllReviewsClick = {
+            alVerTodasLasResenas = {
                 abrirUrl("https://www.themoviedb.org/tv/${datosSerie.id}/reviews?language=es-ES")
             },
-            onRecommendationClick = onSerieClick
+            alPulsarRecomendacion = alPulsarSerie
         )
     } ?: PantallaCargando()
 }
@@ -128,30 +128,30 @@ fun PantallaCargando() {
 @Composable
 fun PantallaDetalleSerie(
     item: FichaSerie,
-    allGenres: List<Genero>,
-    watchLink: String?,
-    directLink: String?,
-    mainProvider: Provider?,
-    cast: List<CastMember>,
+    todosLosGeneros: List<Genero>,
+    enlaceVer: String?,
+    enlaceDirecto: String?,
+    proveedorPrincipal: Provider?,
+    reparto: List<CastMember>,
     resenas: List<Review>,
     recomendaciones: List<FichaSerie>,
     palabrasClave: List<Keyword>,
-    onBackClick: () -> Unit,
-    onPlayTrailerClick: () -> Unit,
-    onWatchNowClick: () -> Unit,
-    onSeeAllReviewsClick: () -> Unit,
-    onRecommendationClick: (FichaSerie) -> Unit
+    alVolver: () -> Unit,
+    alReproducirTrailer: () -> Unit,
+    alVerAhora: () -> Unit,
+    alVerTodasLasResenas: () -> Unit,
+    alPulsarRecomendacion: (FichaSerie) -> Unit
 ) {
-    val scrollState = rememberScrollState()
+    val estadoScroll = rememberScrollState()
 
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFF000814))) {
-        Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-            CabeceraImagen(item.backdropPath, onPlayTrailerClick)
-            BannerStreaming(watchLink, directLink, mainProvider, onWatchNowClick)
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(estadoScroll)) {
+            CabeceraImagen(item.backdropPath, alReproducirTrailer)
+            BannerStreaming(enlaceVer, enlaceDirecto, proveedorPrincipal, alVerAhora)
 
             Column(modifier = Modifier.padding(20.dp)) {
                 TituloSeccion(item.title)
-                MetadatosSerie(item.firstAirDate, item.genreIds, allGenres)
+                MetadatosSerie(item.firstAirDate, item.genreIds, todosLosGeneros)
                 
                 SeccionOpinion()
 
@@ -161,13 +161,13 @@ fun PantallaDetalleSerie(
                 
                 SinopsisSeccion(item.overview)
                 
-                RepartoSeccion(cast)
-                SeccionSocial(resenas, onSeeAllReviewsClick)
+                RepartoSeccion(reparto)
+                SeccionSocial(resenas, alVerTodasLasResenas)
                 PalabrasClaveSeccion(palabrasClave)
-                RecomendacionesSeccion(recomendaciones, onRecommendationClick)
+                RecomendacionesSeccion(recomendaciones, alPulsarRecomendacion)
             }
         }
-        BotonIrAtras(onBackClick)
+        BotonIrAtras(alVolver)
     }
 }
 
@@ -251,7 +251,7 @@ fun SeccionOpinion() {
 }
 
 @Composable
-fun SeccionSocial(resenas: List<Review>, onSeeAllReviewsClick: () -> Unit) {
+fun SeccionSocial(resenas: List<Review>, alVerTodasLasResenas: () -> Unit) {
     Column(modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -342,7 +342,7 @@ fun SeccionSocial(resenas: List<Review>, onSeeAllReviewsClick: () -> Unit) {
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
-                modifier = Modifier.clickable { onSeeAllReviewsClick() }
+                modifier = Modifier.clickable { alVerTodasLasResenas() }
             )
 
         } else {
@@ -405,14 +405,14 @@ fun PalabrasClaveSeccion(palabrasClave: List<Keyword>) {
 }
 
 @Composable
-fun KeywordChip(name: String) {
+fun KeywordChip(nombre: String) {
     Surface(
         color = SeaBlueLight.copy(alpha = 0.1f),
         shape = RoundedCornerShape(4.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, SeaBlueLight.copy(alpha = 0.5f))
     ) {
         Text(
-            text = name,
+            text = nombre,
             color = SeaBlueLight,
             fontSize = 13.sp,
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
@@ -422,7 +422,7 @@ fun KeywordChip(name: String) {
 }
 
 @Composable
-fun RecomendacionesSeccion(recomendaciones: List<FichaSerie>, onSerieClick: (FichaSerie) -> Unit) {
+fun RecomendacionesSeccion(recomendaciones: List<FichaSerie>, alPulsarRecomendacion: (FichaSerie) -> Unit) {
     if (recomendaciones.isNotEmpty()) {
         Column(modifier = Modifier.padding(top = 24.dp)) {
             Text(
@@ -437,7 +437,7 @@ fun RecomendacionesSeccion(recomendaciones: List<FichaSerie>, onSerieClick: (Fic
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(recomendaciones) { serie ->
-                    CardRecomendacion(serie, onSerieClick)
+                    CardRecomendacion(serie, alPulsarRecomendacion)
                 }
             }
         }
@@ -445,11 +445,11 @@ fun RecomendacionesSeccion(recomendaciones: List<FichaSerie>, onSerieClick: (Fic
 }
 
 @Composable
-fun CardRecomendacion(serie: FichaSerie, onSerieClick: (FichaSerie) -> Unit) {
+fun CardRecomendacion(serie: FichaSerie, alPulsarRecomendacion: (FichaSerie) -> Unit) {
     Column(
         modifier = Modifier
             .width(250.dp)
-            .clickable { onSerieClick(serie) }
+            .clickable { alPulsarRecomendacion(serie) }
     ) {
         AsyncImage(
             model = "https://image.tmdb.org/t/p/w500${serie.backdropPath}",
@@ -484,7 +484,7 @@ fun CardRecomendacion(serie: FichaSerie, onSerieClick: (FichaSerie) -> Unit) {
 }
 
 @Composable
-fun CabeceraImagen(ruta: String?, alPulsarPlay: () -> Unit) {
+fun CabeceraImagen(ruta: String?, alReproducir: () -> Unit) {
     Box(modifier = Modifier.height(350.dp).fillMaxWidth()) {
         AsyncImage(
             model = "https://image.tmdb.org/t/p/w1280$ruta",
@@ -496,7 +496,7 @@ fun CabeceraImagen(ruta: String?, alPulsarPlay: () -> Unit) {
             Brush.verticalGradient(listOf(Color.Transparent, Color(0xFF000814).copy(alpha = 0.5f)), startY = 600f)
         ))
         Surface(
-            modifier = Modifier.align(Alignment.Center).clickable { alPulsarPlay() },
+            modifier = Modifier.align(Alignment.Center).clickable { alReproducir() },
             shape = CircleShape,
             color = Color.Black.copy(alpha = 0.5f),
             border = androidx.compose.foundation.BorderStroke(2.dp, Color.White.copy(alpha = 0.8f))
@@ -507,8 +507,8 @@ fun CabeceraImagen(ruta: String?, alPulsarPlay: () -> Unit) {
 }
 
 @Composable
-fun BannerStreaming(watchLink: String?, directLink: String?, proveedor: Provider?, alPulsar: () -> Unit) {
-    if (watchLink != null || directLink != null) {
+fun BannerStreaming(enlaceVer: String?, enlaceDirecto: String?, proveedor: Provider?, alPulsar: () -> Unit) {
+    if (enlaceVer != null || enlaceDirecto != null) {
         Row(
             modifier = Modifier.fillMaxWidth().background(Color(0xFF032541))
                 .clickable { alPulsar() }.padding(horizontal = 20.dp, vertical = 12.dp),
