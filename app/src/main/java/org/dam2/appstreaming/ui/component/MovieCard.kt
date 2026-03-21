@@ -25,7 +25,9 @@ fun MovieCard(movie: FichaPelicula, allGenres: List<Genero>, onClick: () -> Unit
     val imageUrl = "https://image.tmdb.org/t/p/w500${movie.rutaPoster ?: ""}"
 
     // 2. Búsqueda del género: Si la lista está vacía o no encuentra el ID, pone "Cine"
-    val nombreGenero = allGenres.find { it.id == movie.idsGeneros?.firstOrNull() }?.name ?: "Cine"
+    val nombreGenero = allGenres.find {
+        it.id == movie.idsGeneros?.firstOrNull()
+    }?.name ?: "Cine"
 
     Column(
         modifier = Modifier

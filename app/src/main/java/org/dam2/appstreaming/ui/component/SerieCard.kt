@@ -23,6 +23,7 @@ import org.dam2.appstreaming.data.model.Genero
 fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
     // Construcción de la URL y búsqueda del nombre del género
     val imageUrl = "https://image.tmdb.org/t/p/w500${serie.rutaPoster}"
+
     val nombreGenero = allGenres.find {
         it.id == serie.idsGeneros?.firstOrNull()
     }?.name ?: "Serie"

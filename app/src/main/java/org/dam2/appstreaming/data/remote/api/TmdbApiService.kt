@@ -1,9 +1,16 @@
-package org.dam2.appstreaming.data.network
+package org.dam2.appstreaming.data.remote.api
 
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.data.model.GeneroResponse
-import org.dam2.appstreaming.data.remote.dto.*
+import org.dam2.appstreaming.data.remote.dto.CreditsResponse
+import org.dam2.appstreaming.data.remote.dto.KeywordResponse
+import org.dam2.appstreaming.data.remote.dto.MovieResponse
+import org.dam2.appstreaming.data.remote.dto.ReleaseDatesResponse
+import org.dam2.appstreaming.data.remote.dto.ReviewResponse
+import org.dam2.appstreaming.data.remote.dto.SeriesResponse
+import org.dam2.appstreaming.data.remote.dto.VideoResponse
+import org.dam2.appstreaming.data.remote.dto.WatchProvidersResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.dam2.appstreaming.data.TmdbRepository
+import org.dam2.appstreaming.data.repository.TmdbRepository
 import org.dam2.appstreaming.data.remote.dto.CastMember
 import org.dam2.appstreaming.data.remote.dto.Provider
 import org.dam2.appstreaming.data.remote.dto.Review

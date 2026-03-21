@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import org.dam2.appstreaming.data.TmdbRepository
+import org.dam2.appstreaming.data.repository.TmdbRepository
 import org.dam2.appstreaming.data.model.*
 
 /**
@@ -39,7 +39,8 @@ class HomeViewModel : ViewModel() {
             try {
                 val gPeliculas = repo.obtenerGenerosPelicula()
                 val gTv = repo.obtenerGenerosTv()
-                _estado.update { it.copy(generosPelicula = gPeliculas, generosTv = gTv) }
+                _estado.update {
+                    it.copy(generosPelicula = gPeliculas, generosTv = gTv) }
                 cargarDatos(null)
             } catch (e: Exception) { e.printStackTrace() }
         }

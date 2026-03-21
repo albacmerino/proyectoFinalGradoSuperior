@@ -1,10 +1,10 @@
-package org.dam2.appstreaming.data
+package org.dam2.appstreaming.data.repository
 
 import org.dam2.appstreaming.data.remote.dto.*
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.data.model.Genero
-import org.dam2.appstreaming.data.network.TmdbApiService
+import org.dam2.appstreaming.data.remote.api.TmdbApiService
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

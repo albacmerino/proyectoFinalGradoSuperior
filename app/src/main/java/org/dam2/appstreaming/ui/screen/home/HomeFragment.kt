@@ -63,7 +63,8 @@ class HomeFragment : Fragment() {
                             // Invocamos la funcion Composable principal de la pantalla de inicio
                             HomeScreen(
                                 selectedTab = estado.pestana, // Pestaña actual (Pelis/Series)
-                                onTabSelected = { viewModel.alCambiarPestana(it) }, // Accion al cambiar pestaña
+                                onTabSelected = {
+                                    viewModel.alCambiarPestana(it) }, // Accion al cambiar pestaña
                                 moviesNow = estado.peliculasEstreno, // Ahora usamos las listas directas del estado
                                 moviesPop = estado.peliculasPopulares,
                                 moviesTop = estado.peliculasMejorValoradas,
@@ -72,7 +73,8 @@ class HomeFragment : Fragment() {
                                 seriesTop = estado.seriesMejorValoradas,
                                 generos = estado.generosActuales, // Generos según la pestaña activa
                                 selectedGenreId = estado.idGeneroSeleccionado, // Genero filtrado
-                                onGeneroClick = { viewModel.alSeleccionarGenero(it) }, // Accion al filtrar
+                                onGeneroClick = {
+                                    viewModel.alSeleccionarGenero(it) }, // Accion al filtrar
                                 onMovieClick = { pelicula ->
                                     // Al hacer clic en una pelicula, preparamos el ViewModel de detalle
                                     peliculaViewModel.setSelectedItem(pelicula)

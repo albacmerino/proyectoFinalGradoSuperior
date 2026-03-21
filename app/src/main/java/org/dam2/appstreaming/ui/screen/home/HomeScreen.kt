@@ -44,19 +44,23 @@ fun HomeScreen(
 ) {
     // Estado para gestionar si el menú lateral está abierto
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
     // Ámbito de corrutina para controlar el menú lateral (apertura/cierre animados)
     val scope = rememberCoroutineScope()
 
     // Envoltorio para el menú lateral de navegación
     ModalNavigationDrawer(
         drawerState = drawerState,
-        drawerContent = { HomeDrawer() } // El contenido del menú (Perfil, Favoritos...)
+        drawerContent = {
+            HomeDrawer() } // El contenido del menú (Perfil, Favoritos...)
     ) {
         // Estructura básica de la pantalla (AppBar y contenido principal)
         Scaffold(
             topBar = {
                 // Barra superior con botón de menú lateral y título
-                HomeTopBar(onOpenMenu = { scope.launch { drawerState.open() } })
+                HomeTopBar(onOpenMenu = {
+                    scope.launch { drawerState.open() }
+                })
             },
             containerColor = Color.Transparent // El fondo lo gestiona el Fragment
         ) { padding ->
