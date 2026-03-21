@@ -66,22 +66,22 @@ class SerieViewModel : ViewModel() {
     private fun loadDetails(seriesId: Int) {
         viewModelScope.launch {
             try {
-                _trailerKey.value = repository.getSeriesTrailer(seriesId)
+                _trailerKey.value = repository.obtenerTrailerSerie(seriesId)
 
-                val details = repository.getSeriesDetails(seriesId)
+                val details = repository.obtenerDetallesSerie(seriesId)
                 details?.let {
                     _selectedSerie.value = it
                     _directPlatformLink.value = it.homepage
                 }
 
-                val watchInfo = repository.getSeriesWatchProvidersData(seriesId)
+                val watchInfo = repository.obtenerPlataformasSerie(seriesId)
                 _watchLink.value = watchInfo?.link
                 _mainProvider.value = watchInfo?.flatrate?.firstOrNull()
 
-                _reparto.value = repository.getSeriesCast(seriesId)
-                _resenas.value = repository.getSeriesReviews(seriesId)
-                _recomendaciones.value = repository.getSeriesRecommendations(seriesId)
-                _palabrasClave.value = repository.getSeriesKeywords(seriesId)
+                _reparto.value = repository.obtenerRepartoSerie(seriesId)
+                _resenas.value = repository.obtenerResenasSerie(seriesId)
+                _recomendaciones.value = repository.obtenerRecomendacionesSerie(seriesId)
+                _palabrasClave.value = repository.obtenerPalabrasClaveSerie(seriesId)
             } catch (e: Exception) {
                 // Si algo falla, la app ya no se cerrará. Puedes loguear el error aquí si quieres.
                 e.printStackTrace()

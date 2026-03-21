@@ -69,25 +69,25 @@ class PeliculaViewModel : ViewModel() {
 
     private fun loadDetails(movieId: Int) {
         viewModelScope.launch {
-            _trailerKey.value = repository.getMovieTrailer(movieId)
+            _trailerKey.value = repository.obtenerTrailerPelicula(movieId)
             
-            val details = repository.getMovieDetails(movieId)
+            val details = repository.obtenerDetallesPelicula(movieId)
             details?.let {
                 _selectedPelicula.value = it
                 _directPlatformLink.value = it.homepage
             }
 
             try {
-                val watchInfo = repository.getMovieWatchProvidersData(movieId)
+                val watchInfo = repository.obtenerPlataformasPelicula(movieId)
                 _watchLink.value = watchInfo?.link
                 _mainProvider.value = watchInfo?.flatrate?.firstOrNull()
             } catch (_: Exception) { }
 
-            _certificacion.value = repository.getMovieCertification(movieId)
-            _reparto.value = repository.getMovieCast(movieId)
-            _resenas.value = repository.getMovieReviews(movieId)
-            _recomendaciones.value = repository.getMovieRecommendations(movieId)
-            _palabrasClave.value = repository.getMovieKeywords(movieId)
+            _certificacion.value = repository.obtenerCertificacionPelicula(movieId)
+            _reparto.value = repository.obtenerRepartoPelicula(movieId)
+            _resenas.value = repository.obtenerResenasPelicula(movieId)
+            _recomendaciones.value = repository.obtenerRecomendacionesPelicula(movieId)
+            _palabrasClave.value = repository.obtenerPalabrasClavePelicula(movieId)
         }
     }
 }

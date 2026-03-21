@@ -54,18 +54,18 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 // Carga de Películas (Cine)
-                _movies.value = repository.getNowPlayingMovies() // Novedades
-                _popularMovies.value = repository.getPopularMovies()
-                _topRatedMovies.value = repository.getTopRatedMovies()
+                _movies.value = repository.obtenerPeliculasEnCine() // Novedades
+                _popularMovies.value = repository.obtenerPeliculasPopulares()
+                _topRatedMovies.value = repository.obtenerPeliculasMejorValoradas()
 
                 // Carga de Series (TV)
-                _series.value = repository.getOnTheAirSeries() // Novedades
-                _popularSeries.value = repository.getPopularSeries()
-                _topRatedSeries.value = repository.getTopRatedSeries()
+                _series.value = repository.obtenerSeriesEnCine() // Novedades
+                _popularSeries.value = repository.obtenerSeriesPopulares()
+                _topRatedSeries.value = repository.obtenerSeriesMejorValoradas()
 
                 //Cargar Generos
-                movieGenres.value = repository.getMovieGenres()
-                tvGenres.value = repository.getTvGenres()
+                movieGenres.value = repository.obtenerGenerosPelicula()
+                tvGenres.value = repository.obtenerGenerosTv()
 
             } catch (e: Exception) {
                 e.printStackTrace()

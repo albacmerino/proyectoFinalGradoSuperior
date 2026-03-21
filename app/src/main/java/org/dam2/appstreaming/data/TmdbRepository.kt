@@ -19,45 +19,45 @@ object TmdbConfig {
 
 class TmdbRepository {
 
-    private val client = OkHttpClient.Builder().addInterceptor { chain ->
-        val newRequest = chain.request().newBuilder()
+    private val cliente = OkHttpClient.Builder().addInterceptor { chain ->
+        val nuevaRequest = chain.request().newBuilder()
             .addHeader("Authorization", "Bearer ${TmdbConfig.ACCESS_TOKEN}")
             .addHeader("accept", "application/json")
             .build()
-        chain.proceed(newRequest)
+        chain.proceed(nuevaRequest)
     }.build()
 
     private val api = Retrofit.Builder()
         .baseUrl(TmdbConfig.BASE_URL)
-        .client(client)
+        .client(cliente)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(TmdbApiService::class.java)
 
     // --- PELÍCULAS ---
-    suspend fun getPopularMovies(): List<FichaPelicula> = try {
+    suspend fun obtenerPeliculasPopulares(): List<FichaPelicula> = try {
         api.getPopularMovies().listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
-    suspend fun getNowPlayingMovies(): List<FichaPelicula> = try {
+    suspend fun obtenerPeliculasEnCine(): List<FichaPelicula> = try {
         api.getNowPlayingMovies().listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
-    suspend fun getTopRatedMovies(): List<FichaPelicula> = try {
+    suspend fun obtenerPeliculasMejorValoradas(): List<FichaPelicula> = try {
         api.getTopRatedMovies().listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun getMovieDetails(movieId: Int): FichaPelicula? = try {
+    suspend fun obtenerDetallesPelicula(movieId: Int): FichaPelicula? = try {
         api.getMovieDetails(movieId)
     } catch (_: Exception) {
         null
     }
 
-    suspend fun getMovieTrailer(movieId: Int): String? {
+    suspend fun obtenerTrailerPelicula(movieId: Int): String? {
         return try {
             val response = api.getMovieVideos(movieId)
             val trailer = response.listaVideos.find {
@@ -71,7 +71,7 @@ class TmdbRepository {
         }
     }
 
-    suspend fun getMovieWatchProvidersData(movieId: Int): WatchCountryInfo? {
+    suspend fun obtenerPlataformasPelicula(movieId: Int): WatchCountryInfo? {
         return try {
             val response = api.getMovieWatchProviders(movieId)
             response.results["ES"] ?: response.results.values.firstOrNull()
@@ -80,7 +80,7 @@ class TmdbRepository {
         }
     }
 
-    suspend fun getMovieCertification(movieId: Int): String? {
+    suspend fun obtenerCertificacionPelicula(movieId: Int): String? {
         return try {
             val response = api.getMovieReleaseDates(movieId)
             val spainResults = response.results.find {
@@ -100,48 +100,48 @@ class TmdbRepository {
         }
     }
 
-    suspend fun getMovieCast(movieId: Int): List<CastMember> = try {
+    suspend fun obtenerRepartoPelicula(movieId: Int): List<CastMember> = try {
         api.getMovieCredits(movieId).cast
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun getMovieReviews(movieId: Int): List<Review> = try {
+    suspend fun obtenerResenasPelicula(movieId: Int): List<Review> = try {
         api.getMovieReviews(movieId).results
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun getMovieRecommendations(movieId: Int): List<FichaPelicula> = try {
+    suspend fun obtenerRecomendacionesPelicula(movieId: Int): List<FichaPelicula> = try {
         api.getMovieRecommendations(movieId).listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun getMovieKeywords(movieId: Int): List<Keyword> = try {
+    suspend fun obtenerPalabrasClavePelicula(movieId: Int): List<Keyword> = try {
         api.getMovieKeywords(movieId).keywords ?: emptyList()
     } catch (_: Exception) {
         emptyList()
     }
 
     // --- SERIES ---
-    suspend fun getPopularSeries(): List<FichaSerie> = try {
+    suspend fun obtenerSeriesPopulares(): List<FichaSerie> = try {
         api.getPopularSeries().listaSeries
     } catch (_: Exception) {
         emptyList()
     }
-    suspend fun getTopRatedSeries(): List<FichaSerie> = try {
+    suspend fun obtenerSeriesMejorValoradas(): List<FichaSerie> = try {
         api.getTopRatedSeries().listaSeries
     } catch (_: Exception) {
         emptyList()
     }
-    suspend fun getOnTheAirSeries(): List<FichaSerie> = try {
+    suspend fun obtenerSeriesEnCine(): List<FichaSerie> = try {
         api.getOnTheAirSeries().listaSeries
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun getSeriesTrailer(seriesId: Int): String? {
+    suspend fun obtenerTrailerSerie(seriesId: Int): String? {
         return try {
             val response = api.getSeriesVideos(seriesId)
             val trailer = response.listaVideos.find {
@@ -156,7 +156,7 @@ class TmdbRepository {
         }
     }
 
-    suspend fun getSeriesWatchProvidersData(seriesId: Int): WatchCountryInfo? {
+    suspend fun obtenerPlataformasSerie(seriesId: Int): WatchCountryInfo? {
         return try {
             val response = api.getSeriesWatchProviders(seriesId)
             response.results["ES"] ?: response.results.values.firstOrNull()
@@ -165,31 +165,31 @@ class TmdbRepository {
         }
     }
 
-    suspend fun getSeriesCast(seriesId: Int): List<CastMember> = try {
+    suspend fun obtenerRepartoSerie(seriesId: Int): List<CastMember> = try {
         api.getSeriesCredits(seriesId).cast
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun getSeriesReviews(seriesId: Int): List<Review> = try {
+    suspend fun obtenerResenasSerie(seriesId: Int): List<Review> = try {
         api.getSeriesReviews(seriesId).results
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun getSeriesRecommendations(seriesId: Int): List<FichaSerie> = try {
+    suspend fun obtenerRecomendacionesSerie(seriesId: Int): List<FichaSerie> = try {
         api.getSeriesRecommendations(seriesId).listaSeries
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun getSeriesKeywords(seriesId: Int): List<Keyword> = try {
+    suspend fun obtenerPalabrasClaveSerie(seriesId: Int): List<Keyword> = try {
         api.getSeriesKeywords(seriesId).results ?: emptyList()
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun getSeriesDetails(serieId: Int): FichaSerie? = try {
+    suspend fun obtenerDetallesSerie(serieId: Int): FichaSerie? = try {
         api.getSeriesDetails(serieId)
     } catch (_: Exception) {
         null
@@ -197,12 +197,12 @@ class TmdbRepository {
 
 
     // --- GÉNEROS ---
-    suspend fun getMovieGenres(): List<Genero> = try {
+    suspend fun obtenerGenerosPelicula(): List<Genero> = try {
         api.getMovieGenres().genres
     } catch (_: Exception) {
         emptyList()
     }
-    suspend fun getTvGenres(): List<Genero> = try {
+    suspend fun obtenerGenerosTv(): List<Genero> = try {
         api.getTvGenres().genres
     } catch (_: Exception) {
         emptyList()
