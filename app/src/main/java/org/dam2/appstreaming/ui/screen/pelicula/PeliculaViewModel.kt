@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.dam2.appstreaming.data.TmdbRepository
 import org.dam2.appstreaming.data.network.CastMember
@@ -13,81 +15,104 @@ import org.dam2.appstreaming.data.network.Keyword
 import org.dam2.appstreaming.ui.component.FichaPelicula
 import org.dam2.appstreaming.ui.component.Genero
 
+/**
+ * ViewModel que gestiona el estado de la pantalla de detalles de una película.
+ */
 class PeliculaViewModel : ViewModel() {
     private val repository = TmdbRepository()
 
-    private val _selectedPelicula = MutableStateFlow<FichaPelicula?>(null)
-    val selectedPelicula: StateFlow<FichaPelicula?> = _selectedPelicula
+    /**
+     * Estado unificado para la pantalla de detalle.
+     */
+    data class PeliculaState(
+        val movie: FichaPelicula? = null,
+        val allGenres: List<Genero> = emptyList(),
+        val trailerKey: String? = null,
+        val watchLink: String? = null,
+        val directPlatformLink: String? = null,
+        val mainProvider: Provider? = null,
+        val certification: String? = null,
+        val cast: List<CastMember> = emptyList(),
+        val reviews: List<Review> = emptyList(),
+        val recommendations: List<FichaPelicula> = emptyList(),
+        val keywords: List<Keyword> = emptyList(),
+        val isLoading: Boolean = false
+    )
 
-    private val _allGenres = MutableStateFlow<List<Genero>>(emptyList())
-    val allGenres: StateFlow<List<Genero>> = _allGenres
+    private val _state = MutableStateFlow(PeliculaState())
+    val state: StateFlow<PeliculaState> = _state.asStateFlow()
 
-    private val _trailerKey = MutableStateFlow<String?>(null)
-    val trailerKey: StateFlow<String?> = _trailerKey
-
-    private val _watchLink = MutableStateFlow<String?>(null)
-    val watchLink: StateFlow<String?> = _watchLink
-
-    private val _directPlatformLink = MutableStateFlow<String?>(null)
-    val directPlatformLink: StateFlow<String?> = _directPlatformLink
-
-    private val _mainProvider = MutableStateFlow<Provider?>(null)
-    val mainProvider: StateFlow<Provider?> = _mainProvider
-
-    private val _certificacion = MutableStateFlow<String?>(null)
-    val certificacion: StateFlow<String?> = _certificacion
-
-    private val _reparto = MutableStateFlow<List<CastMember>>(emptyList())
-    val reparto: StateFlow<List<CastMember>> = _reparto
-
-    private val _resenas = MutableStateFlow<List<Review>>(emptyList())
-    val resenas: StateFlow<List<Review>> = _resenas
-
-    private val _recomendaciones = MutableStateFlow<List<FichaPelicula>>(emptyList())
-    val recomendaciones: StateFlow<List<FichaPelicula>> = _recomendaciones
-
-    private val _palabrasClave = MutableStateFlow<List<Keyword>>(emptyList())
-    val palabrasClave: StateFlow<List<Keyword>> = _palabrasClave
-
+    /**
+     * Establece la película seleccionada e inicia la carga de detalles.
+     */
     fun setSelectedItem(pelicula: FichaPelicula) {
-        _selectedPelicula.value = pelicula
-        _trailerKey.value = null
-        _watchLink.value = null
-        _directPlatformLink.value = null
-        _mainProvider.value = null
-        _certificacion.value = null
-        _reparto.value = emptyList()
-        _resenas.value = emptyList()
-        _recomendaciones.value = emptyList()
-        _palabrasClave.value = emptyList()
+        _state.update { 
+            it.copy(
+                movie = pelicula,
+                isLoading = true,
+                trailerKey = null,
+                watchLink = null,
+                directPlatformLink = null,
+                mainProvider = null,
+                certification = null,
+                cast = emptyList(),
+                reviews = emptyList(),
+                recommendations = emptyList(),
+                keywords = emptyList()
+            ) 
+        }
         loadDetails(pelicula.id)
     }
 
+    /**
+     * Establece la lista global de géneros para poder traducir los IDs.
+     */
     fun setGenres(list: List<Genero>) {
-        _allGenres.value = list
+        _state.update { it.copy(allGenres = list) }
     }
 
+    /**
+     * Carga toda la información adicional de la película desde el repositorio.
+     */
     private fun loadDetails(movieId: Int) {
         viewModelScope.launch {
-            _trailerKey.value = repository.obtenerTrailerPelicula(movieId)
-            
-            val details = repository.obtenerDetallesPelicula(movieId)
-            details?.let {
-                _selectedPelicula.value = it
-                _directPlatformLink.value = it.homepage
-            }
-
             try {
-                val watchInfo = repository.obtenerPlataformasPelicula(movieId)
-                _watchLink.value = watchInfo?.link
-                _mainProvider.value = watchInfo?.flatrate?.firstOrNull()
-            } catch (_: Exception) { }
+                // Obtenemos el trailer de YouTube
+                val trailer = repository.obtenerTrailerPelicula(movieId)
+                
+                // Obtenemos detalles extendidos (como la sinopsis completa o homepage)
+                val details = repository.obtenerDetallesPelicula(movieId)
+                
+                // Obtenemos dónde ver la película (plataformas de streaming)
+                val watchInfo = try { repository.obtenerPlataformasPelicula(movieId) } catch (e: Exception) { null }
+                
+                // Obtenemos otros datos: certificación, reparto, reseñas, etc.
+                val cert = repository.obtenerCertificacionPelicula(movieId)
+                val reparto = repository.obtenerRepartoPelicula(movieId)
+                val resenas = repository.obtenerResenasPelicula(movieId)
+                val recomend = repository.obtenerRecomendacionesPelicula(movieId)
+                val palabras = repository.obtenerPalabrasClavePelicula(movieId)
 
-            _certificacion.value = repository.obtenerCertificacionPelicula(movieId)
-            _reparto.value = repository.obtenerRepartoPelicula(movieId)
-            _resenas.value = repository.obtenerResenasPelicula(movieId)
-            _recomendaciones.value = repository.obtenerRecomendacionesPelicula(movieId)
-            _palabrasClave.value = repository.obtenerPalabrasClavePelicula(movieId)
+                // Actualizamos el estado con toda la información cargada
+                _state.update { currentState ->
+                    currentState.copy(
+                        movie = details ?: currentState.movie,
+                        trailerKey = trailer,
+                        directPlatformLink = details?.homepage,
+                        watchLink = watchInfo?.link,
+                        mainProvider = watchInfo?.flatrate?.firstOrNull(),
+                        certification = cert,
+                        cast = reparto,
+                        reviews = resenas,
+                        recommendations = recomend,
+                        keywords = palabras,
+                        isLoading = false
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(isLoading = false) }
+                e.printStackTrace()
+            }
         }
     }
 }

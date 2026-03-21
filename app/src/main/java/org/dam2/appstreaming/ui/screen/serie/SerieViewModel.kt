@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.dam2.appstreaming.data.TmdbRepository
 import org.dam2.appstreaming.data.network.CastMember
@@ -13,47 +15,41 @@ import org.dam2.appstreaming.data.network.Keyword
 import org.dam2.appstreaming.ui.component.FichaSerie
 import org.dam2.appstreaming.ui.component.Genero
 
+/**
+ * ViewModel que gestiona el estado de la pantalla de detalles de una serie.
+ */
 class SerieViewModel : ViewModel() {
-    private val repositorio = TmdbRepository()
+    private val repository = TmdbRepository()
 
-    private val _serieSeleccionada = MutableStateFlow<FichaSerie?>(null)
-    val serieSeleccionada: StateFlow<FichaSerie?> = _serieSeleccionada
+    /**
+     * Estado unificado para la pantalla de detalle de serie.
+     */
+    data class SerieState(
+        val serie: FichaSerie? = null,
+        val allGenres: List<Genero> = emptyList(),
+        val trailerKey: String? = null,
+        val watchLink: String? = null,
+        val directPlatformLink: String? = null,
+        val mainProvider: Provider? = null,
+        val cast: List<CastMember> = emptyList(),
+        val reviews: List<Review> = emptyList(),
+        val recommendations: List<FichaSerie> = emptyList(),
+        val keywords: List<Keyword> = emptyList(),
+        val isLoading: Boolean = false
+    )
 
-    private val _todosLosGeneros = MutableStateFlow<List<Genero>>(emptyList())
-    val todosLosGeneros: StateFlow<List<Genero>> = _todosLosGeneros
-
-    private val _claveTrailer = MutableStateFlow<String?>(null)
-    val claveTrailer: StateFlow<String?> = _claveTrailer
-
-    private val _enlaceVer = MutableStateFlow<String?>(null)
-    val enlaceVer: StateFlow<String?> = _enlaceVer
-
-    private val _enlaceDirectoPlataforma = MutableStateFlow<String?>(null)
-    val enlaceDirectoPlataforma: StateFlow<String?> = _enlaceDirectoPlataforma
-
-    private val _proveedorPrincipal = MutableStateFlow<Provider?>(null)
-    val proveedorPrincipal: StateFlow<Provider?> = _proveedorPrincipal
-
-    private val _reparto = MutableStateFlow<List<CastMember>>(emptyList())
-    val reparto: StateFlow<List<CastMember>> = _reparto
-
-    private val _resenas = MutableStateFlow<List<Review>>(emptyList())
-    val resenas: StateFlow<List<Review>> = _resenas
-
-    private val _recomendaciones = MutableStateFlow<List<FichaSerie>>(emptyList())
-    val recomendaciones: StateFlow<List<FichaSerie>> = _recomendaciones
-
-    private val _palabrasClave = MutableStateFlow<List<Keyword>>(emptyList())
-    val palabrasClave: StateFlow<List<Keyword>> = _palabrasClave
+    private val _state = MutableStateFlow(SerieState())
+    val state: StateFlow<SerieState> = _state.asStateFlow()
 
     init {
         cargarGeneros()
     }
 
-    fun cargarGeneros() {
+    private fun cargarGeneros() {
         viewModelScope.launch {
             try {
-                _todosLosGeneros.value = repositorio.obtenerGenerosTv()
+                val generos = repository.obtenerGenerosTv()
+                _state.update { it.copy(allGenres = generos) }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -61,43 +57,62 @@ class SerieViewModel : ViewModel() {
     }
 
     fun setGeneros(generos: List<Genero>) {
-        _todosLosGeneros.value = generos
+        _state.update {
+            it.copy(allGenres = generos)
+        }
     }
 
+    /**
+     * Establece la serie seleccionada e inicia la carga de detalles.
+     */
     fun establecerItemSeleccionado(item: FichaSerie) {
-        _serieSeleccionada.value = item
-        _claveTrailer.value = null
-        _enlaceVer.value = null
-        _enlaceDirectoPlataforma.value = null
-        _proveedorPrincipal.value = null
-        _reparto.value = emptyList()
-        _resenas.value = emptyList()
-        _recomendaciones.value = emptyList()
-        _palabrasClave.value = emptyList()
+        _state.update { 
+            it.copy(
+                serie = item,
+                isLoading = true,
+                trailerKey = null,
+                watchLink = null,
+                directPlatformLink = null,
+                mainProvider = null,
+                cast = emptyList(),
+                reviews = emptyList(),
+                recommendations = emptyList(),
+                keywords = emptyList()
+            ) 
+        }
         cargarDetalles(item.id)
     }
 
+    /**
+     * Carga toda la información adicional de la serie desde el repositorio.
+     */
     private fun cargarDetalles(idSerie: Int) {
         viewModelScope.launch {
             try {
-                _claveTrailer.value = repositorio.obtenerTrailerSerie(idSerie)
+                val trailer = repository.obtenerTrailerSerie(idSerie)
+                val detalles = repository.obtenerDetallesSerie(idSerie)
+                val infoPlataformas = try { repository.obtenerPlataformasSerie(idSerie) } catch (e: Exception) { null }
+                val reparto = repository.obtenerRepartoSerie(idSerie)
+                val resenas = repository.obtenerResenasSerie(idSerie)
+                val palabras = repository.obtenerPalabrasClaveSerie(idSerie)
+                val recomend = repository.obtenerRecomendacionesSerie(idSerie)
 
-                val detalles = repositorio.obtenerDetallesSerie(idSerie)
-                detalles?.let {
-                    _serieSeleccionada.value = it
-                    _enlaceDirectoPlataforma.value = it.homepage
+                _state.update { currentState ->
+                    currentState.copy(
+                        serie = detalles ?: currentState.serie,
+                        trailerKey = trailer,
+                        directPlatformLink = detalles?.homepage,
+                        watchLink = infoPlataformas?.link,
+                        mainProvider = infoPlataformas?.flatrate?.firstOrNull(),
+                        cast = reparto,
+                        reviews = resenas,
+                        keywords = palabras,
+                        recommendations = recomend,
+                        isLoading = false
+                    )
                 }
-
-                val infoPlataformas = repositorio.obtenerPlataformasSerie(idSerie)
-                _enlaceVer.value = infoPlataformas?.link
-                _proveedorPrincipal.value = infoPlataformas?.flatrate?.firstOrNull()
-
-                _reparto.value = repositorio.obtenerRepartoSerie(idSerie)
-                _resenas.value = repositorio.obtenerResenasSerie(idSerie)
-                _palabrasClave.value = repositorio.obtenerPalabrasClaveSerie(idSerie)
-                _recomendaciones.value = repositorio.obtenerRecomendacionesSerie(idSerie)
             } catch (e: Exception) {
-                // Si algo falla, la app ya no se cerrará. Puedes loguear el error aquí si quieres.
+                _state.update { it.copy(isLoading = false) }
                 e.printStackTrace()
             }
         }
