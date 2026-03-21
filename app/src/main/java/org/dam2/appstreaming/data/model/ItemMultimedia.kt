@@ -1,4 +1,4 @@
-package org.dam2.appstreaming.ui.component
+package org.dam2.appstreaming.data.model
 
 /**
  * Interfaz común para Películas y Series.

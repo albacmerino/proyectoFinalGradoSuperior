@@ -8,12 +8,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.dam2.appstreaming.data.TmdbRepository
-import org.dam2.appstreaming.data.network.CastMember
-import org.dam2.appstreaming.data.network.Provider
-import org.dam2.appstreaming.data.network.Review
-import org.dam2.appstreaming.data.network.Keyword
-import org.dam2.appstreaming.ui.component.FichaPelicula
-import org.dam2.appstreaming.ui.component.Genero
+import org.dam2.appstreaming.data.remote.dto.CastMember
+import org.dam2.appstreaming.data.remote.dto.Provider
+import org.dam2.appstreaming.data.remote.dto.Review
+import org.dam2.appstreaming.data.remote.dto.Keyword
+import org.dam2.appstreaming.data.model.FichaPelicula
+import org.dam2.appstreaming.data.model.Genero
 
 /**
  * ViewModel que gestiona el estado de la pantalla de detalles de una película.
@@ -84,7 +84,11 @@ class PeliculaViewModel : ViewModel() {
                 val details = repository.obtenerDetallesPelicula(movieId)
                 
                 // Obtenemos dónde ver la película (plataformas de streaming)
-                val watchInfo = try { repository.obtenerPlataformasPelicula(movieId) } catch (e: Exception) { null }
+                val watchInfo = try {
+                    repository.obtenerPlataformasPelicula(movieId)
+                } catch (_: Exception) {
+                    null
+                }
                 
                 // Obtenemos otros datos: certificación, reparto, reseñas, etc.
                 val cert = repository.obtenerCertificacionPelicula(movieId)

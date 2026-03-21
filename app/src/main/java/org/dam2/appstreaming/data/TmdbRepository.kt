@@ -1,13 +1,10 @@
 package org.dam2.appstreaming.data
 
-import org.dam2.appstreaming.data.network.CastMember
-import org.dam2.appstreaming.data.network.Review
+import org.dam2.appstreaming.data.remote.dto.*
+import org.dam2.appstreaming.data.model.FichaPelicula
+import org.dam2.appstreaming.data.model.FichaSerie
+import org.dam2.appstreaming.data.model.Genero
 import org.dam2.appstreaming.data.network.TmdbApiService
-import org.dam2.appstreaming.data.network.WatchCountryInfo
-import org.dam2.appstreaming.data.network.Keyword
-import org.dam2.appstreaming.ui.component.FichaPelicula
-import org.dam2.appstreaming.ui.component.FichaSerie
-import org.dam2.appstreaming.ui.component.Genero
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

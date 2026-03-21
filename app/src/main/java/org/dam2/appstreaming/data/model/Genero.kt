@@ -1,4 +1,4 @@
-package org.dam2.appstreaming.ui.component
+package org.dam2.appstreaming.data.model
 
 import com.google.gson.annotations.SerializedName
 

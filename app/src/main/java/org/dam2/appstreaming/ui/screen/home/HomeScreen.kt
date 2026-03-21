@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.component.*
+import org.dam2.appstreaming.data.model.*
 
 /**
  * Pantalla principal de la interfaz de usuario.

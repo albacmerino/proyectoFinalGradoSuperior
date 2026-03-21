@@ -62,8 +62,8 @@ class HomeFragment : Fragment() {
                         ) {
                             // Invocamos la funcion Composable principal de la pantalla de inicio
                             HomeScreen(
-                                selectedTab = estado.pestaña, // Pestaña actual (Pelis/Series)
-                                onTabSelected = { viewModel.alCambiarPestaña(it) }, // Accion al cambiar pestaña
+                                selectedTab = estado.pestana, // Pestaña actual (Pelis/Series)
+                                onTabSelected = { viewModel.alCambiarPestana(it) }, // Accion al cambiar pestaña
                                 moviesNow = estado.peliculasEstreno, // Ahora usamos las listas directas del estado
                                 moviesPop = estado.peliculasPopulares,
                                 moviesTop = estado.peliculasMejorValoradas,

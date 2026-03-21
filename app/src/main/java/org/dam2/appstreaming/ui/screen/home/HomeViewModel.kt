@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.dam2.appstreaming.data.TmdbRepository
-import org.dam2.appstreaming.ui.component.*
+import org.dam2.appstreaming.data.model.*
 
 /**
  * ViewModel que gestiona la logica de la pantalla de inicio.
@@ -15,7 +15,7 @@ class HomeViewModel : ViewModel() {
     private val repo = TmdbRepository()
 
     data class HomeState(
-        val pestaña: Int = 0, // 0 para Cine, 1 para TV
+        val pestana: Int = 0, // 0 para Cine, 1 para TV
         val peliculasEstreno: List<FichaPelicula> = emptyList(),
         val peliculasPopulares: List<FichaPelicula> = emptyList(),
         val peliculasMejorValoradas: List<FichaPelicula> = emptyList(),
@@ -27,7 +27,7 @@ class HomeViewModel : ViewModel() {
         val idGeneroSeleccionado: Int? = null,
         val cargando: Boolean = false
     ) {
-        val generosActuales get() = if (pestaña == 0) generosPelicula else generosTv
+        val generosActuales get() = if (pestana == 0) generosPelicula else generosTv
     }
 
     private val _estado = MutableStateFlow(HomeState())
@@ -64,7 +64,7 @@ class HomeViewModel : ViewModel() {
                     )}
                 } else {
                     // Modo "Genero": Carga contenido especifico usando discover
-                    if (_estado.value.pestaña == 0) {
+                    if (_estado.value.pestana == 0) {
                         val peliculasFiltradas = repo.descubrirPeliculasPorGenero(idGenero)
                         _estado.update { it.copy(
                             peliculasEstreno = peliculasFiltradas,
@@ -88,8 +88,8 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun alCambiarPestaña(indice: Int) {
-        _estado.update { it.copy(pestaña = indice, idGeneroSeleccionado = null) }
+    fun alCambiarPestana(indice: Int) {
+        _estado.update { it.copy(pestana = indice, idGeneroSeleccionado = null) }
         cargarDatos(null)
     }
 

@@ -1,97 +1,12 @@
 package org.dam2.appstreaming.data.network
 
-import com.google.gson.annotations.SerializedName
-import org.dam2.appstreaming.ui.component.FichaPelicula
-import org.dam2.appstreaming.ui.component.FichaSerie
-import org.dam2.appstreaming.ui.component.GeneroResponse
+import org.dam2.appstreaming.data.model.FichaPelicula
+import org.dam2.appstreaming.data.model.FichaSerie
+import org.dam2.appstreaming.data.model.GeneroResponse
+import org.dam2.appstreaming.data.remote.dto.*
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
-
-// Clase para mapear la respuesta de TMDB (ellos devuelven un objeto con una lista 'results')
-data class MovieResponse(
-    @SerializedName("results") val listaPeliculas: List<FichaPelicula>
-)
-data class SeriesResponse(
-    @SerializedName("results") val listaSeries: List<FichaSerie>
-)
-
-data class VideoResponse(
-    @SerializedName("results") val listaVideos: List<Video>
-)
-
-data class Video(
-    val key: String,
-    val site: String,
-    val type: String
-)
-
-data class WatchProvidersResponse(
-    val results: Map<String, WatchCountryInfo>
-)
-
-data class WatchCountryInfo(
-    val link: String,
-    val flatrate: List<Provider>? = null
-)
-
-data class Provider(
-    @SerializedName("provider_name") val providerName: String,
-    @SerializedName("logo_path") val logoPath: String
-)
-
-data class ReleaseDatesResponse(
-    val results: List<RegionReleaseDate>
-)
-
-data class RegionReleaseDate(
-    @SerializedName("iso_3166_1") val iso31661: String,
-    @SerializedName("release_dates") val releaseDates: List<CertificationItem>
-)
-
-data class CertificationItem(
-    val certification: String
-)
-
-data class CreditsResponse(
-    val cast: List<CastMember>
-)
-
-data class CastMember(
-    val id: Int,
-    val name: String,
-    val character: String,
-    @SerializedName("profile_path") val profilePath: String?
-)
-
-data class ReviewResponse(
-    @SerializedName("results") val results: List<Review>
-)
-
-data class Review(
-    val author: String,
-    val content: String,
-    @SerializedName("created_at") val createdAt: String,
-    @SerializedName("author_details") val authorDetails: AuthorDetails
-)
-
-data class AuthorDetails(
-    val name: String,
-    val username: String,
-    @SerializedName("avatar_path") val avatarPath: String?,
-    val rating: Double?
-)
-
-data class KeywordResponse(
-    val id: Int,
-    @SerializedName("keywords") val keywords: List<Keyword>? = null,
-    @SerializedName("results") val results: List<Keyword>? = null
-)
-
-data class Keyword(
-    val id: Int,
-    val name: String
-)
 
 interface TmdbApiService {
 

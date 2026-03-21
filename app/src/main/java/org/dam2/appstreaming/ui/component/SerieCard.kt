@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
+import org.dam2.appstreaming.data.model.FichaSerie
+import org.dam2.appstreaming.data.model.Genero
 
 @Composable
 fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {

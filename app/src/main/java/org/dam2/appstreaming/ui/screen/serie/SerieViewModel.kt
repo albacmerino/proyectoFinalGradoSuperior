@@ -8,12 +8,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.dam2.appstreaming.data.TmdbRepository
-import org.dam2.appstreaming.data.network.CastMember
-import org.dam2.appstreaming.data.network.Provider
-import org.dam2.appstreaming.data.network.Review
-import org.dam2.appstreaming.data.network.Keyword
-import org.dam2.appstreaming.ui.component.FichaSerie
-import org.dam2.appstreaming.ui.component.Genero
+import org.dam2.appstreaming.data.remote.dto.CastMember
+import org.dam2.appstreaming.data.remote.dto.Provider
+import org.dam2.appstreaming.data.remote.dto.Review
+import org.dam2.appstreaming.data.remote.dto.Keyword
+import org.dam2.appstreaming.data.model.FichaSerie
+import org.dam2.appstreaming.data.model.Genero
 
 /**
  * ViewModel que gestiona el estado de la pantalla de detalles de una serie.
@@ -91,7 +91,11 @@ class SerieViewModel : ViewModel() {
             try {
                 val trailer = repository.obtenerTrailerSerie(idSerie)
                 val detalles = repository.obtenerDetallesSerie(idSerie)
-                val infoPlataformas = try { repository.obtenerPlataformasSerie(idSerie) } catch (e: Exception) { null }
+                val infoPlataformas = try {
+                    repository.obtenerPlataformasSerie(idSerie)
+                } catch (_: Exception) {
+                    null
+                }
                 val reparto = repository.obtenerRepartoSerie(idSerie)
                 val resenas = repository.obtenerResenasSerie(idSerie)
                 val palabras = repository.obtenerPalabrasClaveSerie(idSerie)

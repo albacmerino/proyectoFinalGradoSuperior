@@ -1,6 +1,5 @@
 package org.dam2.appstreaming.ui.screen.reviews
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,9 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import org.dam2.appstreaming.data.network.Review
-import org.dam2.appstreaming.ui.colors.SeaBlueLight
-import org.dam2.appstreaming.ui.colors.SeaGradient
+import org.dam2.appstreaming.data.remote.dto.Review
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
