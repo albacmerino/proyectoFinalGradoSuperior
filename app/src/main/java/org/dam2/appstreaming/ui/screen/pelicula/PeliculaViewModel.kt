@@ -81,7 +81,7 @@ class PeliculaViewModel : ViewModel() {
                 val watchInfo = repository.getMovieWatchProvidersData(movieId)
                 _watchLink.value = watchInfo?.link
                 _mainProvider.value = watchInfo?.flatrate?.firstOrNull()
-            } catch (e: Exception) { }
+            } catch (_: Exception) { }
 
             _certificacion.value = repository.getMovieCertification(movieId)
             _reparto.value = repository.getMovieCast(movieId)

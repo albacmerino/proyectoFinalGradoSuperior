@@ -578,7 +578,10 @@ fun MetadatosPelicula(fecha: String?, idsGeneros: List<Int>?, listaGeneros: List
 fun PuntuacionYAcciones(nota: Double) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         SeaRatingBar(rating = (nota / 2).toInt())
-        Text("  ${String.format("%.1f", nota)}", color = SeaBlueLight, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text("  ${String.format("%.1f", nota)}",
+            color = SeaBlueLight,
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp)
     }
     Spacer(modifier = Modifier.height(32.dp))
     Button(onClick = { }, modifier = Modifier.fillMaxWidth().height(56.dp).border(2.dp, SeaGradient, RoundedCornerShape(16.dp)), colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), shape = RoundedCornerShape(16.dp)) {

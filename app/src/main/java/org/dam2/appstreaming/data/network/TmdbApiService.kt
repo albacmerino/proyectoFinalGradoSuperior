@@ -45,7 +45,7 @@ data class ReleaseDatesResponse(
 )
 
 data class RegionReleaseDate(
-    val iso_3166_1: String,
+    @SerializedName("iso_3166_1") val iso31661: String,
     @SerializedName("release_dates") val releaseDates: List<CertificationItem>
 )
 
@@ -84,7 +84,8 @@ data class AuthorDetails(
 
 data class KeywordResponse(
     val id: Int,
-    val keywords: List<Keyword>
+    @SerializedName("keywords") val keywords: List<Keyword>? = null,
+    @SerializedName("results") val results: List<Keyword>? = null
 )
 
 data class Keyword(
@@ -142,18 +143,21 @@ interface TmdbApiService {
         @Query("language") lang: String = "es-ES"
     ): CreditsResponse
 
+    //consultar reseñas
     @GET("movie/{movie_id}/reviews")
     suspend fun getMovieReviews(
         @Path("movie_id") movieId: Int,
         @Query("language") lang: String = "es-ES"
     ): ReviewResponse
 
+    //recomendaciones
     @GET("movie/{movie_id}/recommendations")
     suspend fun getMovieRecommendations(
         @Path("movie_id") movieId: Int,
         @Query("language") lang: String = "es-ES"
     ): MovieResponse
 
+    //palabras clave
     @GET("movie/{movie_id}/keywords")
     suspend fun getMovieKeywords(
         @Path("movie_id") movieId: Int
@@ -175,6 +179,12 @@ interface TmdbApiService {
     suspend fun getOnTheAirSeries(
         @Query("language") lang: String = "es-ES"
     ): SeriesResponse
+
+    @GET("tv/{series_id}")
+    suspend fun getSeriesDetails(
+        @Path("series_id") seriesId: Int,
+        @Query("language") lang: String = "es-ES"
+    ): FichaSerie
 
     @GET("tv/{series_id}/videos")
     suspend fun getSeriesVideos(
@@ -205,7 +215,12 @@ interface TmdbApiService {
         @Query("language") lang: String = "es-ES"
     ): SeriesResponse
 
-    // --- GÉNEROS ---
+    @GET("tv/{series_id}/keywords")
+    suspend fun getSeriesKeywords(
+        @Path("series_id") seriesId: Int
+    ): KeywordResponse
+
+    // --- GENEROS ---
 
     @GET("genre/movie/list")
     suspend fun getMovieGenres(
