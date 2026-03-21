@@ -8,94 +8,93 @@ import org.dam2.appstreaming.data.TmdbRepository
 import org.dam2.appstreaming.ui.component.*
 
 /**
- * ViewModel que gestiona la lógica de la pantalla de inicio.
- * Utiliza un patrón de estado único (HomeState) para simplificar la UI.
+ * ViewModel que gestiona la logica de la pantalla de inicio.
+ * Utiliza un patron de estado unico (HomeState) para simplificar la UI.
  */
 class HomeViewModel : ViewModel() {
     private val repo = TmdbRepository()
 
     data class HomeState(
-        val tab: Int = 0, // 0 para Cine, 1 para TV
-        val moviesNow: List<FichaPelicula> = emptyList(),
-        val moviesPop: List<FichaPelicula> = emptyList(),
-        val moviesTop: List<FichaPelicula> = emptyList(),
-        val seriesNow: List<FichaSerie> = emptyList(),
-        val seriesPop: List<FichaSerie> = emptyList(),
-        val seriesTop: List<FichaSerie> = emptyList(),
-        val movieGenres: List<Genero> = emptyList(),
-        val tvGenres: List<Genero> = emptyList(),
-        val selectedGenreId: Int? = null,
-        val isLoading: Boolean = false
+        val pestaña: Int = 0, // 0 para Cine, 1 para TV
+        val peliculasEstreno: List<FichaPelicula> = emptyList(),
+        val peliculasPopulares: List<FichaPelicula> = emptyList(),
+        val peliculasMejorValoradas: List<FichaPelicula> = emptyList(),
+        val seriesEstreno: List<FichaSerie> = emptyList(),
+        val seriesPopulares: List<FichaSerie> = emptyList(),
+        val seriesMejorValoradas: List<FichaSerie> = emptyList(),
+        val generosPelicula: List<Genero> = emptyList(),
+        val generosTv: List<Genero> = emptyList(),
+        val idGeneroSeleccionado: Int? = null,
+        val cargando: Boolean = false
     ) {
-        val currentGenres get() = if (tab == 0) movieGenres else tvGenres
+        val generosActuales get() = if (pestaña == 0) generosPelicula else generosTv
     }
 
-    private val _state = MutableStateFlow(HomeState())
-    val state = _state.asStateFlow()
+    private val _estado = MutableStateFlow(HomeState())
+    val estado = _estado.asStateFlow()
 
     init {
-        // Carga inicial de géneros y datos generales
+        // Carga inicial de generos y datos generales
         viewModelScope.launch {
             try {
-                val mGenres = repo.obtenerGenerosPelicula()
-                val tGenres = repo.obtenerGenerosTv()
-                _state.update { it.copy(movieGenres = mGenres, tvGenres = tGenres) }
-                loadData(null)
+                val gPeliculas = repo.obtenerGenerosPelicula()
+                val gTv = repo.obtenerGenerosTv()
+                _estado.update { it.copy(generosPelicula = gPeliculas, generosTv = gTv) }
+                cargarDatos(null)
             } catch (e: Exception) { e.printStackTrace() }
         }
     }
 
     /**
-     * Carga los datos dependiendo de si hay un género seleccionado o no.
-     * Si hay un género, utiliza el servicio 'discover' para obtener muchos más resultados reales de ese género.
+     * Carga los datos dependiendo de si hay un genero seleccionado o no.
      */
-    private fun loadData(genreId: Int?) {
+    private fun cargarDatos(idGenero: Int?) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            _estado.update { it.copy(cargando = true) }
             try {
-                if (genreId == null) {
+                if (idGenero == null) {
                     // Modo "Todo": Carga las listas generales
-                    _state.update { it.copy(
-                        moviesNow = repo.obtenerPeliculasEnCine(),
-                        moviesPop = repo.obtenerPeliculasPopulares(),
-                        moviesTop = repo.obtenerPeliculasMejorValoradas(),
-                        seriesNow = repo.obtenerSeriesEnCine(),
-                        seriesPop = repo.obtenerSeriesPopulares(),
-                        seriesTop = repo.obtenerSeriesMejorValoradas()
+                    _estado.update { it.copy(
+                        peliculasEstreno = repo.obtenerPeliculasEnCine(),
+                        peliculasPopulares = repo.obtenerPeliculasPopulares(),
+                        peliculasMejorValoradas = repo.obtenerPeliculasMejorValoradas(),
+                        seriesEstreno = repo.obtenerSeriesEnEmision(),
+                        seriesPopulares = repo.obtenerSeriesPopulares(),
+                        seriesMejorValoradas = repo.obtenerSeriesMejorValoradas()
                     )}
                 } else {
-                    // Modo "Género": Carga contenido específico de ese género usando discover
-                    if (_state.value.tab == 0) {
-                        val filteredMovies = repo.descubrirPeliculasPorGenero(genreId)
-                        _state.update { it.copy(
-                            moviesNow = filteredMovies,
-                            moviesPop = filteredMovies,
-                            moviesTop = filteredMovies
+                    // Modo "Genero": Carga contenido especifico usando discover
+                    if (_estado.value.pestaña == 0) {
+                        val peliculasFiltradas = repo.descubrirPeliculasPorGenero(idGenero)
+                        _estado.update { it.copy(
+                            peliculasEstreno = peliculasFiltradas,
+                            peliculasPopulares = peliculasFiltradas,
+                            peliculasMejorValoradas = peliculasFiltradas
                         )}
                     } else {
-                        val filteredSeries = repo.descubrirSeriesPorGenero(genreId)
-                        _state.update { it.copy(
-                            seriesNow = filteredSeries,
-                            seriesPop = filteredSeries,
-                            seriesTop = filteredSeries
+                        val seriesFiltradas = repo.descubrirSeriesPorGenero(idGenero)
+                        _estado.update { it.copy(
+                            seriesEstreno = seriesFiltradas,
+                            seriesPopulares = seriesFiltradas,
+                            seriesMejorValoradas = seriesFiltradas
                         )}
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
-                _state.update { it.copy(isLoading = false) }
+                _estado.update { it.copy(cargando = false) }
             }
         }
     }
 
-    fun onTab(i: Int) {
-        _state.update { it.copy(tab = i, selectedGenreId = null) }
-        loadData(null)
+    fun alCambiarPestaña(indice: Int) {
+        _estado.update { it.copy(pestaña = indice, idGeneroSeleccionado = null) }
+        cargarDatos(null)
     }
 
-    fun onGenre(id: Int?) {
-        _state.update { it.copy(selectedGenreId = id) }
-        loadData(id)
+    fun alSeleccionarGenero(id: Int?) {
+        _estado.update { it.copy(idGeneroSeleccionado = id) }
+        cargarDatos(id)
     }
 }

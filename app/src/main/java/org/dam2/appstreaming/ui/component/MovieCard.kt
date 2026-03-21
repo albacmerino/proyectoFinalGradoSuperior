@@ -19,11 +19,11 @@ import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
 @Composable
 fun MovieCard(movie: FichaPelicula, allGenres: List<Genero>, onClick: () -> Unit) {
-    // 1. Protección de URL: Si posterPath es null, usamos un string vacío para que Coil no falle
-    val imageUrl = "https://image.tmdb.org/t/p/w500${movie.posterPath ?: ""}"
+    // 1. Protección de URL: Si rutaPoster es null, usamos un string vacío para que Coil no falle
+    val imageUrl = "https://image.tmdb.org/t/p/w500${movie.rutaPoster ?: ""}"
 
     // 2. Búsqueda del género: Si la lista está vacía o no encuentra el ID, pone "Cine"
-    val nombreGenero = allGenres.find { it.id == movie.genreIds?.firstOrNull() }?.name ?: "Cine"
+    val nombreGenero = allGenres.find { it.id == movie.idsGeneros?.firstOrNull() }?.name ?: "Cine"
 
     Column(
         modifier = Modifier
@@ -33,7 +33,7 @@ fun MovieCard(movie: FichaPelicula, allGenres: List<Genero>, onClick: () -> Unit
         Box(modifier = Modifier.height(180.dp)) {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = movie.title,
+                contentDescription = movie.titulo,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(12.dp))
@@ -43,7 +43,7 @@ fun MovieCard(movie: FichaPelicula, allGenres: List<Genero>, onClick: () -> Unit
 
             // Asegúrate de que ScoreRing sea accesible aquí
             ScoreRing(
-                score = movie.voteAverage,
+                score = movie.puntuacionMedia,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(4.dp)
@@ -52,7 +52,7 @@ fun MovieCard(movie: FichaPelicula, allGenres: List<Genero>, onClick: () -> Unit
         }
 
         Text(
-            text = movie.title,
+            text = movie.titulo,
             color = Color.White,
             maxLines = 1,
             fontSize = 13.sp,

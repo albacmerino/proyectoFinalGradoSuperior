@@ -56,7 +56,7 @@ fun SerieDetailScreen(
 
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFF000814))) {
             Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-                CabeceraImagen(serie.backdropPath) {
+                CabeceraImagen(serie.rutaFondo) {
                     state.trailerKey?.let { onPlayTrailerClick(it) }
                 }
                 
@@ -66,16 +66,16 @@ fun SerieDetailScreen(
                 }
 
                 Column(modifier = Modifier.padding(20.dp)) {
-                    TituloSeccion(serie.title)
-                    MetadatosSerie(serie.firstAirDate, serie.genreIds, state.allGenres)
+                    TituloSeccion(serie.titulo)
+                    MetadatosSerie(serie.fechaLanzamiento, serie.idsGeneros, state.allGenres)
                     
                     SeccionOpinion()
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    PuntuacionYAcciones(serie.voteAverage)
+                    PuntuacionYAcciones(serie.puntuacionMedia)
                     
                     Spacer(modifier = Modifier.height(32.dp))
-                    SinopsisSeccion(serie.overview)
+                    SinopsisSeccion(serie.sinopsis)
                     
                     RepartoSeccion(state.cast)
                     SeccionSocial(state.reviews) { onSeeAllReviewsClick(serie.id) }
@@ -389,11 +389,11 @@ private fun RecomendacionesSeccion(recomendaciones: List<FichaSerie>, onSerieCli
             LazyRow(contentPadding = PaddingValues(end = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 items(recomendaciones) { serie ->
                     Column(modifier = Modifier.width(250.dp).clickable { onSerieClick(serie) }) {
-                        AsyncImage(model = "https://image.tmdb.org/t/p/w500${serie.backdropPath}", contentDescription = null, modifier = Modifier.fillMaxWidth().height(140.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)
+                        AsyncImage(model = "https://image.tmdb.org/t/p/w500${serie.rutaFondo}", contentDescription = null, modifier = Modifier.fillMaxWidth().height(140.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = serie.title, color = Color.White, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                            Text(text = "${(serie.voteAverage * 10).toInt()}%", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
+                            Text(text = serie.titulo, color = Color.White, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                            Text(text = "${(serie.puntuacionMedia * 10).toInt()}%", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
                         }
                     }
                 }

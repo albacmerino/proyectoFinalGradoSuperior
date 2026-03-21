@@ -20,8 +20,10 @@ import org.dam2.appstreaming.ui.colors.SeaBlueLight
 @Composable
 fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
     // Construcción de la URL y búsqueda del nombre del género
-    val imageUrl = "https://image.tmdb.org/t/p/w500${serie.posterPath}"
-    val nombreGenero = allGenres.find { it.id == serie.genreIds?.firstOrNull() }?.name ?: "Serie"
+    val imageUrl = "https://image.tmdb.org/t/p/w500${serie.rutaPoster}"
+    val nombreGenero = allGenres.find {
+        it.id == serie.idsGeneros?.firstOrNull()
+    }?.name ?: "Serie"
 
     Column(
         modifier = Modifier
@@ -32,7 +34,7 @@ fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
         Box(modifier = Modifier.height(180.dp)) {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = serie.title,
+                contentDescription = serie.titulo,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(12.dp))
@@ -42,7 +44,7 @@ fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
 
             // Anillo de puntuación neón posicionado abajo a la derecha
             ScoreRing(
-                score = serie.voteAverage,
+                score = serie.puntuacionMedia,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(4.dp)
@@ -52,7 +54,7 @@ fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
 
         // Título de la serie (Fuera del Box para que aparezca debajo)
         Text(
-            text = serie.title,
+            text = serie.titulo,
             color = Color.White,
             maxLines = 1,
             fontSize = 13.sp,

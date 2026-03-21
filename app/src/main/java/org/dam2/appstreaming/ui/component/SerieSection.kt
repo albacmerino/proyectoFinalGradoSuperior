@@ -1,3 +1,5 @@
+package org.dam2.appstreaming.ui.component
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,8 +25,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import org.dam2.appstreaming.ui.component.FichaSerie
-import org.dam2.appstreaming.ui.component.ScoreRing
 
 @Composable
 fun SerieSection(title: String, series: List<FichaSerie>) {
@@ -51,13 +51,13 @@ fun SerieSection(title: String, series: List<FichaSerie>) {
 @Composable
 fun SerieCard(serie: FichaSerie) {
     // Reutilizamos el diseño de MovieCard pero con los datos de serie
-    val imageUrl = "https://image.tmdb.org/t/p/w500${serie.posterPath}"
+    val imageUrl = "https://image.tmdb.org/t/p/w500${serie.rutaPoster}"
 
     Column(modifier = Modifier.width(130.dp)) {
         Box(modifier = Modifier.height(180.dp)) {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = serie.title,
+                contentDescription = serie.titulo,
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(12.dp))
@@ -67,12 +67,12 @@ fun SerieCard(serie: FichaSerie) {
                 contentScale = ContentScale.Crop
             )
             ScoreRing(
-                score = serie.voteAverage,
+                score = serie.puntuacionMedia,
                 modifier = Modifier.align(Alignment.BottomEnd).padding(4.dp).offset(x = 6.dp, y = 6.dp)
             )
         }
         Text(
-            text = serie.title, // En FichaSerie, 'title' mapea a 'name' de TMDB
+            text = serie.titulo, // En FichaSerie, 'titulo' mapea a 'name' de TMDB
             color = Color.White,
             fontSize = 12.sp,
             maxLines = 1,

@@ -101,7 +101,7 @@ class SerieViewModel : ViewModel() {
                     currentState.copy(
                         serie = detalles ?: currentState.serie,
                         trailerKey = trailer,
-                        directPlatformLink = detalles?.homepage,
+                        directPlatformLink = detalles?.enlaceWeb,
                         watchLink = infoPlataformas?.link,
                         mainProvider = infoPlataformas?.flatrate?.firstOrNull(),
                         cast = reparto,

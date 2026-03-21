@@ -34,7 +34,7 @@ class TmdbRepository {
         .build()
         .create(TmdbApiService::class.java)
 
-    // --- PELÍCULAS ---
+    // --- PELICULAS ---
     suspend fun obtenerPeliculasPopulares(): List<FichaPelicula> = try {
         api.getPopularMovies().listaPeliculas
     } catch (_: Exception) {
@@ -51,18 +51,18 @@ class TmdbRepository {
         emptyList()
     }
 
-    suspend fun obtenerDetallesPelicula(movieId: Int): FichaPelicula? = try {
-        api.getMovieDetails(movieId)
+    suspend fun obtenerDetallesPelicula(idPelicula: Int): FichaPelicula? = try {
+        api.getMovieDetails(idPelicula)
     } catch (_: Exception) {
         null
     }
 
-    suspend fun obtenerTrailerPelicula(movieId: Int): String? {
+    suspend fun obtenerTrailerPelicula(idPelicula: Int): String? {
         return try {
-            val response = api.getMovieVideos(movieId)
-            val trailer = response.listaVideos.find {
+            val respuesta = api.getMovieVideos(idPelicula)
+            val trailer = respuesta.listaVideos.find {
                 it.site == "YouTube" && it.type == "Trailer"
-            } ?: response.listaVideos.find {
+            } ?: respuesta.listaVideos.find {
                     it.site == "YouTube"
             }
             trailer?.key
@@ -71,61 +71,61 @@ class TmdbRepository {
         }
     }
 
-    suspend fun obtenerPlataformasPelicula(movieId: Int): WatchCountryInfo? {
+    suspend fun obtenerPlataformasPelicula(idPelicula: Int): WatchCountryInfo? {
         return try {
-            val response = api.getMovieWatchProviders(movieId)
-            response.results["ES"] ?: response.results.values.firstOrNull()
+            val respuesta = api.getMovieWatchProviders(idPelicula)
+            respuesta.results["ES"] ?: respuesta.results.values.firstOrNull()
         } catch (_: Exception) {
             null
         }
     }
 
-    suspend fun obtenerCertificacionPelicula(movieId: Int): String? {
+    suspend fun obtenerCertificacionPelicula(idPelicula: Int): String? {
         return try {
-            val response = api.getMovieReleaseDates(movieId)
-            val spainResults = response.results.find {
+            val respuesta = api.getMovieReleaseDates(idPelicula)
+            val resultadosEspania = respuesta.results.find {
                 it.iso31661 == "ES"
             }
-            val certification = spainResults?.releaseDates?.find {
+            val certificacion = resultadosEspania?.releaseDates?.find {
                 it.certification.isNotEmpty()
             }?.certification
-                ?: response.results.flatMap {
+                ?: respuesta.results.flatMap {
                     it.releaseDates
                 }.find {
                     it.certification.isNotEmpty()
                 }?.certification
-            certification
+            certificacion
         } catch (_: Exception) {
             null
         }
     }
 
-    suspend fun obtenerRepartoPelicula(movieId: Int): List<CastMember> = try {
-        api.getMovieCredits(movieId).cast
+    suspend fun obtenerRepartoPelicula(idPelicula: Int): List<CastMember> = try {
+        api.getMovieCredits(idPelicula).cast
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun obtenerResenasPelicula(movieId: Int): List<Review> = try {
-        api.getMovieReviews(movieId).results
+    suspend fun obtenerResenasPelicula(idPelicula: Int): List<Review> = try {
+        api.getMovieReviews(idPelicula).results
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun obtenerRecomendacionesPelicula(movieId: Int): List<FichaPelicula> = try {
-        api.getMovieRecommendations(movieId).listaPeliculas
+    suspend fun obtenerRecomendacionesPelicula(idPelicula: Int): List<FichaPelicula> = try {
+        api.getMovieRecommendations(idPelicula).listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun obtenerPalabrasClavePelicula(movieId: Int): List<Keyword> = try {
-        api.getMovieKeywords(movieId).keywords ?: emptyList()
+    suspend fun obtenerPalabrasClavePelicula(idPelicula: Int): List<Keyword> = try {
+        api.getMovieKeywords(idPelicula).keywords ?: emptyList()
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun descubrirPeliculasPorGenero(genreId: Int): List<FichaPelicula> = try {
-        api.discoverMovies(genreId).listaPeliculas
+    suspend fun descubrirPeliculasPorGenero(idGenero: Int): List<FichaPelicula> = try {
+        api.discoverMovies(idGenero).listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
@@ -137,7 +137,7 @@ class TmdbRepository {
         emptyList()
     }
 
-    suspend fun obtenerSeriesEnCine(): List<FichaSerie> = try {
+    suspend fun obtenerSeriesEnEmision(): List<FichaSerie> = try {
         api.getOnTheAirSeries().listaSeries
     } catch (_: Exception) {
         emptyList()
@@ -148,19 +148,19 @@ class TmdbRepository {
         emptyList()
     }
 
-    suspend fun obtenerDetallesSerie(serieId: Int): FichaSerie? = try {
-        api.getSeriesDetails(serieId)
+    suspend fun obtenerDetallesSerie(idSerie: Int): FichaSerie? = try {
+        api.getSeriesDetails(idSerie)
     } catch (_: Exception) {
         null
     }
 
-    suspend fun obtenerTrailerSerie(seriesId: Int): String? {
+    suspend fun obtenerTrailerSerie(idSerie: Int): String? {
         return try {
-            val response = api.getSeriesVideos(seriesId)
-            val trailer = response.listaVideos.find {
+            val respuesta = api.getSeriesVideos(idSerie)
+            val trailer = respuesta.listaVideos.find {
                 it.site == "YouTube" && it.type == "Trailer"
             }
-                ?: response.listaVideos.find {
+                ?: respuesta.listaVideos.find {
                     it.site == "YouTube"
                 }
             trailer?.key
@@ -169,47 +169,47 @@ class TmdbRepository {
         }
     }
 
-    suspend fun obtenerPlataformasSerie(seriesId: Int): WatchCountryInfo? {
+    suspend fun obtenerPlataformasSerie(idSerie: Int): WatchCountryInfo? {
         return try {
-            val response = api.getSeriesWatchProviders(seriesId)
-            response.results["ES"] ?: response.results.values.firstOrNull()
+            val respuesta = api.getSeriesWatchProviders(idSerie)
+            respuesta.results["ES"] ?: respuesta.results.values.firstOrNull()
         } catch (_: Exception) {
             null
         }
     }
 
-    suspend fun obtenerRepartoSerie(seriesId: Int): List<CastMember> = try {
-        api.getSeriesCredits(seriesId).cast
+    suspend fun obtenerRepartoSerie(idSerie: Int): List<CastMember> = try {
+        api.getSeriesCredits(idSerie).cast
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun obtenerResenasSerie(seriesId: Int): List<Review> = try {
-        api.getSeriesReviews(seriesId).results
+    suspend fun obtenerResenasSerie(idSerie: Int): List<Review> = try {
+        api.getSeriesReviews(idSerie).results
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun obtenerRecomendacionesSerie(seriesId: Int): List<FichaSerie> = try {
-        api.getSeriesRecommendations(seriesId).listaSeries
+    suspend fun obtenerRecomendacionesSerie(idSerie: Int): List<FichaSerie> = try {
+        api.getSeriesRecommendations(idSerie).listaSeries
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun obtenerPalabrasClaveSerie(seriesId: Int): List<Keyword> = try {
-        api.getSeriesKeywords(seriesId).results ?: emptyList()
+    suspend fun obtenerPalabrasClaveSerie(idSerie: Int): List<Keyword> = try {
+        api.getSeriesKeywords(idSerie).results ?: emptyList()
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun descubrirSeriesPorGenero(genreId: Int): List<FichaSerie> = try {
-        api.discoverSeries(genreId).listaSeries
+    suspend fun descubrirSeriesPorGenero(idGenero: Int): List<FichaSerie> = try {
+        api.discoverSeries(idGenero).listaSeries
     } catch (_: Exception) {
         emptyList()
     }
 
 
-    // --- GÉNEROS ---
+    // --- GENEROS ---
     suspend fun obtenerGenerosPelicula(): List<Genero> = try {
         api.getMovieGenres().genres
     } catch (_: Exception) {

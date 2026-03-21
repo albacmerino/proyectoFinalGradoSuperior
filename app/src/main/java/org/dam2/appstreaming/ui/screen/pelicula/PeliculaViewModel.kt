@@ -98,7 +98,7 @@ class PeliculaViewModel : ViewModel() {
                     currentState.copy(
                         movie = details ?: currentState.movie,
                         trailerKey = trailer,
-                        directPlatformLink = details?.homepage,
+                        directPlatformLink = details?.enlaceWeb,
                         watchLink = watchInfo?.link,
                         mainProvider = watchInfo?.flatrate?.firstOrNull(),
                         certification = cert,

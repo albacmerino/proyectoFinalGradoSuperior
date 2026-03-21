@@ -1,17 +1,18 @@
 package org.dam2.appstreaming.ui.component
 
-
 import com.google.gson.annotations.SerializedName
 
+/**
+ * Representa la información de una película desde la API de TMDB.
+ */
 data class FichaPelicula(
-    @SerializedName("id") val id: Int,
-    @SerializedName("title") val title: String,
-    @SerializedName("poster_path") val posterPath: String?,
-    @SerializedName("vote_average") val voteAverage: Double,
-    @SerializedName("genre_ids") val genreIds: List<Int>?,
-    @SerializedName("backdrop_path") val backdropPath: String?,
-    @SerializedName("release_date") val releaseDate: String?,
-    @SerializedName("overview") val overview: String,
-    //enlace oficial de la pelicula (netflix, amazon, etc)
-    @SerializedName("homepage") val homepage: String? = null
-)
+    @SerializedName("id") override val id: Int,
+    @SerializedName("title") override val titulo: String,
+    @SerializedName("overview") override val sinopsis: String,
+    @SerializedName("poster_path") override val rutaPoster: String?,
+    @SerializedName("backdrop_path") override val rutaFondo: String?,
+    @SerializedName("release_date") override val fechaLanzamiento: String?,
+    @SerializedName("vote_average") override val puntuacionMedia: Double,
+    @SerializedName("genre_ids") override val idsGeneros: List<Int>?,
+    @SerializedName("homepage") override val enlaceWeb: String? = null
+) : ItemMultimedia

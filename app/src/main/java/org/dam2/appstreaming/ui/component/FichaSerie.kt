@@ -1,20 +1,20 @@
 package org.dam2.appstreaming.ui.component
 
-
 import com.google.gson.annotations.SerializedName
 
+/**
+ * Representa la información de una serie desde la API de TMDB.
+ */
 data class FichaSerie(
-    @SerializedName("id") val id: Int,
-    @SerializedName("name") val title: String,
-    @SerializedName("overview") val overview: String,
-    @SerializedName("poster_path") val posterPath: String?,
-    @SerializedName("backdrop_path") val backdropPath: String?,
-    @SerializedName("first_air_date") val firstAirDate: String?,
-    @SerializedName("vote_average") val voteAverage: Double,
-    @SerializedName("origin_country") val originCountry: List<String>? = null,
-    @SerializedName("original_name") val originalName: String? = null,
-    @SerializedName("genre_ids") val genreIds: List<Int>? = emptyList(),
-    //enlace oficial de la serie (netflix, amazon, etc)
-    @SerializedName("homepage") val homepage: String? = null
-)
-
+    @SerializedName("id") override val id: Int,
+    @SerializedName("name") override val titulo: String,
+    @SerializedName("overview") override val sinopsis: String,
+    @SerializedName("poster_path") override val rutaPoster: String?,
+    @SerializedName("backdrop_path") override val rutaFondo: String?,
+    @SerializedName("first_air_date") override val fechaLanzamiento: String?,
+    @SerializedName("vote_average") override val puntuacionMedia: Double,
+    @SerializedName("genre_ids") override val idsGeneros: List<Int>?,
+    @SerializedName("origin_country") val paisOrigen: List<String>? = null,
+    @SerializedName("original_name") val nombreOriginal: String? = null,
+    @SerializedName("homepage") override val enlaceWeb: String? = null
+) : ItemMultimedia

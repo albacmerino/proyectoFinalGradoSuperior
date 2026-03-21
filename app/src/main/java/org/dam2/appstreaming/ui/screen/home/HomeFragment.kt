@@ -25,11 +25,11 @@ import org.dam2.appstreaming.ui.screen.serie.SerieViewModel
 
 /**
  * Fragmento principal de la aplicación que actúa como contenedor para la UI de Compose.
- * Gestiona la comunicación entre los ViewModels y la navegación de Android Jetpack.
+ * Gestiona la comunicacion entre los ViewModels y la navegacion de Android Jetpack.
  */
 class HomeFragment : Fragment() {
 
-    // ViewModel específico de la Home, sobrevive solo mientras el fragmento está activo
+    // ViewModel especifico de la Home, sobrevive solo mientras el fragmento está activo
     private val viewModel: HomeViewModel by viewModels()
     
     // ViewModels compartidos a nivel de Activity para pasar datos a las pantallas de detalle
@@ -44,12 +44,12 @@ class HomeFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 // Recolectamos el flujo de estado (Flow) del ViewModel. 
-                // 'state' se actualizará automáticamente cuando cambien los datos en el ViewModel.
-                val state by viewModel.state.collectAsState()
+                // 'estado' se actualizará automáticamente cuando cambien los datos en el ViewModel.
+                val estado by viewModel.estado.collectAsState()
 
                 MaterialTheme {
                     // Definimos un degradado vertical que simula la profundidad del mar
-                    val seaBackgroundGradient = Brush.verticalGradient(
+                    val gradienteFondoMar = Brush.verticalGradient(
                         colors = listOf(Color(0xFF001D3D), Color(0xFF000814))
                     )
                     // Superficie base que ocupa toda la pantalla
@@ -58,32 +58,32 @@ class HomeFragment : Fragment() {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .background(brush = seaBackgroundGradient)
+                                .background(brush = gradienteFondoMar)
                         ) {
-                            // Invocamos la función Composable principal de la pantalla de inicio
+                            // Invocamos la funcion Composable principal de la pantalla de inicio
                             HomeScreen(
-                                selectedTab = state.tab, // Pestaña actual (Pelis/Series)
-                                onTabSelected = { viewModel.onTab(it) }, // Acción al cambiar pestaña
-                                moviesNow = state.moviesNow, // Ahora usamos las listas directas del state, ya que el VM las carga filtradas
-                                moviesPop = state.moviesPop,
-                                moviesTop = state.moviesTop,
-                                seriesNow = state.seriesNow,
-                                seriesPop = state.seriesPop,
-                                seriesTop = state.seriesTop,
-                                generos = state.currentGenres, // Géneros según la pestaña activa
-                                selectedGenreId = state.selectedGenreId, // Género filtrado
-                                onGeneroClick = { viewModel.onGenre(it) }, // Acción al filtrar
-                                onMovieClick = { movie ->
-                                    // Al hacer clic en una película, preparamos el ViewModel de detalle
-                                    peliculaViewModel.setSelectedItem(movie)
-                                    peliculaViewModel.setGenres(state.movieGenres)
-                                    // Navegamos al fragmento de detalle de película
+                                selectedTab = estado.pestaña, // Pestaña actual (Pelis/Series)
+                                onTabSelected = { viewModel.alCambiarPestaña(it) }, // Accion al cambiar pestaña
+                                moviesNow = estado.peliculasEstreno, // Ahora usamos las listas directas del estado
+                                moviesPop = estado.peliculasPopulares,
+                                moviesTop = estado.peliculasMejorValoradas,
+                                seriesNow = estado.seriesEstreno,
+                                seriesPop = estado.seriesPopulares,
+                                seriesTop = estado.seriesMejorValoradas,
+                                generos = estado.generosActuales, // Generos según la pestaña activa
+                                selectedGenreId = estado.idGeneroSeleccionado, // Genero filtrado
+                                onGeneroClick = { viewModel.alSeleccionarGenero(it) }, // Accion al filtrar
+                                onMovieClick = { pelicula ->
+                                    // Al hacer clic en una pelicula, preparamos el ViewModel de detalle
+                                    peliculaViewModel.setSelectedItem(pelicula)
+                                    peliculaViewModel.setGenres(estado.generosPelicula)
+                                    // Navegamos al fragmento de detalle de pelicula
                                     findNavController().navigate(R.id.action_homeFragment_to_peliculaDetailFragment)
                                 },
                                 onSerieClick = { serie ->
                                     // Al hacer clic en una serie, preparamos el ViewModel de detalle
                                     serieViewModel.establecerItemSeleccionado(serie)
-                                    serieViewModel.setGeneros(state.tvGenres)
+                                    serieViewModel.setGeneros(estado.generosTv)
                                     // Navegamos al fragmento de detalle de serie
                                     findNavController().navigate(R.id.action_homeFragment_to_serieDetailFragment)
                                 }

@@ -35,16 +35,20 @@ class ReviewsFragment : Fragment() {
                     if (mediaType == "pelicula") {
                         val state by peliculaViewModel.state.collectAsState()
                         ReviewsScreen(
-                            title = state.movie?.title ?: "Película",
+                            title = state.movie?.titulo ?: "Película",
                             reviews = state.reviews,
-                            onBackClick = { findNavController().popBackStack() }
+                            onBackClick = {
+                                findNavController().popBackStack()
+                            }
                         )
                     } else {
                         val state by serieViewModel.state.collectAsState()
                         ReviewsScreen(
-                            title = state.serie?.title ?: "Serie",
+                            title = state.serie?.titulo ?: "Serie",
                             reviews = state.reviews,
-                            onBackClick = { findNavController().popBackStack() }
+                            onBackClick = {
+                                findNavController().popBackStack()
+                            }
                         )
                     }
                 }

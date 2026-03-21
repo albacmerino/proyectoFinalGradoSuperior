@@ -58,7 +58,7 @@ fun PeliculaDetailScreen(
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFF000814))) {
             Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
                 // Imagen de cabecera con botón de Play
-                CabeceraImagen(movie.backdropPath) {
+                CabeceraImagen(movie.rutaFondo) {
                     state.trailerKey?.let { onPlayTrailerClick(it) }
                 }
                 
@@ -70,19 +70,19 @@ fun PeliculaDetailScreen(
 
                 Column(modifier = Modifier.padding(20.dp)) {
                     // Título y metadatos (año, géneros, clasificación)
-                    TituloSeccion(movie.title)
-                    MetadatosPelicula(movie.releaseDate, movie.genreIds, state.allGenres, state.certification)
+                    TituloSeccion(movie.titulo)
+                    MetadatosPelicula(movie.fechaLanzamiento, movie.idsGeneros, state.allGenres, state.certification)
                     
                     // Selector interactivo de opinión (emoji + nota)
                     SeccionOpinion()
 
                     Spacer(modifier = Modifier.height(24.dp))
                     // Estrellas de puntuación y botón de añadir a lista
-                    PuntuacionYAcciones(movie.voteAverage)
+                    PuntuacionYAcciones(movie.puntuacionMedia)
                     
                     Spacer(modifier = Modifier.height(32.dp))
                     // Resumen de la película
-                    SinopsisSeccion(movie.overview)
+                    SinopsisSeccion(movie.sinopsis)
                     
                     // Carrusel de actores
                     RepartoSeccion(state.cast)
@@ -417,11 +417,11 @@ private fun RecomendacionesSeccion(recomendaciones: List<FichaPelicula>, onPelic
             LazyRow(contentPadding = PaddingValues(end = 20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 items(recomendaciones) { pelicula ->
                     Column(modifier = Modifier.width(250.dp).clickable { onPeliculaClick(pelicula) }) {
-                        AsyncImage(model = "https://image.tmdb.org/t/p/w500${pelicula.backdropPath}", contentDescription = null, modifier = Modifier.fillMaxWidth().height(140.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)
+                        AsyncImage(model = "https://image.tmdb.org/t/p/w500${pelicula.rutaFondo}", contentDescription = null, modifier = Modifier.fillMaxWidth().height(140.dp).clip(RoundedCornerShape(8.dp)), contentScale = ContentScale.Crop)
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = pelicula.title, color = Color.White, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                            Text(text = "${(pelicula.voteAverage * 10).toInt()}%", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
+                            Text(text = pelicula.titulo, color = Color.White, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                            Text(text = "${(pelicula.puntuacionMedia * 10).toInt()}%", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
                         }
                     }
                 }
