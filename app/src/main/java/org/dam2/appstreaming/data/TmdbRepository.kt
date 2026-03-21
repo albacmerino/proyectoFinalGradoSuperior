@@ -60,8 +60,11 @@ class TmdbRepository {
     suspend fun getMovieTrailer(movieId: Int): String? {
         return try {
             val response = api.getMovieVideos(movieId)
-            val trailer = response.listaVideos.find { it.site == "YouTube" && it.type == "Trailer" }
-                ?: response.listaVideos.find { it.site == "YouTube" }
+            val trailer = response.listaVideos.find {
+                it.site == "YouTube" && it.type == "Trailer"
+            } ?: response.listaVideos.find {
+                    it.site == "YouTube"
+            }
             trailer?.key
         } catch (_: Exception) {
             null
@@ -80,9 +83,17 @@ class TmdbRepository {
     suspend fun getMovieCertification(movieId: Int): String? {
         return try {
             val response = api.getMovieReleaseDates(movieId)
-            val spainResults = response.results.find { it.iso31661 == "ES" }
-            val certification = spainResults?.releaseDates?.find { it.certification.isNotEmpty() }?.certification
-                ?: response.results.flatMap { it.releaseDates }.find { it.certification.isNotEmpty() }?.certification
+            val spainResults = response.results.find {
+                it.iso31661 == "ES"
+            }
+            val certification = spainResults?.releaseDates?.find {
+                it.certification.isNotEmpty()
+            }?.certification
+                ?: response.results.flatMap {
+                    it.releaseDates
+                }.find {
+                    it.certification.isNotEmpty()
+                }?.certification
             certification
         } catch (_: Exception) {
             null
@@ -133,8 +144,12 @@ class TmdbRepository {
     suspend fun getSeriesTrailer(seriesId: Int): String? {
         return try {
             val response = api.getSeriesVideos(seriesId)
-            val trailer = response.listaVideos.find { it.site == "YouTube" && it.type == "Trailer" }
-                ?: response.listaVideos.find { it.site == "YouTube" }
+            val trailer = response.listaVideos.find {
+                it.site == "YouTube" && it.type == "Trailer"
+            }
+                ?: response.listaVideos.find {
+                    it.site == "YouTube"
+                }
             trailer?.key
         } catch (_: Exception) {
             null
