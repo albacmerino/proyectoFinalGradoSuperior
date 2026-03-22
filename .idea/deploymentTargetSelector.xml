@@ -4,17 +4,6 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-<<<<<<< Updated upstream
-=======
-        <DropdownSelection timestamp="2026-03-16T18:35:55.612512500Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\albac\.android\avd\TelefonoProyecto.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection />
->>>>>>> Stashed changes
       </SelectionState>
     </selectionStates>
   </component>
