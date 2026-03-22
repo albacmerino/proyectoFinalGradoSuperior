@@ -52,17 +52,21 @@ fun HomeScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            HomeDrawer() } // El contenido del menú (Perfil, Favoritos...)
+            HomeDrawer()
+        } // El contenido del menú (Perfil, Favoritos...)
     ) {
         // Estructura básica de la pantalla (AppBar y contenido principal)
         Scaffold(
             topBar = {
                 // Barra superior con botón de menú lateral y título
                 HomeTopBar(onOpenMenu = {
-                    scope.launch { drawerState.open() }
+                    scope.launch {
+                        drawerState.open()
+                    }
                 })
             },
             containerColor = Color.Transparent // El fondo lo gestiona el Fragment
+
         ) { padding ->
             // Columna principal que organiza el contenido debajo de la AppBar
             Column(modifier = Modifier.padding(padding)) {
@@ -89,6 +93,7 @@ fun HomeScreen(
  */
 @Composable
 private fun HomeDrawer() {
+
     ModalDrawerSheet(
         drawerContainerColor = Color(0xFF000B1A), // Color azul muy oscuro
         modifier = Modifier.width(300.dp)
@@ -96,8 +101,11 @@ private fun HomeDrawer() {
         Spacer(modifier = Modifier.height(48.dp))
         Text("SeaStream Menu", modifier = Modifier.padding(16.dp), color = SeaBlueLight, fontWeight = FontWeight.Bold)
         HorizontalDivider(color = SeaBlueLight.copy(alpha = 0.2f))
-        NavigationDrawerItem(label = { Text("Perfil", color = Color.White) }, selected = false, onClick = {})
-        NavigationDrawerItem(label = { Text("Favoritos", color = Color.White) }, selected = false, onClick = {})
+        NavigationDrawerItem(label = {
+            Text("Perfil",
+                color = Color.White) }, selected = false, onClick = {})
+        NavigationDrawerItem(label = {
+            Text("Favoritos", color = Color.White) }, selected = false, onClick = {})
     }
 }
 
@@ -107,8 +115,14 @@ private fun HomeDrawer() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeTopBar(onOpenMenu: () -> Unit) {
+
     CenterAlignedTopAppBar(
-        title = { Text("SeaStream", style = MaterialTheme.typography.titleLarge.copy(brush = SeaGradient, fontWeight = FontWeight.ExtraBold)) },
+        title = {
+            Text("SeaStream",
+                style = MaterialTheme.typography.titleLarge.copy(brush = SeaGradient,
+                    fontWeight = FontWeight.ExtraBold))
+                },
+
         navigationIcon = {
             IconButton(onClick = onOpenMenu) {
                 Icon(Icons.Default.Menu, contentDescription = null, tint = SeaBlueLight)
@@ -126,6 +140,7 @@ private fun HomeTopBar(onOpenMenu: () -> Unit) {
  */
 @Composable
 private fun HomeTabs(selectedTab: Int, onTabSelected: (Int) -> Unit) {
+
     TabRow(
         selectedTabIndex = selectedTab,
         containerColor = Color.Transparent,
@@ -136,8 +151,15 @@ private fun HomeTabs(selectedTab: Int, onTabSelected: (Int) -> Unit) {
         },
         divider = {}
     ) {
-        Tab(selected = selectedTab == 0, onClick = { onTabSelected(0) }, text = { Text("PELÍCULAS", color = if(selectedTab == 0) Color.White else Color.Gray) })
-        Tab(selected = selectedTab == 1, onClick = { onTabSelected(1) }, text = { Text("SERIES", color = if(selectedTab == 1) Color.White else Color.Gray) })
+        Tab(selected = selectedTab == 0,
+            onClick = { onTabSelected(0) },
+            text = { Text("PELÍCULAS",
+                color = if(selectedTab == 0) Color.White else Color.Gray) })
+
+        Tab(selected = selectedTab == 1,
+            onClick = { onTabSelected(1) },
+            text = { Text("SERIES",
+                color = if(selectedTab == 1) Color.White else Color.Gray) })
     }
 }
 
@@ -147,6 +169,7 @@ private fun HomeTabs(selectedTab: Int, onTabSelected: (Int) -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GenreSelector(generos: List<Genero>, selectedId: Int?, onClick: (Int?) -> Unit) {
+
     LazyRow(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         contentPadding = PaddingValues(horizontal = 16.dp),
@@ -179,22 +202,38 @@ private fun GenreSelector(generos: List<Genero>, selectedId: Int?, onClick: (Int
 @Composable
 private fun MainContent(
     selectedTab: Int,
-    moviesNow: List<FichaPelicula>, moviesPop: List<FichaPelicula>, moviesTop: List<FichaPelicula>,
-    seriesNow: List<FichaSerie>, seriesPop: List<FichaSerie>, seriesTop: List<FichaSerie>,
+    moviesNow: List<FichaPelicula>,
+    moviesPop: List<FichaPelicula>,
+    moviesTop: List<FichaPelicula>,
+    seriesNow: List<FichaSerie>,
+    seriesPop: List<FichaSerie>,
+    seriesTop: List<FichaSerie>,
     generos: List<Genero>,
     onMovieClick: (FichaPelicula) -> Unit, onSerieClick: (FichaSerie) -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 16.dp)) {
         if (selectedTab == 0) {
             // Muestra secciones de cine
-            item { HomeSection("Novedades", moviesNow, generos, onMovieClick, isMovie = true) }
-            item { HomeSection("Populares", moviesPop, generos, onMovieClick, isMovie = true) }
-            item { HomeSection("Mejor valoradas", moviesTop, generos, onMovieClick, isMovie = true) }
+            item { HomeSection(
+                "Novedades", moviesNow, generos, onMovieClick, isMovie = true)
+            }
+            item { HomeSection(
+                "Populares", moviesPop, generos, onMovieClick, isMovie = true)
+            }
+            item { HomeSection(
+                "Mejor valoradas", moviesTop, generos, onMovieClick, isMovie = true)
+            }
         } else {
             // Muestra secciones de televisión
-            item { HomeSection("Novedades TV", seriesNow, generos, onSerieClick, isMovie = false) }
-            item { HomeSection("Populares en TV", seriesPop, generos, onSerieClick, isMovie = false) }
-            item { HomeSection("Mejor valoradas", seriesTop, generos, onSerieClick, isMovie = false) }
+            item { HomeSection(
+                "Novedades TV", seriesNow, generos, onSerieClick, isMovie = false)
+            }
+            item { HomeSection(
+                "Populares en TV", seriesPop, generos, onSerieClick, isMovie = false)
+            }
+            item { HomeSection(
+                "Mejor valoradas", seriesTop, generos, onSerieClick, isMovie = false)
+            }
         }
     }
 }
@@ -213,7 +252,9 @@ private fun <T> HomeSection(
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
         Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
         // Carrusel horizontal de tarjetas
-        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+
             items(items) { item ->
                 if (isMovie) {
                     MovieCard(movie = item as FichaPelicula, allGenres = allGenres, onClick = { onClick(item) })

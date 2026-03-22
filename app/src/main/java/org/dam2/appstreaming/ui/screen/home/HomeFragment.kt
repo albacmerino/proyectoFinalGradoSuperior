@@ -37,8 +37,11 @@ class HomeFragment : Fragment() {
     private val serieViewModel: SerieViewModel by activityViewModels()
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+
+        inflater: LayoutInflater,
+        container: ViewGroup?, //ocupa lo mismo que el padre
+        savedInstanceState: Bundle? //si hay cambios guarda configuracion
+
     ): View {
         // Retornamos una ComposeView, que nos permite usar Jetpack Compose dentro de un Fragment
         return ComposeView(requireContext()).apply {
@@ -62,6 +65,7 @@ class HomeFragment : Fragment() {
                         ) {
                             // Invocamos la funcion Composable principal de la pantalla de inicio
                             HomeScreen(
+
                                 selectedTab = estado.pestana, // Pestaña actual (Pelis/Series)
                                 onTabSelected = {
                                     viewModel.alCambiarPestana(it) }, // Accion al cambiar pestaña

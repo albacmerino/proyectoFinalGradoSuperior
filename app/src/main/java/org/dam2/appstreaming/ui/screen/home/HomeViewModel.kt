@@ -37,12 +37,17 @@ class HomeViewModel : ViewModel() {
         // Carga inicial de generos y datos generales
         viewModelScope.launch {
             try {
+
                 val gPeliculas = repo.obtenerGenerosPelicula()
                 val gTv = repo.obtenerGenerosTv()
                 _estado.update {
-                    it.copy(generosPelicula = gPeliculas, generosTv = gTv) }
+                    it.copy(generosPelicula = gPeliculas, generosTv = gTv)
+                }
                 cargarDatos(null)
-            } catch (e: Exception) { e.printStackTrace() }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -51,11 +56,16 @@ class HomeViewModel : ViewModel() {
      */
     private fun cargarDatos(idGenero: Int?) {
         viewModelScope.launch {
-            _estado.update { it.copy(cargando = true) }
+            _estado.update {
+                it.copy(
+                    cargando = true)
+            }
             try {
+
                 if (idGenero == null) {
                     // Modo "Todo": Carga las listas generales
-                    _estado.update { it.copy(
+                    _estado.update {
+                        it.copy(
                         peliculasEstreno = repo.obtenerPeliculasEnCine(),
                         peliculasPopulares = repo.obtenerPeliculasPopulares(),
                         peliculasMejorValoradas = repo.obtenerPeliculasMejorValoradas(),
@@ -66,15 +76,22 @@ class HomeViewModel : ViewModel() {
                 } else {
                     // Modo "Genero": Carga contenido especifico usando discover
                     if (_estado.value.pestana == 0) {
+
                         val peliculasFiltradas = repo.descubrirPeliculasPorGenero(idGenero)
-                        _estado.update { it.copy(
+
+                        _estado.update {
+                            it.copy(
                             peliculasEstreno = peliculasFiltradas,
                             peliculasPopulares = peliculasFiltradas,
                             peliculasMejorValoradas = peliculasFiltradas
                         )}
+
                     } else {
+
                         val seriesFiltradas = repo.descubrirSeriesPorGenero(idGenero)
-                        _estado.update { it.copy(
+
+                        _estado.update {
+                            it.copy(
                             seriesEstreno = seriesFiltradas,
                             seriesPopulares = seriesFiltradas,
                             seriesMejorValoradas = seriesFiltradas
@@ -83,19 +100,32 @@ class HomeViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+
             } finally {
-                _estado.update { it.copy(cargando = false) }
+                _estado.update {
+                    it.copy(
+                        cargando = false)
+                }
             }
         }
     }
 
     fun alCambiarPestana(indice: Int) {
-        _estado.update { it.copy(pestana = indice, idGeneroSeleccionado = null) }
+
+        _estado.update {
+            it.copy(
+                pestana = indice,
+                idGeneroSeleccionado = null)
+        }
         cargarDatos(null)
     }
 
     fun alSeleccionarGenero(id: Int?) {
-        _estado.update { it.copy(idGeneroSeleccionado = id) }
+
+        _estado.update {
+            it.copy(
+                idGeneroSeleccionado = id)
+        }
         cargarDatos(id)
     }
 }

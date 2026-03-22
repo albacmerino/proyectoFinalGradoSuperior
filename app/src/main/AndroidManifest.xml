@@ -10,7 +10,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/logo_tortuga_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppStreaming">
+        android:theme="@style/Theme.AppStreaming"
+        android:usesCleartextTraffic="true">
         <activity
                 android:name=".MainActivity"
                 android:exported="true">
