@@ -1,11 +1,15 @@
 package org.dam2.appstreaming.data.repository
 
 import android.content.Context
+import android.util.Log
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.dam2.appstreaming.data.local.prefs.GestorToken
 import org.dam2.appstreaming.data.remote.api.ServicioApiBackend
 import org.dam2.appstreaming.data.remote.dto.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 /**
  * Repositorio encargado de gestionar la comunicacion con el Backend Spring Boot.
@@ -14,8 +18,21 @@ class RepositorioBackend(contexto: Context) {
 
     private val gestorToken = GestorToken(contexto)
 
+    // Configuramos un logger para ver las peticiones en el Logcat
+    private val logging = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+
+    private val client = OkHttpClient.Builder()
+        .addInterceptor(logging)
+        .connectTimeout(30, TimeUnit.SECONDS) // Aumentado a 30s
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .build()
+
     private val api = Retrofit.Builder()
-        .baseUrl("http://10.0.2.2:8080/") // IP para emulador Android
+        .baseUrl(BASE_URL)
+        .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(ServicioApiBackend::class.java)
@@ -29,9 +46,12 @@ class RepositorioBackend(contexto: Context) {
                 gestorToken.guardarToken(respuesta.body()!!.token)
                 Result.success(respuesta.body()!!)
             } else {
-                Result.failure(Exception("Error en el registro"))
+                val errorMsg = respuesta.errorBody()?.string() ?: "Error desconocido"
+                Log.e("RepositorioBackend", "Error en registro: $errorMsg")
+                Result.failure(Exception(errorMsg))
             }
         } catch (e: Exception) {
+            Log.e("RepositorioBackend", "Fallo de conexión", e)
             Result.failure(e)
         }
     }
@@ -46,6 +66,7 @@ class RepositorioBackend(contexto: Context) {
                 Result.failure(Exception("Credenciales incorrectas"))
             }
         } catch (e: Exception) {
+            Log.e("RepositorioBackend", "Fallo de conexión en login", e)
             Result.failure(e)
         }
     }
@@ -61,6 +82,7 @@ class RepositorioBackend(contexto: Context) {
                 emptyList()
             }
         } catch (e: Exception) {
+            Log.e("RepositorioBackend", "Error obteniendo favoritos", e)
             emptyList()
         }
     }
@@ -70,11 +92,18 @@ class RepositorioBackend(contexto: Context) {
             val respuesta = api.agregarFavorito(favorito)
             respuesta.isSuccessful
         } catch (e: Exception) {
+            Log.e("RepositorioBackend", "Error agregando favorito", e)
             false
         }
     }
 
     fun cerrarSesion() {
         gestorToken.eliminarToken()
+    }
+
+    companion object {
+        // 10.0.2.2 es la dirección IP especial que apunta al 'localhost' de tu ordenador desde el emulador Android.
+        // Si usas un dispositivo físico, debes cambiar esta IP por la IP local de tu PC (ej. 192.168.1.45).
+        private const val BASE_URL = "http://10.0.2.2:8080/"
     }
 }

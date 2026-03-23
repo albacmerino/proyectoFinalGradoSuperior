@@ -1,41 +1,28 @@
 package org.dam2.appstreaming.ui.screen.auth
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import org.dam2.appstreaming.R
-import org.dam2.appstreaming.ui.colors.SeaGradient
-import org.dam2.appstreaming.ui.colors.SeaBlueDark
-import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
 class RegisterFragment : Fragment() {
+
+    private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,200 +30,51 @@ class RegisterFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MaterialTheme {
-                    RegisterScreen(
-                        onRegisterClick = { nombre, usuario, password ->
-                            // Lógica de registro futura
-                            // findNavController().navigate(R.id.action_register_to_home)
-                        },
-                        onBackToLoginClick = {
-                            findNavController().popBackStack()
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
+                val context = LocalContext.current
+                var nombre by remember { mutableStateOf("") }
+                var usuario by remember { mutableStateOf("") }
+                var password by remember { mutableStateOf("") }
 
-@Composable
-fun RegisterScreen(
-    onRegisterClick: (String, String, String) -> Unit,
-    onBackToLoginClick: () -> Unit
-) {
-    var nombre by remember { mutableStateOf("") }
-    var usuario by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-    // Validación simple de contraseña
-    val isPasswordSafe = password.length >= 6
+                val estado by viewModel.estadoLogin.collectAsState()
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFF000814)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Unirse a la Corriente",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    brush = SeaGradient,
-                    fontWeight = FontWeight.ExtraBold
-                ),
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            Text(
-                text = "Crea tu cuenta en SeaStream",
-                style = MaterialTheme.typography.bodyMedium,
-                color = SeaBlueLight.copy(alpha = 0.6f),
-                modifier = Modifier.padding(bottom = 40.dp)
-            )
-
-            // CAMPO NOMBRE
-            SeaTextField(value = nombre, onValueChange = { nombre = it }, label = "Nombre Completo")
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // CAMPO USUARIO
-            SeaTextField(value = usuario, onValueChange = { usuario = it }, label = "Usuario")
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // CAMPO CONTRASEÑA
-            TextField(
-                value = password,
-                onValueChange = { password = it },
-                placeholder = { Text("Contraseña (min. 6 caracteres)", color = Color.Gray) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-                    .border(
-                        width = if (password.isNotEmpty()) 2.dp else 1.dp,
-                        brush = if (password.length >= 6) SeaGradient else Brush.linearGradient(
-                            listOf(Color(0xFF1B263B), Color(0xFF1B263B))
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ),
-                shape = RoundedCornerShape(12.dp),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
-                trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            painter = painterResource(
-                                id = if (passwordVisible) R.drawable.ic_visibility_on else R.drawable.ic_visibility_off
-                            ),
-                            contentDescription = null,
-                            tint = SeaBlueLight
-                        )
+                LaunchedEffect(estado) {
+                    if (estado is AuthViewModel.ResultadoAuth.Exito) {
+                        Toast.makeText(context, "¡Éxito!", Toast.LENGTH_SHORT).show()
+                        findNavController().navigate(R.id.action_registerFragment_to_homeFragment)
                     }
-                },
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF001D3D),
-                    unfocusedContainerColor = Color(0xFF001D3D),
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = SeaBlueLight
-                )
-            )
+                }
 
-            if (password.isNotEmpty() && !isPasswordSafe) {
-                Text(
-                    text = "La contraseña es demasiado corta",
-                    color = Color.Red.copy(alpha = 0.8f),
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
-                    textAlign = TextAlign.Start
-                )
-            }
-
-            Spacer(modifier = Modifier.height(40.dp))
-
-            // BOTÓN REGISTRO
-            Button(
-                onClick = { if (isPasswordSafe) onRegisterClick(nombre, usuario, password) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                contentPadding = PaddingValues(),
-                shape = RoundedCornerShape(12.dp),
-                enabled = nombre.isNotEmpty() && usuario.isNotEmpty() && isPasswordSafe,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent,
-                    disabledContainerColor = Color.Gray.copy(alpha = 0.2f)
-                )
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            if (isPasswordSafe && usuario.isNotEmpty()) SeaGradient else Brush.linearGradient(
-                                listOf(Color.Gray, Color.Gray)
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("CREAR CUENTA", color = Color.White, fontWeight = FontWeight.ExtraBold)
+                MaterialTheme {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        TextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
+                        Spacer(Modifier.height(8.dp))
+                        TextField(value = usuario, onValueChange = { usuario = it }, label = { Text("Usuario") })
+                        Spacer(Modifier.height(8.dp))
+                        TextField(value = password, onValueChange = { password = it }, label = { Text("Pass") })
+                        Spacer(Modifier.height(32.dp))
+                        
+                        Button(
+                            onClick = {
+                                Log.d("DEBUG_CLICK", "Botón pulsado")
+                                if (usuario.isNotBlank() && password.isNotBlank()) {
+                                    viewModel.registrarse(usuario, password)
+                                } else {
+                                    Toast.makeText(context, "Rellena los campos", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("PROBAR REGISTRO")
+                        }
+                    }
                 }
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Ya tengo cuenta. Volver atrás",
-                color = SeaBlueLight,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { onBackToLoginClick() }
-            )
         }
     }
-}
-
-@Composable
-fun SeaTextField(value: String, onValueChange: (String) -> Unit, label: String) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        placeholder = { Text(label, color = Color.Gray) },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .border(
-                width = if (value.isNotEmpty()) 2.dp else 1.dp,
-                brush = if (value.isNotEmpty()) SeaGradient else Brush.linearGradient(
-                    listOf(
-                        Color(
-                            0xFF1B263B
-                        ), Color(0xFF1B263B)
-                    )
-                ),
-                shape = RoundedCornerShape(12.dp)
-            ),
-        shape = RoundedCornerShape(12.dp),
-        singleLine = true,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color(0xFF001D3D),
-            unfocusedContainerColor = Color(0xFF001D3D),
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            focusedTextColor = Color.White,
-            unfocusedTextColor = Color.White,
-            cursorColor = SeaBlueLight,
-            focusedLabelColor = SeaBlueLight,
-            unfocusedLabelColor = Color.Gray,
-            focusedPlaceholderColor = Color.LightGray
-        )
-    )
 }

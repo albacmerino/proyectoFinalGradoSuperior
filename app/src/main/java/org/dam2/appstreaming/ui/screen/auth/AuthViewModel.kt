@@ -1,6 +1,7 @@
 package org.dam2.appstreaming.ui.screen.auth
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,11 +19,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     fun iniciarSesion(nombre: String, clave: String) {
         viewModelScope.launch {
+            Log.d("AuthViewModel", "Iniciando sesión para: $nombre")
             _estadoLogin.value = ResultadoAuth.Cargando
             val resultado = repositorio.login(nombre, clave)
             resultado.onSuccess {
+                Log.d("AuthViewModel", "Login exitoso")
                 _estadoLogin.value = ResultadoAuth.Exito(it)
             }.onFailure {
+                Log.e("AuthViewModel", "Error en login: ${it.message}")
                 _estadoLogin.value = ResultadoAuth.Error(it.message ?: "Error desconocido")
             }
         }
@@ -30,11 +34,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     fun registrarse(nombre: String, clave: String) {
         viewModelScope.launch {
+            Log.d("AuthViewModel", "Iniciando registro para: $nombre")
             _estadoLogin.value = ResultadoAuth.Cargando
             val resultado = repositorio.registrar(nombre, clave)
             resultado.onSuccess {
+                Log.d("AuthViewModel", "Registro exitoso")
                 _estadoLogin.value = ResultadoAuth.Exito(it)
             }.onFailure {
+                Log.e("AuthViewModel", "Error en registro: ${it.message}")
                 _estadoLogin.value = ResultadoAuth.Error(it.message ?: "Error desconocido")
             }
         }

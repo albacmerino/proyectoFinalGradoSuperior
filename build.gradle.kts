@@ -4,11 +4,18 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.4"
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.spring") version "1.9.22"
-    kotlin("plugin.jpa") version "1.9.22"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.0" apply false
+    kotlin("jvm") version "2.0.21"
+    kotlin("plugin.spring") version "2.0.21"
+    kotlin("plugin.jpa") version "2.0.21"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false
 }
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 group = "org.dam2"
 version = "0.0.1-SNAPSHOT"
 
@@ -22,10 +29,16 @@ dependencies {
     implementation("org.postgresql:postgresql:42.7.1")
 
     // Kotlin
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.21")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.2")
 
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "21"
+    }
 }

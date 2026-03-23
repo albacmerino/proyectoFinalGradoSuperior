@@ -5,6 +5,5 @@ package org.dam2.appstreaming.data.remote.dto
  */
 data class RespuestaAutenticacion(
     val token: String,
-    val nombreUsuario: String,
-    val email: String
+    val nombreUsuario: String
 )
