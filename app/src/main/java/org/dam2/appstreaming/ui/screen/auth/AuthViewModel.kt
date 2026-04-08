@@ -4,50 +4,100 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await // Necesitas añadir esta dependencia en build.gradle si no la tienes
 import org.dam2.appstreaming.data.repository.RepositorioBackend
 import org.dam2.appstreaming.data.remote.dto.RespuestaAutenticacion
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
+
+    // Repositorio original para el Backend (Spring Boot)
     private val repositorio = RepositorioBackend(application)
+
+    // Instancia de Firebase
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 
     private val _estadoLogin = MutableStateFlow<ResultadoAuth>(ResultadoAuth.Idle)
     val estadoLogin: StateFlow<ResultadoAuth> = _estadoLogin.asStateFlow()
 
-    fun iniciarSesion(nombre: String, clave: String) {
+    /**
+     * Iniciar sesión con Firebase
+     * nombre: En Firebase debe ser un email (puedes añadir "@gmail.com" si solo usas nombres)
+     */
+    fun iniciarSesion(email: String, clave: String) {
         viewModelScope.launch {
-            Log.d("AuthViewModel", "Iniciando sesión para: $nombre")
+            Log.d("AuthViewModel", "Iniciando sesión en Firebase para: $email")
             _estadoLogin.value = ResultadoAuth.Cargando
-            val resultado = repositorio.login(nombre, clave)
-            resultado.onSuccess {
-                Log.d("AuthViewModel", "Login exitoso")
-                _estadoLogin.value = ResultadoAuth.Exito(it)
-            }.onFailure {
-                Log.e("AuthViewModel", "Error en login: ${it.message}")
-                _estadoLogin.value = ResultadoAuth.Error(it.message ?: "Error desconocido")
+
+            try {
+                val resultado = firebaseAuth.signInWithEmailAndPassword(email, clave).await()
+                val user = resultado.user
+
+                if (user != null) {
+                    Log.d("AuthViewModel", "Firebase Login exitoso. Nombre en nube: ${user.displayName}")
+
+                    // Aquí cogemos el nombre real que guardamos al registrar
+                    val respuesta = RespuestaAutenticacion(
+                        token = user.uid,
+                        nombreUsuario = user.displayName ?: user.email ?: "Usuario"
+                    )
+                    _estadoLogin.value = ResultadoAuth.Exito(respuesta)
+                }
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "Error en Firebase Login: ${e.message}")
+                _estadoLogin.value = ResultadoAuth.Error(e.message ?: "Error de autenticación")
             }
         }
     }
 
-    fun registrarse(nombre: String, clave: String) {
+
+    /**
+     * Registrar usuario en Firebase
+     */
+    fun registrarse(email: String, clave: String, nombreReal: String) {
         viewModelScope.launch {
-            Log.d("AuthViewModel", "Iniciando registro para: $nombre")
+            Log.d("AuthViewModel", "Registrando en Firebase a: $email")
             _estadoLogin.value = ResultadoAuth.Cargando
-            val resultado = repositorio.registrar(nombre, clave)
-            resultado.onSuccess {
-                Log.d("AuthViewModel", "Registro exitoso")
-                _estadoLogin.value = ResultadoAuth.Exito(it)
-            }.onFailure {
-                Log.e("AuthViewModel", "Error en registro: ${it.message}")
-                _estadoLogin.value = ResultadoAuth.Error(it.message ?: "Error desconocido")
+
+            try {
+                // 1. Crear usuario
+                val resultado = firebaseAuth.createUserWithEmailAndPassword(email, clave).await()
+                val user = resultado.user
+
+                if (user != null) {
+                    // 2. Guardar el nombre real en el perfil de Firebase (Nube)
+                    val actualizacionesPerfil = userProfileChangeRequest {
+                        displayName = nombreReal
+                    }
+                    user.updateProfile(actualizacionesPerfil).await()
+
+                    Log.d("AuthViewModel", "Registro y nombre guardado: ${user.displayName}")
+
+                    val respuesta = RespuestaAutenticacion(
+                        token = user.uid,
+                        nombreUsuario = nombreReal
+                    )
+                    _estadoLogin.value = ResultadoAuth.Exito(respuesta)
+                }
+            } catch (e: Exception) {
+                Log.e("AuthViewModel", "Error en Firebase Registro: ${e.message}")
+                _estadoLogin.value = ResultadoAuth.Error(e.message ?: "Error al crear cuenta")
             }
         }
     }
 
     fun resetearEstado() {
+        _estadoLogin.value = ResultadoAuth.Idle
+    }
+
+    // Cerramos sesión
+    fun cerrarSesion() {
+        firebaseAuth.signOut()
         _estadoLogin.value = ResultadoAuth.Idle
     }
 

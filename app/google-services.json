@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1062697259399",
+    "project_id": "appseastreaming-c205a",
+    "storage_bucket": "appseastreaming-c205a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1062697259399:android:009e5e2ff5e8860f8a0322",
+        "android_client_info": {
+          "package_name": "org.dam2.appstreaming"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWCm7cCpsS-ei9nR7uP16QFKuHBYc93Oo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

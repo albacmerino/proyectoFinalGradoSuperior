@@ -1,12 +1,12 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     id("org.springframework.boot") version "3.2.2"
     id("io.spring.dependency-management") version "1.1.4"
-    kotlin("jvm") version "2.0.21"
-    kotlin("plugin.spring") version "2.0.21"
-    kotlin("plugin.jpa") version "2.0.21"
+    kotlin("jvm") version "2.2.0"
+    kotlin("plugin.spring") version "2.2.0"
+    kotlin("plugin.jpa") version "2.2.0"
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false
     id("com.google.gms.google-services") version "4.4.4" apply false
 }
@@ -32,14 +32,14 @@ dependencies {
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.21")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.1")
-
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.2.0")
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test:3.2.2")
 
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions {
-        jvmTarget = "21"
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
     }
 }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -29,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import org.dam2.appstreaming.R
@@ -38,6 +41,9 @@ import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
 class LoginFragment : Fragment() {
 
+    // Vinculamos el ViewModel
+    private val viewModel: AuthViewModel by viewModels()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,18 +51,43 @@ class LoginFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
+                val estado by viewModel.estadoLogin.collectAsState()
+                val context = LocalContext.current
+
+                // 1. ESTA ES LA ÚNICA VÍA DE ENTRADA AL HOME
+                LaunchedEffect(estado) {
+                    when (estado) {
+                        is AuthViewModel.ResultadoAuth.Exito -> {
+                            // Si Firebase dice que los datos son correctos, navegamos
+                            findNavController().navigate(
+                                R.id.action_loginFragment_to_homeFragment,
+                                null,
+                                navOptions {
+                                    popUpTo(R.id.loginFragment) { inclusive = true }
+                                }
+                            )
+                             viewModel.resetearEstado()
+                        }
+                        is AuthViewModel.ResultadoAuth.Error -> {
+                            // Si los datos están mal, Firebase lanza error y mostramos Toast
+                            Toast.makeText(context, (estado as AuthViewModel.ResultadoAuth.Error).mensaje, Toast.LENGTH_SHORT).show()
+                        }
+                        else -> {}
+                    }
+                }
+
                 MaterialTheme {
                     LoginScreen(
                         onLoginClick = { usuario, password ->
-                            // Forzamos el uso del ID del nav_graph.xml
-                            val actionId = R.id.action_loginFragment_to_homeFragment
-
-                            findNavController().navigate(actionId, null,
-                                navOptions {
-                                popUpTo(R.id.loginFragment) { inclusive = true }
-                            })
+                            if (!usuario.isBlank() && !password.isBlank()) {
+                                // 2. IMPORTANTE: Si el usuario no escribe un @, se lo añadimos para Firebase
+                                val emailFinal = if (usuario.contains("@")) usuario else "$usuario@seastream.com"
+                                viewModel.iniciarSesion(emailFinal, password)
+                            } else {
+                                Toast.makeText(context, "Por favor, rellena todos los campos", Toast.LENGTH_SHORT).show()
+                            }
                         },
-                        onForgotPasswordClick = {  findNavController().navigate(R.id.action_loginFragment_to_homeFragment)},
+                        onForgotPasswordClick = { /* Lógica de recuperación */ },
                         onCreateAccountClick = {
                             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
                         }
