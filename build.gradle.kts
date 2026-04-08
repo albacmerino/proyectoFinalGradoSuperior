@@ -8,6 +8,7 @@ plugins {
     kotlin("plugin.spring") version "2.0.21"
     kotlin("plugin.jpa") version "2.0.21"
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false
+    id("com.google.gms.google-services") version "4.4.4" apply false
 }
 
 java {
