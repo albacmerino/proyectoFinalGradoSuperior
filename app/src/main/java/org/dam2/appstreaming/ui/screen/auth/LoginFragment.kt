@@ -35,6 +35,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import org.dam2.appstreaming.R
+import org.dam2.appstreaming.data.local.prefs.PreferenciasUsuario
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.colors.SeaBlueDark
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
@@ -104,8 +105,11 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
                 onCreateAccountClick: () -> Unit
 ) {
 
+    val context = LocalContext.current
     var usuario by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var mantenerSesion by remember { mutableStateOf(true) }
+    var passwordVisible by remember { mutableStateOf(false) } // Estado para la visibilidad
 
     // Fondo oscuro para que el neón brille
     Surface(
@@ -168,7 +172,6 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            var passwordVisible by remember { mutableStateOf(false) } // Estado para la visibilidad
 
             // CAMPO CONTRASEÑA
             TextField(
@@ -226,9 +229,38 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // BOTÓN (Actualizado con la variable 'usuario')
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = mantenerSesion,
+                    onCheckedChange = { mantenerSesion = it },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = SeaBlueLight,
+                        uncheckedColor = Color.Gray,
+                        checkmarkColor = Color.White
+                    )
+                )
+                Text(
+                    text = "Mantener sesión iniciada",
+                    color = Color.LightGray,
+                    fontSize = 14.sp,
+                    modifier = Modifier.clickable { mantenerSesion = !mantenerSesion }
+                )
+            }
+
             Button(
-                onClick = { onLoginClick(usuario, password) },
+                onClick = {
+                    if (usuario.isNotBlank() && password.isNotBlank()) {
+                        // 2. Instanciamos usando el context de Compose
+                        val prefs = PreferenciasUsuario(context)
+                        prefs.guardarMantenerSesion(mantenerSesion)
+
+                        onLoginClick(usuario, password)
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),

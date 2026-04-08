@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository
  * Repositorio para la entidad Usuario.
  */
 @Repository
-interface RepositorioUsuario : JpaRepository<Usuario, Long> {
+interface RepositorioUsuario : JpaRepository<Usuario, String> {
     fun findByNombreUsuario(nombreUsuario: String): Usuario?
     fun existsByNombreUsuario(nombreUsuario: String): Boolean
 }

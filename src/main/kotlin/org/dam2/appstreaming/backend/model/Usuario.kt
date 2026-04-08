@@ -9,8 +9,8 @@ import jakarta.persistence.*
 @Table(name = "usuarios")
 data class Usuario(
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    @Column(name = "firebase_uid", nullable = false, unique = true)
+    val id: String? = null,
 
     @Column(unique = true, nullable = false)
     val nombreUsuario: String,
