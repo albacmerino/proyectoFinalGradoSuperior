@@ -20,6 +20,7 @@ import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.component.*
 import org.dam2.appstreaming.data.model.*
+import org.dam2.appstreaming.ui.component.home.HomeDrawer
 
 /**
  * Pantalla principal de la interfaz de usuario.
@@ -40,7 +41,8 @@ fun HomeScreen(
     selectedGenreId: Int?,       // Género actualmente filtrado
     onGeneroClick: (Int?) -> Unit, // Callback al elegir un género
     onMovieClick: (FichaPelicula) -> Unit, // Callback al pulsar una película
-    onSerieClick: (FichaSerie) -> Unit      // Callback al pulsar una serie
+    onSerieClick: (FichaSerie) -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     // Estado para gestionar si el menú lateral está abierto
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -49,35 +51,41 @@ fun HomeScreen(
     val scope = rememberCoroutineScope()
 
     // Envoltorio para el menú lateral de navegación
+    // En HomeScreen.kt
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            HomeDrawer()
-        } // El contenido del menú (Perfil, Favoritos...)
+            HomeDrawer(
+                onPerfilClick = {
+                    scope.launch { drawerState.close() }
+                    // Aquí irá la navegación al perfil
+                },
+                onFavoritosClick = {
+                    scope.launch { drawerState.close() }
+                    // Aquí irá la navegación a favoritos
+                },
+                onLogoutClick = {
+                    scope.launch {
+                        drawerState.close()
+                        onLogoutClick() // Ahora sí funcionará
+                    }
+                }
+            )
+        }
     ) {
-        // Estructura básica de la pantalla (AppBar y contenido principal)
         Scaffold(
             topBar = {
-                // Barra superior con botón de menú lateral y título
                 HomeTopBar(onOpenMenu = {
                     scope.launch {
                         drawerState.open()
                     }
                 })
             },
-            containerColor = Color.Transparent // El fondo lo gestiona el Fragment
-
+            containerColor = Color.Transparent
         ) { padding ->
-            // Columna principal que organiza el contenido debajo de la AppBar
             Column(modifier = Modifier.padding(padding)) {
-                
-                // Pestañas superiores (PELÍCULAS / SERIES)
                 HomeTabs(selectedTab, onTabSelected)
-                
-                // Filtros de géneros horizontales
                 GenreSelector(generos, selectedGenreId, onGeneroClick)
-
-                // El contenido principal desplazable (las listas de películas/series)
                 MainContent(
                     selectedTab, moviesNow, moviesPop, moviesTop,
                     seriesNow, seriesPop, seriesTop, generos,
@@ -91,23 +99,7 @@ fun HomeScreen(
 /**
  * Contenido del menú lateral de navegación.
  */
-@Composable
-private fun HomeDrawer() {
 
-    ModalDrawerSheet(
-        drawerContainerColor = Color(0xFF000B1A), // Color azul muy oscuro
-        modifier = Modifier.width(300.dp)
-    ) {
-        Spacer(modifier = Modifier.height(48.dp))
-        Text("SeaStream Menu", modifier = Modifier.padding(16.dp), color = SeaBlueLight, fontWeight = FontWeight.Bold)
-        HorizontalDivider(color = SeaBlueLight.copy(alpha = 0.2f))
-        NavigationDrawerItem(label = {
-            Text("Perfil",
-                color = Color.White) }, selected = false, onClick = {})
-        NavigationDrawerItem(label = {
-            Text("Favoritos", color = Color.White) }, selected = false, onClick = {})
-    }
-}
 
 /**
  * Barra superior de la aplicación.

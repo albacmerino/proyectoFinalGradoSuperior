@@ -82,6 +82,12 @@
                 app:exitAnim="@anim/slide_out_left"
                 app:popEnterAnim="@android:anim/slide_in_left"
                 app:popExitAnim="@android:anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_homeFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
 
 
@@ -135,4 +141,6 @@
         android:id="@+id/forgotPasswordFragment"
         android:name="org.dam2.appstreaming.ui.screen.auth.ForgotPasswordFragment"
         android:label="Recuperar Contraseña" />
+
+
 </navigation>

@@ -154,7 +154,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
             TextField(
                 value = usuario,
                 onValueChange = { usuario = it },
-                placeholder = { Text("Usuario", color = Color.Gray) },
+                placeholder = { Text("Introduzca su email", color = Color.Gray) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(60.dp)

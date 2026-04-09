@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await // Necesitas añadir esta dependencia en build.gradle si no la tienes
+import org.dam2.appstreaming.data.local.prefs.PreferenciasUsuario
 import org.dam2.appstreaming.data.repository.RepositorioBackend
 import org.dam2.appstreaming.data.remote.dto.RespuestaAutenticacion
 
@@ -113,6 +114,17 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 _estadoLogin.value = ResultadoAuth.Error(e.message ?: "Error al enviar correo")
             }
         }
+    }
+
+    fun cerrarSesion(prefs: PreferenciasUsuario) {
+        // 1. Cerramos en Firebase
+        firebaseAuth.signOut()
+
+        // 2. Limpiamos el "Recordar sesión" para que no entre solo la próxima vez
+        prefs.guardarMantenerSesion(false)
+
+        // 3. Opcional: Resetear el estado del login
+        _estadoLogin.value = ResultadoAuth.Idle
     }
 
     sealed class ResultadoAuth {

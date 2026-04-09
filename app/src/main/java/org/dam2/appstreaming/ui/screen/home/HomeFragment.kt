@@ -19,7 +19,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.auth.FirebaseAuth
 import org.dam2.appstreaming.R
+import org.dam2.appstreaming.data.local.prefs.PreferenciasUsuario
 import org.dam2.appstreaming.ui.screen.pelicula.PeliculaViewModel
 import org.dam2.appstreaming.ui.screen.serie.SerieViewModel
 
@@ -92,6 +94,17 @@ class HomeFragment : Fragment() {
                                     serieViewModel.setGeneros(estado.generosTv)
                                     // Navegamos al fragmento de detalle de serie
                                     findNavController().navigate(R.id.action_homeFragment_to_serieDetailFragment)
+                                },
+                                        onLogoutClick = {
+                                    // 1. Cerramos sesión en Firebase
+                                    FirebaseAuth.getInstance().signOut()
+
+                                    // 2. Limpiamos la preferencia de "Recordar sesión"
+                                    val prefs = PreferenciasUsuario(requireContext())
+                                    prefs.guardarMantenerSesion(false)
+
+                                    // 3. Navegamos al Login (Asegúrate de tener esta acción en nav_graph)
+                                    findNavController().navigate(R.id.action_homeFragment_to_loginFragment)
                                 }
                             )
                         }

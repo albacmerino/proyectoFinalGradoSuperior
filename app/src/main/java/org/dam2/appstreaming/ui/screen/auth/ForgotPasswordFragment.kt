@@ -35,10 +35,12 @@ class ForgotPasswordFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
+        val emailRecuperado = arguments?.getString("email_previa") ?: ""
+
         return ComposeView(requireContext()).apply {
             setContent {
-                var email by remember { mutableStateOf("") }
-                val estado by viewModel.estadoLogin.collectAsState()
+                var email by remember { mutableStateOf(emailRecuperado) }
+
 
                 Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF000814)) {
                     Column(
