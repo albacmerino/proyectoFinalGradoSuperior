@@ -95,10 +95,24 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _estadoLogin.value = ResultadoAuth.Idle
     }
 
-    // Cerramos sesión
+
     fun cerrarSesion() {
         firebaseAuth.signOut()
         _estadoLogin.value = ResultadoAuth.Idle
+    }
+
+    // Dentro de AuthViewModel.kt
+    fun recuperarPassword(email: String) {
+        viewModelScope.launch {
+            _estadoLogin.value = ResultadoAuth.Cargando
+            try {// Firebase envía el email automáticamente
+                firebaseAuth.sendPasswordResetEmail(email).await()
+                _estadoLogin.value = ResultadoAuth.Error("Correo de recuperación enviado")
+                // Usamos .Error temporalmente para mostrar el mensaje en el Toast de la UI
+            } catch (e: Exception) {
+                _estadoLogin.value = ResultadoAuth.Error(e.message ?: "Error al enviar correo")
+            }
+        }
     }
 
     sealed class ResultadoAuth {

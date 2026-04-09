@@ -80,15 +80,23 @@ class LoginFragment : Fragment() {
                 MaterialTheme {
                     LoginScreen(
                         onLoginClick = { usuario, password ->
-                            if (!usuario.isBlank() && !password.isBlank()) {
-                                // 2. IMPORTANTE: Si el usuario no escribe un @, se lo añadimos para Firebase
+                            if (usuario.isNotBlank() && password.isNotBlank()) {
                                 val emailFinal = if (usuario.contains("@")) usuario else "$usuario@seastream.com"
                                 viewModel.iniciarSesion(emailFinal, password)
                             } else {
                                 Toast.makeText(context, "Por favor, rellena todos los campos", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        onForgotPasswordClick = { /* Lógica de recuperación */ },
+
+                        onForgotPasswordClick = { u ->
+                            // Creamos un bundle por si queremos pasar el usuario que ya escribió
+                            val bundle = Bundle().apply {
+                                putString("email_previa", if (u.contains("@")) u else "$u@seastream.com")
+                            }
+
+                            // Navegamos a la nueva pantalla (Asegúrate de tener este ID en tu nav_graph.xml)
+                            findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment, bundle)
+                        },
                         onCreateAccountClick = {
                             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
                         }
@@ -101,7 +109,7 @@ class LoginFragment : Fragment() {
 
 @Composable
 fun LoginScreen(onLoginClick: (String, String) -> Unit,
-                onForgotPasswordClick: () -> Unit,
+                onForgotPasswordClick: (String) -> Unit, // <--- CAMBIA ESTO (añade String)
                 onCreateAccountClick: () -> Unit
 ) {
 
@@ -220,7 +228,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 12.dp)
-                    .clickable { onForgotPasswordClick() },
+                    .clickable { onForgotPasswordClick(usuario) },
                 textAlign = TextAlign.End,
                 style = MaterialTheme.typography.bodySmall,
                 color = SeaBlueLight,
@@ -303,5 +311,10 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun LoginPreview() {
-    LoginScreen({ _, _ -> }, {}, {})
+    // Añadimos { _ -> } para que coincida con la nueva firma (String) -> Unit
+    LoginScreen(
+        onLoginClick = { _, _ -> },
+        onForgotPasswordClick = { _ -> },
+        onCreateAccountClick = {}
+    )
 }
