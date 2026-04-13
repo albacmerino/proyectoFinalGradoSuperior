@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import org.dam2.appstreaming.R
+import org.dam2.appstreaming.data.repository.RepositorioBackend
 
 /**
  * Fragmento que actúa como contenedor para la pantalla de detalle de película.
@@ -22,6 +23,14 @@ class PeliculaDetailFragment : Fragment() {
 
     // Usamos activityViewModels para compartir el ViewModel con el HomeFragment
     private val viewModel: PeliculaViewModel by activityViewModels()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Inicializamos el repositorio y se lo pasamos al ViewModel
+        val repo = RepositorioBackend(requireContext())
+        viewModel.iniciarRepositorio(repo)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,6 +69,9 @@ class PeliculaDetailFragment : Fragment() {
                         onRecommendationClick = { movie ->
                             // Al pulsar una recomendación, actualizamos el ViewModel con la nueva película
                             viewModel.setSelectedItem(movie)
+                        },
+                                onToggleFavorito = { pelicula ->
+                            viewModel.toggleFavorito(pelicula)
                         }
                     )
                 }

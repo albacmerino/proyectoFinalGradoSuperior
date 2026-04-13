@@ -46,7 +46,9 @@ fun PeliculaDetailScreen(
     onPlayTrailerClick: (String) -> Unit,
     onWatchNowClick: (String) -> Unit,
     onSeeAllReviewsClick: (Int) -> Unit,
-    onRecommendationClick: (FichaPelicula) -> Unit
+    onRecommendationClick: (FichaPelicula) -> Unit,
+    onToggleFavorito: (FichaPelicula) -> Unit // <--- AÑADE ESTO
+
 ) {
     // Si los datos principales están cargando o no hay película, mostramos carga
     if (state.isLoading || state.movie == null) {
@@ -78,7 +80,10 @@ fun PeliculaDetailScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
                     // Estrellas de puntuación y botón de añadir a lista
-                    PuntuacionYAcciones(movie.puntuacionMedia)
+                    PuntuacionYAcciones(
+                        nota = movie.puntuacionMedia,
+                        onAddClick = { onToggleFavorito(movie) }
+                    )
                     
                     Spacer(modifier = Modifier.height(32.dp))
                     // Resumen de la película
@@ -282,7 +287,7 @@ private fun SeccionOpinion() {
 }
 
 @Composable
-private fun PuntuacionYAcciones(nota: Double) {
+private fun PuntuacionYAcciones(nota: Double, onAddClick: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         SeaRatingBar(rating = (nota / 2).toInt())
         Text("  ${String.format("%.1f", nota)}",
@@ -291,7 +296,15 @@ private fun PuntuacionYAcciones(nota: Double) {
             fontSize = 18.sp)
     }
     Spacer(modifier = Modifier.height(32.dp))
-    Button(onClick = { }, modifier = Modifier.fillMaxWidth().height(56.dp).border(2.dp, SeaGradient, RoundedCornerShape(16.dp)), colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), shape = RoundedCornerShape(16.dp)) {
+    Button(
+        onClick = onAddClick, // <--- AHORA EJECUTA LA LÓGICA
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .border(2.dp, SeaGradient, RoundedCornerShape(16.dp)),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(16.dp)
+    ) {
         Text("AÑADIR A MI LISTA", color = Color.White, fontWeight = FontWeight.ExtraBold)
     }
 }

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await // Necesitas añadir esta dependencia en build.gradle si no la tienes
+import org.dam2.appstreaming.data.local.prefs.PreferenciasUsuario
 import org.dam2.appstreaming.data.repository.RepositorioBackend
 import org.dam2.appstreaming.data.remote.dto.RespuestaAutenticacion
 
@@ -29,28 +30,33 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
      * Iniciar sesión con Firebase
      * nombre: En Firebase debe ser un email (puedes añadir "@gmail.com" si solo usas nombres)
      */
-    fun iniciarSesion(email: String, clave: String) {
+    fun iniciarSesion(email: String, clave: String, nombreUsuario: String) {
         viewModelScope.launch {
-            Log.d("AuthViewModel", "Iniciando sesión en Firebase para: $email")
             _estadoLogin.value = ResultadoAuth.Cargando
-
             try {
+                // 1. Autenticación en la Nube (Firebase)
                 val resultado = firebaseAuth.signInWithEmailAndPassword(email, clave).await()
-                val user = resultado.user
+                val firebaseUser = resultado.user
 
-                if (user != null) {
-                    Log.d("AuthViewModel", "Firebase Login exitoso. Nombre en nube: ${user.displayName}")
-
-                    // Aquí cogemos el nombre real que guardamos al registrar
-                    val respuesta = RespuestaAutenticacion(
-                        token = user.uid,
-                        nombreUsuario = user.displayName ?: user.email ?: "Usuario"
+                if (firebaseUser != null) {
+                    // 2. Sincronización en Local (PostgreSQL)
+                    // DTO específico de registro
+                    val exito = repositorio.sincronizarUsuario(
+                        uid = firebaseUser.uid,
+                        nombre = nombreUsuario,
+                        email = firebaseUser.email
                     )
-                    _estadoLogin.value = ResultadoAuth.Exito(respuesta)
+
+                    if (exito) {
+                        _estadoLogin.value = ResultadoAuth.Exito(
+                            RespuestaAutenticacion(firebaseUser.uid, nombreUsuario)
+                        )
+                    } else {
+                        _estadoLogin.value = ResultadoAuth.Error("Error al guardar perfil en PostgreSQL")
+                    }
                 }
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "Error en Firebase Login: ${e.message}")
-                _estadoLogin.value = ResultadoAuth.Error(e.message ?: "Error de autenticación")
+                _estadoLogin.value = ResultadoAuth.Error(e.message ?: "Error de acceso")
             }
         }
     }
@@ -70,13 +76,18 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 val user = resultado.user
 
                 if (user != null) {
-                    // 2. Guardar el nombre real en el perfil de Firebase (Nube)
                     val actualizacionesPerfil = userProfileChangeRequest {
                         displayName = nombreReal
                     }
                     user.updateProfile(actualizacionesPerfil).await()
 
-                    Log.d("AuthViewModel", "Registro y nombre guardado: ${user.displayName}")
+                    // --- NUEVO: Sincronizar con PostgreSQL tras el registro ---
+                    repositorio.sincronizarUsuario(
+                        uid = user.uid,
+                        nombre = nombreReal,
+                        email = user.email
+                    )
+                    // -----------------------------------------------------------
 
                     val respuesta = RespuestaAutenticacion(
                         token = user.uid,
@@ -95,9 +106,34 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         _estadoLogin.value = ResultadoAuth.Idle
     }
 
-    // Cerramos sesión
+
     fun cerrarSesion() {
         firebaseAuth.signOut()
+        _estadoLogin.value = ResultadoAuth.Idle
+    }
+
+    // Dentro de AuthViewModel.kt
+    fun recuperarPassword(email: String) {
+        viewModelScope.launch {
+            _estadoLogin.value = ResultadoAuth.Cargando
+            try {// Firebase envía el email automáticamente
+                firebaseAuth.sendPasswordResetEmail(email).await()
+                _estadoLogin.value = ResultadoAuth.Error("Correo de recuperación enviado")
+                // Usamos .Error temporalmente para mostrar el mensaje en el Toast de la UI
+            } catch (e: Exception) {
+                _estadoLogin.value = ResultadoAuth.Error(e.message ?: "Error al enviar correo")
+            }
+        }
+    }
+
+    fun cerrarSesion(prefs: PreferenciasUsuario) {
+        // 1. Cerramos en Firebase
+        firebaseAuth.signOut()
+
+        // 2. Limpiamos el "Recordar sesión" para que no entre solo la próxima vez
+        prefs.guardarMantenerSesion(false)
+
+        // 3. Opcional: Resetear el estado del login
         _estadoLogin.value = ResultadoAuth.Idle
     }
 

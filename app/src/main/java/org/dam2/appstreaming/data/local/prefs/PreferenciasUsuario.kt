@@ -31,7 +31,7 @@ class PreferenciasUsuario(context: Context) {
      * Recupera lo que el usuario eligió la última vez.
      */
     fun obtenerMantenerSesion(): Boolean {
-        // Por defecto devolvemos true (es lo más cómodo para el usuario)
-        return sharedPreferences.getBoolean("mantener_sesion", true)
+
+        return sharedPreferences.getBoolean("mantener_sesion", false)
     }
 }

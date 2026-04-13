@@ -1,7 +1,9 @@
 package org.dam2.appstreaming.ui.screen.pelicula
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,13 +16,20 @@ import org.dam2.appstreaming.data.remote.dto.Review
 import org.dam2.appstreaming.data.remote.dto.Keyword
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.Genero
+import org.dam2.appstreaming.data.remote.api.ServicioApiBackend
+import org.dam2.appstreaming.data.remote.dto.SolicitudLista
+import org.dam2.appstreaming.data.repository.RepositorioBackend
 
 /**
  * ViewModel que gestiona el estado de la pantalla de detalles de una película.
  */
 class PeliculaViewModel : ViewModel() {
     private val repository = TmdbRepository()
+    private var repositorioBackend: RepositorioBackend? = null
 
+    fun iniciarRepositorio(repo: RepositorioBackend) {
+        this.repositorioBackend = repo
+    }
     /**
      * Estado unificado para la pantalla de detalle.
      */
@@ -116,6 +125,41 @@ class PeliculaViewModel : ViewModel() {
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false) }
                 e.printStackTrace()
+            }
+        }
+    }
+    // En PeliculaDetailViewModel.kt
+    fun toggleFavorito(pelicula: FichaPelicula) {
+        viewModelScope.launch {
+            try {
+                // El nombre de usuario lo sacamos de Firebase
+                // displayName puede ser nulo, así que usamos el email o un fallback
+                val user = FirebaseAuth.getInstance().currentUser
+                val nombreUser = when {
+                    !user?.displayName.isNullOrBlank() -> user?.displayName
+                    !user?.email.isNullOrBlank() -> user?.email?.substringBefore("@")
+                    else -> user?.uid // Último recurso: el ID largo de Firebase
+                } ?: "UsuarioAnonimo"
+
+                val solicitud = SolicitudLista(
+                    idMultimedia = pelicula.id,
+                    titulo = pelicula.titulo,
+                    rutaPoster = pelicula.rutaPoster,
+                    esPelicula = true,
+                    nombreUsuario = nombreUser,
+                    tipoLista = "FAVORITO"
+                )
+
+                // 2. Llamamos al repositorio
+                val exito = repositorioBackend?.agregarALista(solicitud) ?: false
+
+                if (exito) {
+                    Log.d("PeliculaViewModel", "Guardado en PostgreSQL con éxito: ${pelicula.titulo}")
+                } else {
+                    Log.e("PeliculaViewModel", "Error al guardar en el servidor")
+                }
+            } catch (e: Exception) {
+                Log.e("PeliculaViewModel", "Error en la petición de favoritos", e)
             }
         }
     }

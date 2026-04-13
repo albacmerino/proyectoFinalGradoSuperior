@@ -6,8 +6,8 @@ import jakarta.persistence.*
  * Entidad que representa una pelicula o serie favorita de un usuario.
  */
 @Entity
-@Table(name = "favoritos")
-data class Favorito(
+@Table(name = "Lista")
+data class Lista(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -22,6 +22,9 @@ data class Favorito(
 
     @Column(nullable = false)
     val esPelicula: Boolean,
+
+    @Column(nullable = false)
+    val tipoLista: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)

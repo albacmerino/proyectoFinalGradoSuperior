@@ -17,17 +17,27 @@ interface ServicioApiBackend {
     @POST("auth/login")
     suspend fun login(@Body solicitud: SolicitudLogin): Response<RespuestaAutenticacion>
 
-    // --- FAVORITOS ---
+    // --- OBTENER LISTA ---
 
-    @GET("api/favoritos/{nombreUsuario}")
-    suspend fun obtenerFavoritos(@Path("nombreUsuario") nombreUsuario: String): Response<List<RespuestaFavorito>>
-
-    @POST("api/favoritos/agregar")
-    suspend fun agregarFavorito(@Body solicitud: SolicitudFavorito): Response<String>
-
-    @DELETE("api/favoritos/eliminar/{nombreUsuario}/{idMultimedia}")
-    suspend fun eliminarFavorito(
+    @GET("api/listas/{nombreUsuario}/{tipoLista}")
+    suspend fun obtenerContenidoLista(
         @Path("nombreUsuario") nombreUsuario: String,
-        @Path("idMultimedia") idMultimedia: Int
+        @Path("tipoLista") tipoLista: String // <--- Añadido el segundo parámetro
+    ): Response<List<RespuestaLista>>
+    @POST("api/listas/agregar")
+    suspend fun agregarALista(@Body solicitud: SolicitudLista): Response<okhttp3.ResponseBody>
+
+    // 3. Eliminar de una lista
+    // IMPORTANTE: Los nombres en @Path deben coincidir con tu Controlador de Spring Boot
+    @DELETE("api/listas/eliminar/{nombreUsuario}/{tipoLista}/{idMultimedia}")
+    suspend fun eliminarDeLista(
+        @Path("nombreUsuario") nombre: String,
+        @Path("tipoLista") tipo: String,
+        @Path("idMultimedia") id: Int
     ): Response<String>
+
+    @POST("auth/sincronizar")
+    suspend fun sincronizarUsuario(
+        @Body solicitud: SolicitudRegistro
+    ): Response<okhttp3.ResponseBody>
 }

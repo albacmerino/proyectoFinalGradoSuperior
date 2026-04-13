@@ -19,8 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.compose.*
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import org.dam2.appstreaming.R
+import org.dam2.appstreaming.data.local.prefs.PreferenciasUsuario
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
 class SplashFragment : Fragment() {
@@ -34,12 +36,20 @@ class SplashFragment : Fragment() {
             setContent {
                 MaterialTheme {
                     SplashScreenContent(onTimeout = {
+                        val auth = FirebaseAuth.getInstance()
+                        val prefs = PreferenciasUsuario(requireContext())
+                        val currentUser = auth.currentUser
 
-                        try {
-                            findNavController ().navigate(R.id.action_splashFragment_to_loginFragment)
+                        // LÓGICA DE DECISIÓN:
+                        if (currentUser != null && prefs.obtenerMantenerSesion()) {
+                            // Si el usuario existe Y marcó "Mantener sesión" -> HOME
+                            findNavController().navigate(R.id.action_splashFragment_to_homeFragment)
+                        } else {
+                            // Si NO hay usuario o NO marcó el check -> LOGIN
+                            // Por seguridad, si el usuario existe pero no quería persistencia, cerramos sesión
+                            if (currentUser != null) auth.signOut()
 
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                            findNavController().navigate(R.id.action_splashFragment_to_loginFragment)
                         }
                     })
                 }

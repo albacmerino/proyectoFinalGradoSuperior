@@ -10,12 +10,12 @@ import jakarta.persistence.*
 data class Usuario(
     @Id
     @Column(name = "firebase_uid", nullable = false, unique = true)
-    val id: String? = null,
+    val id: String,
 
     @Column(unique = true, nullable = false)
     val nombreUsuario: String,
 
-    @Column(nullable = false)
-    val contrasena: String,
+    @Column(nullable = true)
+    val email: String? = null
 
 )

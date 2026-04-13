@@ -5,5 +5,5 @@ package org.dam2.appstreaming.data.remote.dto
  */
 data class SolicitudLogin(
     val nombreUsuario: String,
-    val contrasena: String
+    val uid: String
 )
