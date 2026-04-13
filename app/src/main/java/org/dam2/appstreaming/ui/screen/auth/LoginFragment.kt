@@ -82,7 +82,10 @@ class LoginFragment : Fragment() {
                         onLoginClick = { usuario, password ->
                             if (usuario.isNotBlank() && password.isNotBlank()) {
                                 val emailFinal = if (usuario.contains("@")) usuario else "$usuario@seastream.com"
-                                viewModel.iniciarSesion(emailFinal, password)
+
+                                // CAMBIO AQUÍ: Añadimos 'usuario' como tercer parámetro (nombreUsuario)
+                                viewModel.iniciarSesion(emailFinal, password, usuario)
+
                             } else {
                                 Toast.makeText(context, "Por favor, rellena todos los campos", Toast.LENGTH_SHORT).show()
                             }

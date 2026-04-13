@@ -38,7 +38,7 @@ fun HomeDrawer(
         NavigationDrawerItem(
             label = { Text("Favoritos", color = Color.White) },
             selected = false,
-            onClick = onFavoritosClick
+            onClick = { onFavoritosClick() }, // Esta función navegará al nuevo fragmentoicon = { Icon(Icons.Default.Favorite, contentDescription = null, tint = SeaBlueLight) }
         )
 
         // Empuja el botón de logout hacia la parte inferior

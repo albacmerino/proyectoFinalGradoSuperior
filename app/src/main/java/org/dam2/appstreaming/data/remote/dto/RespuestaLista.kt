@@ -1,12 +1,12 @@
 package org.dam2.appstreaming.data.remote.dto
 
 /**
- * Datos que enviamos al servidor para añadir un favorito.
+ * Representa un favorito que el servidor devuelve a la app.
  */
-data class SolicitudFavorito(
+data class RespuestaLista(
     val idMultimedia: Int,
     val titulo: String,
     val rutaPoster: String?,
     val esPelicula: Boolean,
-    val nombreUsuario: String
+    val tipoLista: String
 )

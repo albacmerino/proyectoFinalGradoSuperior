@@ -73,26 +73,65 @@ class RepositorioBackend(contexto: Context) {
 
     // --- FAVORITOS ---
 
-    suspend fun obtenerFavoritos(nombreUsuario: String): List<RespuestaFavorito> {
+    suspend fun obtenerContenidoLista(nombreUsuario: String, tipoLista: String): List<RespuestaLista> {
         return try {
-            val respuesta = api.obtenerFavoritos(nombreUsuario)
+            // Llamamos a la función corregida de la interfaz
+            val respuesta = api.obtenerContenidoLista(nombreUsuario, tipoLista)
             if (respuesta.isSuccessful) {
                 respuesta.body() ?: emptyList()
             } else {
+                Log.e("RepositorioBackend", "Error obteniendo lista $tipoLista: ${respuesta.code()}")
                 emptyList()
             }
         } catch (e: Exception) {
-            Log.e("RepositorioBackend", "Error obteniendo favoritos", e)
+            Log.e("RepositorioBackend", "Error de red obteniendo lista $tipoLista", e)
             emptyList()
         }
     }
 
-    suspend fun agregarFavorito(favorito: SolicitudFavorito): Boolean {
+    suspend fun agregarALista(solicitud: SolicitudLista): Boolean {
         return try {
-            val respuesta = api.agregarFavorito(favorito)
+            val respuesta = api.agregarALista(solicitud)
+
+            if (respuesta.isSuccessful) {
+                Log.d("RepositorioBackend", "Éxito al agregar a la lista ${solicitud.tipoLista}")
+                true
+            } else {
+                Log.e("RepositorioBackend", "Error del servidor: ${respuesta.code()}")
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("RepositorioBackend", "Error de conexión al agregar a lista", e)
+            false
+        }
+    }
+    /**
+     * Elimina un contenido de una lista específica.
+     */
+    suspend fun eliminarDeLista(nombreUsuario: String, tipoLista: String, idMultimedia: Int): Boolean {
+        return try {
+            val respuesta = api.eliminarDeLista(nombreUsuario, tipoLista, idMultimedia)
             respuesta.isSuccessful
         } catch (e: Exception) {
-            Log.e("RepositorioBackend", "Error agregando favorito", e)
+            Log.e("RepositorioBackend", "Error eliminando de lista $tipoLista", e)
+            false
+        }
+    }
+    suspend fun sincronizarUsuario(uid: String, nombre: String, email: String?): Boolean {
+        return try {
+            // Usamos el DTO de registro que configuramos antes
+            val solicitud = SolicitudRegistro(
+                uid = uid,
+                nombreUsuario = nombre,
+                email = email
+            )
+
+            // Llamamos a la API (asegúrate de que el método esté en ServicioApiBackend)
+            val respuesta = api.sincronizarUsuario(solicitud)
+
+            respuesta.isSuccessful
+        } catch (e: Exception) {
+            android.util.Log.e("RepositorioBackend", "Error en sincronización: ${e.message}")
             false
         }
     }
@@ -104,6 +143,6 @@ class RepositorioBackend(contexto: Context) {
     companion object {
         // 10.0.2.2 es la dirección IP especial que apunta al 'localhost' de tu ordenador desde el emulador Android.
         // Si usas un dispositivo físico, debes cambiar esta IP por la IP local de tu PC (ej. 192.168.1.45).
-        private const val BASE_URL = "http://10.0.2.2:8080/"
+        private const val BASE_URL = "http://192.168.1.19:8080/"
     }
 }

@@ -1,11 +1,12 @@
-package org.dam2.appstreaming.data.remote.dto
+package org.dam2.appstreaming.backend.dto
 
 /**
  * Representa un favorito que el servidor devuelve a la app.
  */
-data class RespuestaFavorito(
+data class RespuestaLista(
     val idMultimedia: Int,
     val titulo: String,
     val rutaPoster: String?,
-    val esPelicula: Boolean
+    val esPelicula: Boolean,
+    val tipoLista: String
 )

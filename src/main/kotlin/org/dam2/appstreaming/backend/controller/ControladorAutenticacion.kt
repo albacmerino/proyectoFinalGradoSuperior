@@ -2,6 +2,7 @@ package org.dam2.appstreaming.backend.controller
 
 import org.dam2.appstreaming.backend.dto.RespuestaAutenticacion
 import org.dam2.appstreaming.backend.dto.SolicitudAutenticacion
+import org.dam2.appstreaming.backend.dto.SolicitudRegistro
 import org.dam2.appstreaming.backend.model.Usuario
 import org.dam2.appstreaming.backend.service.ServicioAutenticacion
 import org.springframework.http.ResponseEntity
@@ -31,6 +32,17 @@ class ControladorAutenticacion(private val servicioAutenticacion: ServicioAutent
             ResponseEntity.ok(respuesta)
         } catch (e: Exception) {
             ResponseEntity.status(401).body(mapOf("error" to e.message))
+        }
+    }
+
+    @PostMapping("/sincronizar") // <--- Esto completa la ruta /api/auth/sincronizar
+    fun sincronizar(@RequestBody solicitud: SolicitudRegistro): ResponseEntity<String> {
+        return try {
+            // Lógica para guardar el usuario en PostgreSQL si no existe
+            servicioAutenticacion.sincronizarUsuario(solicitud)
+            ResponseEntity.ok("Usuario sincronizado")
+        } catch (e: Exception) {
+            ResponseEntity.status(500).body(e.message)
         }
     }
 
