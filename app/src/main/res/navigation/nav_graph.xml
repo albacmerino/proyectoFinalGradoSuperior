@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:id="@+id/nav_graph"
-        app:startDestination="@id/splashFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/splashFragment">
+
+    <!-- Acción Global para ir al Home desde cualquier sitio -->
+    <action
+        android:id="@+id/action_global_homeFragment"
+        app:destination="@id/homeFragment"
+        app:enterAnim="@android:anim/fade_in"
+        app:exitAnim="@android:anim/fade_out"
+        app:popUpTo="@id/homeFragment"
+        app:popUpToInclusive="true" />
 
     <!-- Pantalla 1: SPLASH -->
     <fragment
-            android:id="@+id/splashFragment"
-            android:name="org.dam2.appstreaming.ui.screen.splash.SplashFragment"
-            android:label="Splash">
+        android:id="@+id/splashFragment"
+        android:name="org.dam2.appstreaming.ui.screen.splash.SplashFragment"
+        android:label="Splash">
         <action
-                android:id="@+id/action_splashFragment_to_loginFragment"
-                app:destination="@id/loginFragment"
-                app:enterAnim="@anim/slide_in_right"
-                app:exitAnim="@anim/slide_out_left"
-                app:popUpTo="@id/splashFragment"
-                app:popUpToInclusive="true" />
+            android:id="@+id/action_splashFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_splashFragment_to_homeFragment"
             app:destination="@id/homeFragment"
@@ -26,22 +35,18 @@
 
     <!-- Pantalla 2: LOGIN -->
     <fragment
-            android:id="@+id/loginFragment"
-            android:name="org.dam2.appstreaming.ui.screen.auth.LoginFragment"
-            android:label="Login">
-
-        <!-- Transición al Home -->
+        android:id="@+id/loginFragment"
+        android:name="org.dam2.appstreaming.ui.screen.auth.LoginFragment"
+        android:label="Login">
         <action
-                android:id="@+id/action_loginFragment_to_homeFragment"
-                app:destination="@id/homeFragment"
-                app:enterAnim="@anim/slide_in_right"
-                app:exitAnim="@anim/slide_out_left"
-                app:popEnterAnim="@android:anim/slide_in_left"
-                app:popExitAnim="@android:anim/slide_out_right"
-                app:popUpTo="@id/loginFragment"
-                app:popUpToInclusive="true"
-                />
-        <!--Transición a recuperar contraseña -->
+            android:id="@+id/action_loginFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_loginFragment_to_forgotPasswordFragment"
             app:destination="@id/forgotPasswordFragment"
@@ -49,90 +54,84 @@
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popExitAnim="@android:anim/slide_out_right" />
-
-
-        <!-- Transición al Registro -->
         <action
-                android:id="@+id/action_loginFragment_to_registerFragment"
-                app:destination="@id/registerFragment"
-                app:enterAnim="@anim/slide_in_right"
-                app:exitAnim="@anim/slide_out_left"
-                app:popEnterAnim="@android:anim/slide_in_left"
-                app:popExitAnim="@android:anim/slide_out_right" />
+            android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
 
     <!-- Pantalla 3: HOME -->
     <fragment
-            android:id="@+id/homeFragment"
-            android:name="org.dam2.appstreaming.ui.screen.home.HomeFragment"
-            android:label="Home">
-
+        android:id="@+id/homeFragment"
+        android:name="org.dam2.appstreaming.ui.screen.home.HomeFragment"
+        android:label="Home">
         <action
-                android:id="@+id/action_homeFragment_to_peliculaDetailFragment"
-                app:destination="@id/peliculaDetailFragment"
-                app:enterAnim="@anim/slide_in_right"
-                app:exitAnim="@anim/slide_out_left"
-                app:popEnterAnim="@android:anim/slide_in_left"
-                app:popExitAnim="@android:anim/slide_out_right"/>
-
+            android:id="@+id/action_homeFragment_to_peliculaDetailFragment"
+            app:destination="@id/peliculaDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
         <action
-                android:id="@+id/action_homeFragment_to_serieDetailFragment"
-                app:destination="@id/serieDetailFragment"
-                app:enterAnim="@anim/slide_in_right"
-                app:exitAnim="@anim/slide_out_left"
-                app:popEnterAnim="@android:anim/slide_in_left"
-                app:popExitAnim="@android:anim/slide_out_right" />
-
+            android:id="@+id/action_homeFragment_to_serieDetailFragment"
+            app:destination="@id/serieDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
         <action
             android:id="@+id/action_homeFragment_to_loginFragment"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
-    </fragment>
-
-
-    <fragment
-            android:id="@+id/peliculaDetailFragment"
-            android:name="org.dam2.appstreaming.ui.screen.pelicula.PeliculaDetailFragment">
+        <!-- NUEVA ACCIÓN: Ir a Favoritos -->
         <action
-                android:id="@+id/action_peliculaDetailFragment_to_reviewsFragment"
-                app:destination="@id/reviewsFragment"
-                app:enterAnim="@anim/slide_in_right"
-                app:exitAnim="@anim/slide_out_left"
-                app:popEnterAnim="@android:anim/slide_in_left"
-                app:popExitAnim="@android:anim/slide_out_right" />
+            android:id="@+id/action_homeFragment_to_favoritosFragment"
+            app:destination="@id/favoritosFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
     </fragment>
 
+    <!-- DETALLE PELÍCULA -->
     <fragment
-            android:id="@+id/serieDetailFragment"
-            android:name="org.dam2.appstreaming.ui.screen.serie.SerieDetailFragment">
+        android:id="@+id/peliculaDetailFragment"
+        android:name="org.dam2.appstreaming.ui.screen.pelicula.PeliculaDetailFragment">
         <action
-                android:id="@+id/action_serieDetailFragment_to_reviewsFragment"
-                app:destination="@id/reviewsFragment"
-                app:enterAnim="@anim/slide_in_right"
-                app:exitAnim="@anim/slide_out_left"
-                app:popEnterAnim="@android:anim/slide_in_left"
-                app:popExitAnim="@android:anim/slide_out_right" />
+            android:id="@+id/action_peliculaDetailFragment_to_reviewsFragment"
+            app:destination="@id/reviewsFragment" />
     </fragment>
 
+    <!-- DETALLE SERIE -->
     <fragment
-            android:id="@+id/reviewsFragment"
-            android:name="org.dam2.appstreaming.ui.screen.reviews.ReviewsFragment">
+        android:id="@+id/serieDetailFragment"
+        android:name="org.dam2.appstreaming.ui.screen.serie.SerieDetailFragment">
+        <action
+            android:id="@+id/action_serieDetailFragment_to_reviewsFragment"
+            app:destination="@id/reviewsFragment" />
+    </fragment>
+
+    <!-- REVIEWS -->
+    <fragment
+        android:id="@+id/reviewsFragment"
+        android:name="org.dam2.appstreaming.ui.screen.reviews.ReviewsFragment">
         <argument
-                android:name="mediaType"
-                app:argType="string" />
+            android:name="mediaType"
+            app:argType="string" />
     </fragment>
 
-    <!-- Pantalla 4: REGISTER -->
+    <!-- REGISTER -->
     <fragment
-            android:id="@+id/registerFragment"
-            android:name="org.dam2.appstreaming.ui.screen.auth.RegisterFragment"
-            android:label="Register">
+        android:id="@+id/registerFragment"
+        android:name="org.dam2.appstreaming.ui.screen.auth.RegisterFragment"
+        android:label="Register">
         <action
             android:id="@+id/action_registerFragment_to_loginFragment"
             app:destination="@id/loginFragment"
-            app:enterAnim="@android:anim/slide_in_left"
-            app:exitAnim="@android:anim/slide_out_right"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
     </fragment>
@@ -142,5 +141,35 @@
         android:name="org.dam2.appstreaming.ui.screen.auth.ForgotPasswordFragment"
         android:label="Recuperar Contraseña" />
 
+    <!-- Pantalla de FAVORITOS (Corregida con sus acciones) -->
+    <fragment
+        android:id="@+id/favoritosFragment"
+        android:name="org.dam2.appstreaming.ui.screen.favoritos.FavoritosFragment"
+        android:label="Mis Favoritos">
+
+        <!-- Para ir al detalle desde la cuadrícula -->
+        <action
+            android:id="@+id/action_favoritosFragment_to_peliculaDetailFragment"
+            app:destination="@id/peliculaDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_favoritosFragment_to_serieDetailFragment"
+            app:destination="@id/serieDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+
+        <!-- Para cerrar sesión -->
+        <action
+            android:id="@+id/action_favoritosFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
 
 </navigation>

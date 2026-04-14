@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.dam2.appstreaming.data.local.AppDatabase
+import org.dam2.appstreaming.data.local.entities.ListaEntity
 import org.dam2.appstreaming.data.local.prefs.GestorToken
 import org.dam2.appstreaming.data.remote.api.ServicioApiBackend
 import org.dam2.appstreaming.data.remote.dto.*
@@ -11,23 +13,15 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
-/**
- * Repositorio encargado de gestionar la comunicacion con el Backend Spring Boot.
- */
 class RepositorioBackend(contexto: Context) {
 
+    private val database = AppDatabase.getDatabase(contexto)
+    private val listaDao = database.listaDao()
     private val gestorToken = GestorToken(contexto)
 
-    // Configuramos un logger para ver las peticiones en el Logcat
-    private val logging = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
-    }
-
     private val client = OkHttpClient.Builder()
-        .addInterceptor(logging)
-        .connectTimeout(30, TimeUnit.SECONDS) // Aumentado a 30s
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
+        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+        .connectTimeout(30, TimeUnit.SECONDS)
         .build()
 
     private val api = Retrofit.Builder()
@@ -37,112 +31,65 @@ class RepositorioBackend(contexto: Context) {
         .build()
         .create(ServicioApiBackend::class.java)
 
-    // --- AUTENTICACION ---
+    // --- 1. SINCRONIZACIÓN (El nuevo "Login/Registro" para PostgreSQL) ---
 
-    suspend fun registrar(nombre: String, clave: String): Result<RespuestaAutenticacion> {
-        return try {
-            val respuesta = api.registrar(SolicitudRegistro(nombre, clave))
-            if (respuesta.isSuccessful && respuesta.body() != null) {
-                gestorToken.guardarToken(respuesta.body()!!.token)
-                Result.success(respuesta.body()!!)
-            } else {
-                val errorMsg = respuesta.errorBody()?.string() ?: "Error desconocido"
-                Log.e("RepositorioBackend", "Error en registro: $errorMsg")
-                Result.failure(Exception(errorMsg))
-            }
-        } catch (e: Exception) {
-            Log.e("RepositorioBackend", "Fallo de conexión", e)
-            Result.failure(e)
+    suspend fun sincronizarUsuario(uid: String, nombre: String, email: String?): Boolean {
+        // Ya no llamamos a api.sincronizarUsuario(solicitud)
+        // Simplemente devolvemos true para que la App avance al Home sin errores de red
+        Log.d("RepositorioBackend", "Sincronización local completada para $nombre")
+        gestorToken.guardarToken(uid)
+        return true
+    }
+
+    // --- 2. GESTIÓN DE LISTAS (LOCAL CON ROOM) ---
+
+    suspend fun obtenerContenidoLista(tipoLista: String): List<RespuestaLista> {
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        return listaDao.obtenerPorTipo(uid, tipoLista).map {
+            RespuestaLista(it.idMultimedia, it.titulo, it.rutaPoster, it.esPelicula, it.tipoLista)
         }
     }
 
-    suspend fun login(nombre: String, clave: String): Result<RespuestaAutenticacion> {
+    suspend fun eliminarDeLista(tipoLista: String, idMultimedia: Int): Boolean {
         return try {
-            val respuesta = api.login(SolicitudLogin(nombre, clave))
-            if (respuesta.isSuccessful && respuesta.body() != null) {
-                gestorToken.guardarToken(respuesta.body()!!.token)
-                Result.success(respuesta.body()!!)
-            } else {
-                Result.failure(Exception("Credenciales incorrectas"))
-            }
-        } catch (e: Exception) {
-            Log.e("RepositorioBackend", "Fallo de conexión en login", e)
-            Result.failure(e)
-        }
+            val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            listaDao.eliminar(uid, idMultimedia, tipoLista)
+            true
+        } catch (e: Exception) { false }
     }
 
-    // --- FAVORITOS ---
-
-    suspend fun obtenerContenidoLista(nombreUsuario: String, tipoLista: String): List<RespuestaLista> {
-        return try {
-            // Llamamos a la función corregida de la interfaz
-            val respuesta = api.obtenerContenidoLista(nombreUsuario, tipoLista)
-            if (respuesta.isSuccessful) {
-                respuesta.body() ?: emptyList()
-            } else {
-                Log.e("RepositorioBackend", "Error obteniendo lista $tipoLista: ${respuesta.code()}")
-                emptyList()
-            }
-        } catch (e: Exception) {
-            Log.e("RepositorioBackend", "Error de red obteniendo lista $tipoLista", e)
-            emptyList()
-        }
+    fun obtenerIdsFavoritos(): kotlinx.coroutines.flow.Flow<List<Int>> {
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        return listaDao.obtenerIdsFavoritos(uid)
     }
-
+    companion object {
+        private const val BASE_URL = "http://192.168.1.19:8080/"
+    }
     suspend fun agregarALista(solicitud: SolicitudLista): Boolean {
         return try {
-            val respuesta = api.agregarALista(solicitud)
+            val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
-            if (respuesta.isSuccessful) {
-                Log.d("RepositorioBackend", "Éxito al agregar a la lista ${solicitud.tipoLista}")
-                true
+            // Comprobamos si ya existe en Room
+            val existe = listaDao.existe(uid, solicitud.idMultimedia, solicitud.tipoLista)
+
+            if (existe) {
+                listaDao.eliminar(uid, solicitud.idMultimedia, solicitud.tipoLista)
+                Log.d("ROOM", "Eliminado de favoritos local")
             } else {
-                Log.e("RepositorioBackend", "Error del servidor: ${respuesta.code()}")
-                false
+                listaDao.insertar(ListaEntity(
+                    idMultimedia = solicitud.idMultimedia,
+                    titulo = solicitud.titulo,
+                    rutaPoster = solicitud.rutaPoster,
+                    esPelicula = solicitud.esPelicula,
+                    tipoLista = solicitud.tipoLista,
+                    usuarioId = uid
+                ))
+                Log.d("ROOM", "Añadido a favoritos local")
             }
+            true
         } catch (e: Exception) {
-            Log.e("RepositorioBackend", "Error de conexión al agregar a lista", e)
+            Log.e("ROOM", "Error en Room: ${e.message}")
             false
         }
-    }
-    /**
-     * Elimina un contenido de una lista específica.
-     */
-    suspend fun eliminarDeLista(nombreUsuario: String, tipoLista: String, idMultimedia: Int): Boolean {
-        return try {
-            val respuesta = api.eliminarDeLista(nombreUsuario, tipoLista, idMultimedia)
-            respuesta.isSuccessful
-        } catch (e: Exception) {
-            Log.e("RepositorioBackend", "Error eliminando de lista $tipoLista", e)
-            false
-        }
-    }
-    suspend fun sincronizarUsuario(uid: String, nombre: String, email: String?): Boolean {
-        return try {
-            // Usamos el DTO de registro que configuramos antes
-            val solicitud = SolicitudRegistro(
-                uid = uid,
-                nombreUsuario = nombre,
-                email = email
-            )
-
-            // Llamamos a la API (asegúrate de que el método esté en ServicioApiBackend)
-            val respuesta = api.sincronizarUsuario(solicitud)
-
-            respuesta.isSuccessful
-        } catch (e: Exception) {
-            android.util.Log.e("RepositorioBackend", "Error en sincronización: ${e.message}")
-            false
-        }
-    }
-
-    fun cerrarSesion() {
-        gestorToken.eliminarToken()
-    }
-
-    companion object {
-        // 10.0.2.2 es la dirección IP especial que apunta al 'localhost' de tu ordenador desde el emulador Android.
-        // Si usas un dispositivo físico, debes cambiar esta IP por la IP local de tu PC (ej. 192.168.1.45).
-        private const val BASE_URL = "http://192.168.1.19:8080/"
     }
 }

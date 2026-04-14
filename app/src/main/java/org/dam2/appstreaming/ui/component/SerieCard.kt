@@ -4,6 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,7 +25,13 @@ import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.data.model.Genero
 
 @Composable
-fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
+fun SerieCard(
+    serie: FichaSerie,
+    allGenres: List<Genero>,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
+    onClick: () -> Unit
+) {
     // Construcción de la URL y búsqueda del nombre del género
     val imageUrl = "https://image.tmdb.org/t/p/w500${serie.rutaPoster}"
 
@@ -33,7 +44,7 @@ fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
             .width(130.dp)
             .clickable { onClick() }
     ) {
-        // Contenedor de Imagen + Puntuación
+        // Contenedor de Imagen + Puntuación + Corazón
         Box(modifier = Modifier.height(180.dp)) {
             AsyncImage(
                 model = imageUrl,
@@ -45,6 +56,22 @@ fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
                 contentScale = ContentScale.Crop
             )
 
+            // --- ICONO DE CORAZÓN (Favoritos) ---
+            IconButton(
+                onClick = onToggleFavorite,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .size(32.dp)
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Favorito",
+                    tint = if (isFavorite) Color.Red else Color.White.copy(alpha = 0.8f),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
             // Anillo de puntuación neón posicionado abajo a la derecha
             ScoreRing(
                 score = serie.puntuacionMedia,
@@ -55,7 +82,7 @@ fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
             )
         }
 
-        // Título de la serie (Fuera del Box para que aparezca debajo)
+        // Título de la serie
         Text(
             text = serie.titulo,
             color = Color.White,
@@ -65,7 +92,7 @@ fun SerieCard(serie: FichaSerie, allGenres: List<Genero>, onClick: () -> Unit) {
             modifier = Modifier.padding(top = 12.dp, start = 4.dp)
         )
 
-        // Nombre del Género con estética SeaStream
+        // Nombre del Género
         Text(
             text = nombreGenero,
             color = SeaBlueLight.copy(alpha = 0.7f),

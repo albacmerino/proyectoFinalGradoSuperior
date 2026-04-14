@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,11 +22,15 @@ import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.Genero
 
 @Composable
-fun MovieCard(movie: FichaPelicula, allGenres: List<Genero>, onClick: () -> Unit) {
-    // 1. Protección de URL: Si rutaPoster es null, usamos un string vacío para que Coil no falle
+fun MovieCard(
+    movie: FichaPelicula,
+    allGenres: List<Genero>,
+    isFavorite: Boolean, // <--- AÑADIR ESTO
+    onClick: () -> Unit,
+    onToggleFavorite: () -> Unit,
+) {
     val imageUrl = "https://image.tmdb.org/t/p/w500${movie.rutaPoster ?: ""}"
 
-    // 2. Búsqueda del género: Si la lista está vacía o no encuentra el ID, pone "Cine"
     val nombreGenero = allGenres.find {
         it.id == movie.idsGeneros?.firstOrNull()
     }?.name ?: "Cine"
@@ -45,7 +51,24 @@ fun MovieCard(movie: FichaPelicula, allGenres: List<Genero>, onClick: () -> Unit
                 contentScale = ContentScale.Crop
             )
 
-            // Asegúrate de que ScoreRing sea accesible aquí
+            // --- ESTO ES LO NUEVO: EL CORAZÓN ---
+            androidx.compose.material3.IconButton(
+                onClick = onToggleFavorite,
+                modifier = Modifier
+                    .align(Alignment.TopEnd) // Arriba a la derecha
+                    .padding(4.dp)
+            ) {
+                androidx.compose.material3.Icon(
+                    imageVector = if (isFavorite)
+                        androidx.compose.material.icons.Icons.Default.Favorite
+                    else
+                        androidx.compose.material.icons.Icons.Default.FavoriteBorder,
+                    contentDescription = null,
+                    tint = if (isFavorite) Color.Red else Color.White.copy(alpha = 0.8f),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
             ScoreRing(
                 score = movie.puntuacionMedia,
                 modifier = Modifier
@@ -63,13 +86,6 @@ fun MovieCard(movie: FichaPelicula, allGenres: List<Genero>, onClick: () -> Unit
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 12.dp, start = 4.dp)
         )
-
-        Text(
-            text = nombreGenero,
-            color = SeaBlueLight.copy(alpha = 0.7f),
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(start = 4.dp)
-        )
+        // ... (resto del código igual)
     }
 }

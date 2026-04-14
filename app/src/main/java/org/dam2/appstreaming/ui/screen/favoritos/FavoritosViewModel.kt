@@ -1,14 +1,13 @@
 package org.dam2.appstreaming.ui.screen.favoritos
 
 import android.app.Application
-import androidx.activity.result.launch
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.dam2.appstreaming.data.remote.dto.RespuestaLista
-import org.dam2.appstreaming.data.repository.RepositorioBackend
 import kotlinx.coroutines.launch
+import org.dam2.appstreaming.data.repository.RepositorioBackend
+import org.dam2.appstreaming.data.remote.dto.RespuestaLista
 
 class FavoritosViewModel(application: Application) : AndroidViewModel(application) {
     private val repositorio = RepositorioBackend(application)
@@ -16,16 +15,23 @@ class FavoritosViewModel(application: Application) : AndroidViewModel(applicatio
     private val _listaFavoritos = MutableStateFlow<List<RespuestaLista>>(emptyList())
     val listaFavoritos: StateFlow<List<RespuestaLista>> = _listaFavoritos
 
-    private val _cargando = MutableStateFlow(false)
-    val cargando: StateFlow<Boolean> = _cargando
+    private val _estaCargando = MutableStateFlow(false)
+    val estaCargando: StateFlow<Boolean> = _estaCargando
 
-    fun cargarFavoritos(nombreUsuario: String) {
+    fun cargarFavoritos() {
         viewModelScope.launch {
-            _cargando.value = true
-            // Llamamos al repositorio pidiendo específicamente la lista "FAVORITO"
-            val lista = repositorio.obtenerContenidoLista(nombreUsuario, "FAVORITO")
-            _listaFavoritos.value = lista
-            _cargando.value = false
+            _estaCargando.value = true
+            // Llamamos al repositorio que ahora lee de ROOM
+            val datos = repositorio.obtenerContenidoLista("FAVORITO")
+            _listaFavoritos.value = datos
+            _estaCargando.value = false
+        }
+    }
+
+    fun eliminarDeFavoritos(idMultimedia: Int) {
+        viewModelScope.launch {
+            val exito = repositorio.eliminarDeLista("FAVORITO", idMultimedia)
+            if (exito) cargarFavoritos() // Recargamos la lista tras eliminar
         }
     }
 }

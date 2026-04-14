@@ -5,69 +5,61 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.component.*
 import org.dam2.appstreaming.data.model.*
-import org.dam2.appstreaming.ui.component.home.HomeDrawer
+import org.dam2.appstreaming.ui.component.common.HomeDrawer
+import org.dam2.appstreaming.ui.component.common.StreamTopBar
+import org.dam2.appstreaming.ui.component.common.StreamTabs
+import org.dam2.appstreaming.ui.component.common.GenreSelector
 
-/**
- * Pantalla principal de la interfaz de usuario.
- * Define la estructura visual de la pantalla de inicio (Películas/Series).
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    selectedTab: Int,           // Pestaña seleccionada (0: Películas, 1: Series)
-    onTabSelected: (Int) -> Unit, // Callback para cambiar de pestaña
-    moviesNow: List<FichaPelicula>, // Listas de datos para las secciones
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    moviesNow: List<FichaPelicula>,
     moviesPop: List<FichaPelicula>,
     moviesTop: List<FichaPelicula>,
     seriesNow: List<FichaSerie>,
     seriesPop: List<FichaSerie>,
     seriesTop: List<FichaSerie>,
-    generos: List<Genero>,       // Géneros para el selector
-    selectedGenreId: Int?,       // Género actualmente filtrado
-    onGeneroClick: (Int?) -> Unit, // Callback al elegir un género
-    onMovieClick: (FichaPelicula) -> Unit, // Callback al pulsar una película
+    generos: List<Genero>,
+    selectedGenreId: Int?,
+    onGeneroClick: (Int?) -> Unit,
+    onMovieClick: (FichaPelicula) -> Unit,
     onSerieClick: (FichaSerie) -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
+    onNavigateToFavoritos: () -> Unit,
+    idsFavoritos: List<Int>,
+    onToggleFavorite: (Any) -> Unit
 ) {
-    // Estado para gestionar si el menú lateral está abierto
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-
-    // Ámbito de corrutina para controlar el menú lateral (apertura/cierre animados)
     val scope = rememberCoroutineScope()
 
-    // Envoltorio para el menú lateral de navegación
-    // En HomeScreen.kt
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             HomeDrawer(
-                onPerfilClick = {
-                    scope.launch { drawerState.close() }
-                    // Aquí irá la navegación al perfil
-                },
+                onHomeClick = { scope.launch { drawerState.close() } },
+                onPerfilClick = { scope.launch { drawerState.close() } },
                 onFavoritosClick = {
-                    scope.launch { drawerState.close() }
-                    // Aquí irá la navegación a favoritos
+                    scope.launch {
+                        drawerState.close()
+                        onNavigateToFavoritos()
+                    }
                 },
                 onLogoutClick = {
                     scope.launch {
                         drawerState.close()
-                        onLogoutClick() // Ahora sí funcionará
+                        onLogoutClick()
                     }
                 }
             )
@@ -75,122 +67,30 @@ fun HomeScreen(
     ) {
         Scaffold(
             topBar = {
-                HomeTopBar(onOpenMenu = {
-                    scope.launch {
-                        drawerState.open()
-                    }
-                })
+                StreamTopBar(
+                    title = "SeaStream",
+                    showBackButton = false,
+                    onMenuClick = { scope.launch { drawerState.open() } }
+                )
             },
             containerColor = Color.Transparent
         ) { padding ->
             Column(modifier = Modifier.padding(padding)) {
-                HomeTabs(selectedTab, onTabSelected)
+                StreamTabs(selectedTab, onTabSelected)
                 GenreSelector(generos, selectedGenreId, onGeneroClick)
+
                 MainContent(
                     selectedTab, moviesNow, moviesPop, moviesTop,
                     seriesNow, seriesPop, seriesTop, generos,
-                    onMovieClick, onSerieClick
+                    selectedGenreId, // Pasamos el ID del género para controlar la repetición
+                    onMovieClick, onSerieClick,
+                    idsFavoritos, onToggleFavorite
                 )
             }
         }
     }
 }
 
-/**
- * Contenido del menú lateral de navegación.
- */
-
-
-/**
- * Barra superior de la aplicación.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun HomeTopBar(onOpenMenu: () -> Unit) {
-
-    CenterAlignedTopAppBar(
-        title = {
-            Text("SeaStream",
-                style = MaterialTheme.typography.titleLarge.copy(brush = SeaGradient,
-                    fontWeight = FontWeight.ExtraBold))
-                },
-
-        navigationIcon = {
-            IconButton(onClick = onOpenMenu) {
-                Icon(Icons.Default.Menu, contentDescription = null, tint = SeaBlueLight)
-            }
-        },
-        actions = {
-            IconButton(onClick = { }) { Icon(Icons.Default.Search, contentDescription = null, tint = SeaBlueLight) }
-        },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
-    )
-}
-
-/**
- * Fila de pestañas para alternar entre Películas y Series.
- */
-@Composable
-private fun HomeTabs(selectedTab: Int, onTabSelected: (Int) -> Unit) {
-
-    TabRow(
-        selectedTabIndex = selectedTab,
-        containerColor = Color.Transparent,
-        contentColor = SeaBlueLight,
-        indicator = { tabPositions ->
-            // Línea indicadora personalizada con gradiente
-            Box(Modifier.tabIndicatorOffset(tabPositions[selectedTab]).height(3.dp).background(brush = SeaGradient))
-        },
-        divider = {}
-    ) {
-        Tab(selected = selectedTab == 0,
-            onClick = { onTabSelected(0) },
-            text = { Text("PELÍCULAS",
-                color = if(selectedTab == 0) Color.White else Color.Gray) })
-
-        Tab(selected = selectedTab == 1,
-            onClick = { onTabSelected(1) },
-            text = { Text("SERIES",
-                color = if(selectedTab == 1) Color.White else Color.Gray) })
-    }
-}
-
-/**
- * Fila horizontal de botones de género (Chips).
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun GenreSelector(generos: List<Genero>, selectedId: Int?, onClick: (Int?) -> Unit) {
-
-    LazyRow(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Opción predeterminada: Todo
-        item {
-            FilterChip(
-                selected = selectedId == null,
-                onClick = { onClick(null) },
-                label = { Text("Todo") },
-                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = SeaBlueLight, selectedLabelColor = Color.Black)
-            )
-        }
-        // Lista dinámica de géneros
-        items(generos) { genero ->
-            FilterChip(
-                selected = selectedId == genero.id,
-                onClick = { onClick(genero.id) },
-                label = { Text(genero.name) },
-                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = SeaBlueLight, selectedLabelColor = Color.Black)
-            )
-        }
-    }
-}
-
-/**
- * Organiza las secciones (Novedades, Populares, etc.) en una lista vertical optimizada.
- */
 @Composable
 private fun MainContent(
     selectedTab: Int,
@@ -201,57 +101,90 @@ private fun MainContent(
     seriesPop: List<FichaSerie>,
     seriesTop: List<FichaSerie>,
     generos: List<Genero>,
-    onMovieClick: (FichaPelicula) -> Unit, onSerieClick: (FichaSerie) -> Unit
+    selectedGenreId: Int?,
+    onMovieClick: (FichaPelicula) -> Unit,
+    onSerieClick: (FichaSerie) -> Unit,
+    idsFavoritos: List<Int>,
+    onToggleFavorite: (Any) -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 16.dp)) {
-        if (selectedTab == 0) {
-            // Muestra secciones de cine
-            item { HomeSection(
-                "Novedades", moviesNow, generos, onMovieClick, isMovie = true)
+
+        // SI HAY UN GÉNERO SELECCIONADO: Mostramos solo una fila de resultados
+        if (selectedGenreId != null) {
+            val nombreGenero = generos.find { it.id == selectedGenreId }?.name ?: "Filtrados"
+            item {
+                HomeSection(
+                    title = "Resultados: $nombreGenero",
+                    items = if (selectedTab == 0) moviesNow else seriesNow,
+                    allGenres = generos,
+                    onClick = {
+                        if (it is FichaPelicula) onMovieClick(it)
+                        else if (it is FichaSerie) onSerieClick(it)
+                    },
+                    isMovie = selectedTab == 0,
+                    idsFavoritos = idsFavoritos,
+                    onToggleFavorite = onToggleFavorite
+                )
             }
-            item { HomeSection(
-                "Populares", moviesPop, generos, onMovieClick, isMovie = true)
-            }
-            item { HomeSection(
-                "Mejor valoradas", moviesTop, generos, onMovieClick, isMovie = true)
-            }
-        } else {
-            // Muestra secciones de televisión
-            item { HomeSection(
-                "Novedades TV", seriesNow, generos, onSerieClick, isMovie = false)
-            }
-            item { HomeSection(
-                "Populares en TV", seriesPop, generos, onSerieClick, isMovie = false)
-            }
-            item { HomeSection(
-                "Mejor valoradas", seriesTop, generos, onSerieClick, isMovie = false)
+        }
+        // SI NO HAY GÉNERO: Mostramos las 3 secciones normales (Novedades, Populares, Top)
+        else {
+            if (selectedTab == 0) {
+                item { HomeSection("Novedades", moviesNow, generos, onMovieClick, true, idsFavoritos, onToggleFavorite) }
+                item { HomeSection("Populares", moviesPop, generos, onMovieClick, true, idsFavoritos, onToggleFavorite) }
+                item { HomeSection("Mejor valoradas", moviesTop, generos, onMovieClick, true, idsFavoritos, onToggleFavorite) }
+            } else {
+                item { HomeSection("Novedades TV", seriesNow, generos, onSerieClick, false, idsFavoritos, onToggleFavorite) }
+                item { HomeSection("Populares en TV", seriesPop, generos, onSerieClick, false, idsFavoritos, onToggleFavorite) }
+                item { HomeSection("Mejor valoradas", seriesTop, generos, onSerieClick, false, idsFavoritos, onToggleFavorite) }
             }
         }
     }
 }
 
-/**
- * Una sección individual compuesta por un título y una lista horizontal de tarjetas.
- */
 @Composable
 private fun <T> HomeSection(
     title: String,
     items: List<T>,
     allGenres: List<Genero>,
     onClick: (T) -> Unit,
-    isMovie: Boolean
+    isMovie: Boolean,
+    idsFavoritos: List<Int>,
+    onToggleFavorite: (Any) -> Unit
 ) {
-    Column(modifier = Modifier.padding(vertical = 12.dp)) {
-        Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 16.dp, bottom = 8.dp))
-        // Carrusel horizontal de tarjetas
-        LazyRow(contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    if (items.isEmpty()) return // No pintar sección si no hay datos
 
+    Column(modifier = Modifier.padding(vertical = 12.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.White,
+            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+        )
+        LazyRow(
+            contentPadding = PaddingValues(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             items(items) { item ->
+                val itemId = if (item is FichaPelicula) item.id else (item as FichaSerie).id
+                val isFav = idsFavoritos.contains(itemId)
+
                 if (isMovie) {
-                    MovieCard(movie = item as FichaPelicula, allGenres = allGenres, onClick = { onClick(item) })
+                    MovieCard(
+                        movie = item as FichaPelicula,
+                        allGenres = allGenres,
+                        isFavorite = isFav,
+                        onToggleFavorite = { onToggleFavorite(item) },
+                        onClick = { onClick(item) }
+                    )
                 } else {
-                    SerieCard(serie = item as FichaSerie, allGenres = allGenres, onClick = { onClick(item) })
+                    SerieCard(
+                        serie = item as FichaSerie,
+                        allGenres = allGenres,
+                        isFavorite = isFav,
+                        onToggleFavorite = { onToggleFavorite(item) },
+                        onClick = { onClick(item) }
+                    )
                 }
             }
         }
