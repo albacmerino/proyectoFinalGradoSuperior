@@ -34,3 +34,6 @@ captures/
 
 # --- Logs ---
 *.log
+/app/appSeaStreamingKey.json
+/pacedBy(8.dp),
+/treaming.ui.screen.favoritos
