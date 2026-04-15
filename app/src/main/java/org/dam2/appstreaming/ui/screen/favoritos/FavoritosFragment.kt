@@ -80,6 +80,9 @@ class FavoritosFragment : Fragment() {
                             },
                             onNavigateToMisListas = {
                                 findNavController().navigate(R.id.action_global_to_misListas)
+                            },
+                            onDeleteClick = { item ->
+                                viewModel.eliminarDeLista(item)
                             }
                         )
                     }

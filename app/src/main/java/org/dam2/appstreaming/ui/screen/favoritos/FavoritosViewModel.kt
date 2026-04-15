@@ -16,7 +16,6 @@ class FavoritosViewModel(application: Application) : AndroidViewModel(applicatio
     val listaFavoritos: StateFlow<List<RespuestaLista>> = _listaFavoritos
 
     private val _estaCargando = MutableStateFlow(false)
-    val estaCargando: StateFlow<Boolean> = _estaCargando
 
     fun cargarFavoritos() {
         viewModelScope.launch {
@@ -28,10 +27,13 @@ class FavoritosViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun eliminarDeFavoritos(idMultimedia: Int) {
+    fun eliminarDeLista(item: RespuestaLista) {
         viewModelScope.launch {
-            val exito = repositorio.eliminarDeLista("FAVORITO", idMultimedia)
-            if (exito) cargarFavoritos() // Recargamos la lista tras eliminar
+
+            val exito = repositorio.eliminarDeLista(item.tipoLista, item.idMultimedia)
+            if (exito) {
+                cargarFavoritos() // Recargamos la lista para que desaparezca de la pantalla
+            }
         }
     }
 }

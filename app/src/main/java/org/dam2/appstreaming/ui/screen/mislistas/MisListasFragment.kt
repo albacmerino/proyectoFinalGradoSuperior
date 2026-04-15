@@ -1,6 +1,6 @@
 package org.dam2.appstreaming.ui.screen.mislistas
 
-import MisListasScreen
+
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -69,9 +69,12 @@ class MisListasFragment : Fragment() {
                                     findNavController().navigate(R.id.action_misListas_to_serieDetail)
                                 }
                             },
-                            onBackClick = {
-                                // Volver a la pantalla anterior
-                                findNavController().popBackStack()
+                            onDeleteClick = { item -> viewModel.eliminarDeLista(item) },
+                            onNavigateToHome = { findNavController().navigate(R.id.homeFragment) },
+                            onNavigateToFavoritos = { findNavController().navigate(R.id.favoritosFragment) },
+                            onLogoutClick = {
+                                com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                                findNavController().navigate(R.id.action_global_to_loginFragment) // Asegúrate de tener esta acción global
                             }
                         )
                     }

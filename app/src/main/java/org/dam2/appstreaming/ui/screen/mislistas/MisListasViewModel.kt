@@ -4,17 +4,26 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import org.dam2.appstreaming.data.remote.dto.RespuestaLista
 import org.dam2.appstreaming.data.repository.RepositorioBackend
 
 class MisListasViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = RepositorioBackend(application)
 
-    // El estado de la pantalla será un mapa: "Nombre de Lista" -> "Lista de Pelis/Series"
+    // Observa todas las listas de forma reactiva desde Room
     val listas = repo.obtenerTodasLasListasAgrupadas()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyMap()
         )
+
+    fun eliminarDeLista(item: RespuestaLista) {
+        viewModelScope.launch {
+            // Usamos 'repo' que es como se llama tu variable arriba
+            repo.eliminarDeLista(item.tipoLista, item.idMultimedia)
+            // No hace falta recargar nada, el Flow 'listas' detectará el borrado automáticamente
+        }
+    }
 }
