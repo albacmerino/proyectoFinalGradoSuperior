@@ -8,6 +8,10 @@ interface ListaDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertar(item: ListaEntity)
 
+    @Query("SELECT DISTINCT tipoLista FROM listas_locales WHERE usuarioId = :uId")
+    fun obtenerNombresDeMisListas(uId: String): kotlinx.coroutines.flow.Flow<List<String>> // Cambiado de suspend a Flow
+
+
     @Query("SELECT * FROM listas_locales WHERE usuarioId = :uId AND tipoLista = :tipo")
     suspend fun obtenerPorTipo(uId: String, tipo: String): List<ListaEntity>
 

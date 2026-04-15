@@ -70,9 +70,26 @@ class PeliculaDetailFragment : Fragment() {
                             // Al pulsar una recomendación, actualizamos el ViewModel con la nueva película
                             viewModel.setSelectedItem(movie)
                         },
-                                onToggleFavorito = { pelicula ->
-                            viewModel.toggleFavorito(pelicula)
-                        }
+                        onAddClick = { pelicula, nombreLista ->
+                            if (nombreLista == null) {
+                                // 1. Si el nombre es nulo, el usuario solo pulsó el botón "Añadir"
+                                // y queremos abrir el menú.
+                                viewModel.abrirSheet()
+                            } else {
+                                // 2. Si el nombre NO es nulo, el usuario eligió una lista dentro del menú.
+                                // Llamamos a la nueva función genérica pasando todos los parámetros.
+                                viewModel.guardarEnLista(
+                                    id = pelicula.id,
+                                    titulo = pelicula.titulo,
+                                    rutaPoster = pelicula.rutaPoster,
+                                    esPelicula = true, // Es película porque estamos en PeliculaDetailFragment
+                                    nombreLista = nombreLista
+                                )
+                            }
+                        },
+
+                        onCloseSheet = { viewModel.cerrarSheet() }
+
                     )
                 }
             }

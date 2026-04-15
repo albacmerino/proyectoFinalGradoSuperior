@@ -35,6 +35,7 @@ import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.component.SeaRatingBar
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.Genero
+import org.dam2.appstreaming.ui.component.common.AddToListSheet
 
 /**
  * Pantalla de detalle de película (Componente Composable principal).
@@ -47,8 +48,8 @@ fun PeliculaDetailScreen(
     onWatchNowClick: (String) -> Unit,
     onSeeAllReviewsClick: (Int) -> Unit,
     onRecommendationClick: (FichaPelicula) -> Unit,
-    onToggleFavorito: (FichaPelicula) -> Unit // <--- AÑADE ESTO
-
+    onAddClick: (FichaPelicula, String?) -> Unit,
+    onCloseSheet: () -> Unit
 ) {
     // Si los datos principales están cargando o no hay película, mostramos carga
     if (state.isLoading || state.movie == null) {
@@ -82,7 +83,7 @@ fun PeliculaDetailScreen(
                     // Estrellas de puntuación y botón de añadir a lista
                     PuntuacionYAcciones(
                         nota = movie.puntuacionMedia,
-                        onAddClick = { onToggleFavorito(movie) }
+                        onAddClick = { onAddClick(movie, null) }
                     )
                     
                     Spacer(modifier = Modifier.height(32.dp))
@@ -102,8 +103,18 @@ fun PeliculaDetailScreen(
                     RecomendacionesSeccion(state.recommendations, onRecommendationClick)
                 }
             }
+
             // Botón flotante para volver atrás
             BotonIrAtras(onBackClick)
+
+            if (state.mostrarSheet) {
+                AddToListSheet(
+                    listasExistentes = state.nombresListas,
+                    onNombreNuevaLista = { nombre -> onAddClick(movie, nombre) },
+                    onListaSeleccionada = { nombre -> onAddClick(movie, nombre) },
+                    onDismiss = onCloseSheet
+                )
+            }
         }
     }
 }
@@ -321,7 +332,7 @@ private fun RepartoSeccion(reparto: List<CastMember>) {
     if (reparto.isNotEmpty()) {
         Column(modifier = Modifier.padding(top = 24.dp)) {
             Text("Reparto principal", style = MaterialTheme.typography.titleLarge, color = SeaBlueLight, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             LazyRow(contentPadding = PaddingValues(end = 20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(reparto.take(15)) { actor ->
                     CardActor(actor)
@@ -448,4 +459,5 @@ private fun BotonIrAtras(alPulsar: () -> Unit) {
     IconButton(onClick = alPulsar, modifier = Modifier.padding(top = 48.dp, start = 16.dp).size(45.dp).background(Color.Black.copy(alpha = 0.6f), CircleShape)) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
     }
+
 }

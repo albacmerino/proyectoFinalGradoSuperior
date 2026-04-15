@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.remote.dto.CastMember
 import org.dam2.appstreaming.data.remote.dto.Provider
 import org.dam2.appstreaming.data.remote.dto.Review
@@ -46,7 +47,9 @@ fun SerieDetailScreen(
     onPlayTrailerClick: (String) -> Unit,
     onWatchNowClick: (String) -> Unit,
     onSeeAllReviewsClick: (Int) -> Unit,
-    onRecommendationClick: (FichaSerie) -> Unit
+    onRecommendationClick: (FichaSerie) -> Unit,
+    onAddClick: (FichaSerie, String?) -> Unit,
+    onCloseSheet: () -> Unit
 ) {
     if (state.isLoading || state.serie == null) {
         PantallaCargando()
@@ -72,7 +75,8 @@ fun SerieDetailScreen(
                     SeccionOpinion()
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    PuntuacionYAcciones(serie.puntuacionMedia)
+                    PuntuacionYAcciones(serie.puntuacionMedia, onAddClick = { onAddClick(serie, null) }
+                    )
                     
                     Spacer(modifier = Modifier.height(32.dp))
                     SinopsisSeccion(serie.sinopsis)
@@ -84,6 +88,14 @@ fun SerieDetailScreen(
                 }
             }
             BotonIrAtras(onBackClick)
+            if (state.mostrarSheet) {
+                org.dam2.appstreaming.ui.component.common.AddToListSheet(
+                    listasExistentes = state.nombresListas,
+                    onNombreNuevaLista = { nombre -> onAddClick(serie, nombre) },
+                    onListaSeleccionada = { nombre -> onAddClick(serie, nombre) },
+                    onDismiss = onCloseSheet
+                )
+            }
         }
     }
 }
@@ -254,7 +266,7 @@ private fun SeccionOpinion() {
 }
 
 @Composable
-private fun PuntuacionYAcciones(nota: Double) {
+private fun PuntuacionYAcciones(nota: Double, onAddClick: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         SeaRatingBar(rating = (nota / 2).toInt())
         Text("  ${String.format("%.1f", nota)}",
@@ -263,7 +275,15 @@ private fun PuntuacionYAcciones(nota: Double) {
             fontSize = 18.sp)
     }
     Spacer(modifier = Modifier.height(32.dp))
-    Button(onClick = { }, modifier = Modifier.fillMaxWidth().height(56.dp).border(2.dp, SeaGradient, RoundedCornerShape(16.dp)), colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent), shape = RoundedCornerShape(16.dp)) {
+    Button(
+        onClick = onAddClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .border(2.dp, SeaGradient, RoundedCornerShape(16.dp)),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+        shape = RoundedCornerShape(16.dp)
+    ) {
         Text("AÑADIR A MI LISTA", color = Color.White, fontWeight = FontWeight.ExtraBold)
     }
 }

@@ -2,6 +2,10 @@ package org.dam2.appstreaming.data.repository
 
 import android.content.Context
 import android.util.Log
+import androidx.fragment.app.add
+import kotlinx.coroutines.flow.Flow
+
+import kotlinx.coroutines.flow.map
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.dam2.appstreaming.data.local.AppDatabase
@@ -11,6 +15,7 @@ import org.dam2.appstreaming.data.remote.api.ServicioApiBackend
 import org.dam2.appstreaming.data.remote.dto.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+
 import java.util.concurrent.TimeUnit
 
 class RepositorioBackend(contexto: Context) {
@@ -90,6 +95,15 @@ class RepositorioBackend(contexto: Context) {
         } catch (e: Exception) {
             Log.e("ROOM", "Error en Room: ${e.message}")
             false
+        }
+    }
+
+    fun obtenerNombresDeListas(): Flow<List<String>> {
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        return listaDao.obtenerNombresDeMisListas(uid).map { listas ->
+            val resultado = listas.toMutableList()
+            if (!resultado.contains("FAVORITO")) resultado.add(0, "FAVORITO")
+            resultado
         }
     }
 }

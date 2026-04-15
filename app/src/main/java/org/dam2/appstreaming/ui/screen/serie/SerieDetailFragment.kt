@@ -14,15 +14,22 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import org.dam2.appstreaming.R
+import org.dam2.appstreaming.data.repository.RepositorioBackend
 
 /**
  * Fragmento que actúa como contenedor para la pantalla de detalle de serie.
  */
-class SerieDetailFragment : Fragment() {
+class  SerieDetailFragment : Fragment() {
 
     // Usamos activityViewModels para compartir el ViewModel con el HomeFragment
     private val viewModel: SerieViewModel by activityViewModels()
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        // Inicializamos el repositorio para que Room funcione
+        val repo = RepositorioBackend(requireContext())
+        viewModel.iniciarRepositorio(repo)
+    }
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -56,6 +63,22 @@ class SerieDetailFragment : Fragment() {
                         },
                         onRecommendationClick = { serie ->
                             viewModel.establecerItemSeleccionado(serie)
+                        },
+                        onAddClick = { serie, nombreLista ->
+                            if (nombreLista == null) {
+                                viewModel.abrirSheet()
+                            } else {
+                                viewModel.guardarEnLista(
+                                    id = serie.id,
+                                    titulo = serie.titulo, // O serie.titulo, según tu modelo
+                                    rutaPoster = serie.rutaPoster,
+                                    esPelicula = false, // <--- AQUÍ pones false
+                                    nombreLista = nombreLista
+                                )
+                            }
+                        },
+                        onCloseSheet = {
+                            viewModel.cerrarSheet()
                         }
                     )
                 }
