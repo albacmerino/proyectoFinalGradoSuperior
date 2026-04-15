@@ -5,6 +5,8 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/splashFragment">
 
+
+
     <!-- Acción Global para ir al Home desde cualquier sitio -->
     <action
         android:id="@+id/action_global_homeFragment"
@@ -170,6 +172,29 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+    </fragment>
+
+    <!-- Mis Listas -->
+
+    <action
+        android:id="@+id/action_global_to_misListas"
+        app:destination="@id/misListasFragment"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/slide_out_left"
+        app:popEnterAnim="@android:anim/slide_in_left"
+        app:popExitAnim="@android:anim/slide_out_right" />
+
+    <fragment
+        android:id="@+id/misListasFragment"
+        android:name="org.dam2.appstreaming.ui.screen.mislistas.MisListasFragment"
+        android:label="Mis Listas">
+
+        <action
+            android:id="@+id/action_misListas_to_peliculaDetail"
+            app:destination="@id/peliculaDetailFragment" />
+        <action
+            android:id="@+id/action_misListas_to_serieDetail"
+            app:destination="@id/serieDetailFragment" />
     </fragment>
 
 </navigation>

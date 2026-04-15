@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ fun HomeDrawer(
     onHomeClick: () -> Unit,
     onPerfilClick: () -> Unit,
     onFavoritosClick: () -> Unit,
+    onMisListasClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     ModalDrawerSheet(
@@ -73,6 +75,13 @@ fun HomeDrawer(
             colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent)
         )
 
+        NavigationDrawerItem(
+            label = { Text("Mis Listas", color = Color.White) },
+            selected = false,
+            onClick = onMisListasClick, // <--- ASIGNAMOS EL CLIC
+            icon = { Icon(Icons.Default.List, contentDescription = null, tint = SeaBlueLight) },
+            colors = NavigationDrawerItemDefaults.colors(unselectedContainerColor = Color.Transparent)
+        )
         // Empuja el botón de logout hacia la parte inferior
         // (Ya no usa el import de wear, usa el de foundation.layout incluido en ColumnScope)
         Spacer(modifier = Modifier.weight(1f))

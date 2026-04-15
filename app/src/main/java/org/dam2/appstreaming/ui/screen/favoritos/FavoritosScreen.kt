@@ -35,7 +35,8 @@ fun FavoritosScreen(
     listaContenido: List<RespuestaLista>,
     onItemClick: (RespuestaLista) -> Unit,
     onLogoutClick: () -> Unit,
-    onNavigateToHome: () -> Unit
+    onNavigateToHome: () -> Unit,
+    onNavigateToMisListas: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -57,6 +58,12 @@ fun FavoritosScreen(
                 },
                 onPerfilClick = { scope.launch { drawerState.close() } },
                 onFavoritosClick = { scope.launch { drawerState.close() } },
+                onMisListasClick = {
+                    scope.launch {
+                        drawerState.close()
+                        onNavigateToMisListas()
+                    }
+                },
                 onLogoutClick = {
                     scope.launch {
                         drawerState.close()

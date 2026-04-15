@@ -106,4 +106,23 @@ class RepositorioBackend(contexto: Context) {
             resultado
         }
     }
+
+
+    fun obtenerTodasLasListasAgrupadas(): Flow<Map<String, List<RespuestaLista>>> {
+        val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+        // Cogemos todas las filas de Room y las agrupamos por el campo 'tipoLista'
+        return listaDao.obtenerPorUsuario(uid).map { listaEntities ->
+            listaEntities.map { entity ->
+                // Convertimos cada Entity de Room a RespuestaLista para la UI
+                RespuestaLista(
+                    idMultimedia = entity.idMultimedia,
+                    titulo = entity.titulo,
+                    rutaPoster = entity.rutaPoster,
+                    esPelicula = entity.esPelicula,
+                    tipoLista = entity.tipoLista
+                )
+            }.groupBy { it.tipoLista } // Aquí ocurre la magia: crea el Mapa
+        }
+    }
 }

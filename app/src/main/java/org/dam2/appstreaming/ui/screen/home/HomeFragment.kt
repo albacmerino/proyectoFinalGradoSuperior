@@ -83,6 +83,11 @@ class HomeFragment : Fragment() {
                                 onNavigateToFavoritos = {
                                     findNavController().navigate(R.id.action_homeFragment_to_favoritosFragment)
                                 },
+                                onNavigateToMisListas = {
+                                    // Llamamos a la ACCIÓN GLOBAL
+                                    findNavController().navigate(R.id.action_global_to_misListas)
+                                },
+
                                 // --- 2. PASAMOS LOS PARÁMETROS QUE FALTABAN ---
                                 idsFavoritos = idsFavoritos,
                                 onToggleFavorite = { item ->

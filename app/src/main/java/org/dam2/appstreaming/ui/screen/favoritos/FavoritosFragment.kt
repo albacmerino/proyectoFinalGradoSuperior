@@ -77,6 +77,9 @@ class FavoritosFragment : Fragment() {
                             },
                             onNavigateToHome = {
                                 findNavController().navigate(R.id.homeFragment)
+                            },
+                            onNavigateToMisListas = {
+                                findNavController().navigate(R.id.action_global_to_misListas)
                             }
                         )
                     }

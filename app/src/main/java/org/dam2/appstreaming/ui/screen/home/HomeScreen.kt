@@ -39,7 +39,8 @@ fun HomeScreen(
     onLogoutClick: () -> Unit,
     onNavigateToFavoritos: () -> Unit,
     idsFavoritos: List<Int>,
-    onToggleFavorite: (Any) -> Unit
+    onToggleFavorite: (Any) -> Unit,
+    onNavigateToMisListas: () -> Unit,
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -60,6 +61,12 @@ fun HomeScreen(
                     scope.launch {
                         drawerState.close()
                         onLogoutClick()
+                    }
+                },
+                onMisListasClick = {
+                    scope.launch {
+                        drawerState.close()
+                        onNavigateToMisListas()
                     }
                 }
             )

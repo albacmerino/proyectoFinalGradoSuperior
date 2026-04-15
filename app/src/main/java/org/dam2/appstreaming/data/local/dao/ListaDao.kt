@@ -11,7 +11,8 @@ interface ListaDao {
     @Query("SELECT DISTINCT tipoLista FROM listas_locales WHERE usuarioId = :uId")
     fun obtenerNombresDeMisListas(uId: String): kotlinx.coroutines.flow.Flow<List<String>> // Cambiado de suspend a Flow
 
-
+    @Query("SELECT * FROM listas_locales WHERE usuarioId = :uId")
+    fun obtenerPorUsuario(uId: String): kotlinx.coroutines.flow.Flow<List<ListaEntity>>
     @Query("SELECT * FROM listas_locales WHERE usuarioId = :uId AND tipoLista = :tipo")
     suspend fun obtenerPorTipo(uId: String, tipo: String): List<ListaEntity>
 
