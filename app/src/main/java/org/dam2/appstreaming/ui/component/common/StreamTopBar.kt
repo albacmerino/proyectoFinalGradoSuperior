@@ -3,6 +3,7 @@ package org.dam2.appstreaming.ui.component.common
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -15,11 +16,21 @@ import org.dam2.appstreaming.ui.colors.SeaGradient
 @Composable
 fun StreamTopBar(
     title: String,
-    showBackButton: Boolean = true, // He añadido esto para que sea más flexible
+    showBackButton: Boolean = true,
     onBackClick: () -> Unit = {},
-    onMenuClick: () -> Unit = {}
+    onMenuClick: () -> Unit = {},
+    onSearchClick: () -> Unit = {}
 ) {
     CenterAlignedTopAppBar(
+        actions = {
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Buscar",
+                    tint = SeaBlueLight
+                )
+            }
+        },
         title = {
             Text(title, style = MaterialTheme.typography.titleLarge.copy(
                 brush = SeaGradient, fontWeight = FontWeight.ExtraBold
@@ -37,5 +48,6 @@ fun StreamTopBar(
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
+
     )
 }

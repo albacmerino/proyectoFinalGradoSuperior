@@ -203,4 +203,35 @@
         app:destination="@id/loginFragment"
         app:popUpTo="@id/nav_graph"
         app:popUpToInclusive="true" />
+
+    <!-- 1. Acción global para llegar a búsqueda desde cualquier pantalla -->
+    <action
+        android:id="@+id/action_global_to_busqueda"
+        app:destination="@id/busquedaFragment"
+        app:enterAnim="@anim/slide_in_right"
+        app:exitAnim="@anim/slide_out_left"
+        app:popEnterAnim="@android:anim/slide_in_left"
+        app:popExitAnim="@android:anim/slide_out_right" />
+
+    <fragment
+        android:id="@+id/busquedaFragment"
+        android:name="org.dam2.appstreaming.ui.screen.busqueda.BusquedaFragment"
+        android:label="Búsqueda">
+
+        <action
+            android:id="@+id/action_busquedaFragment_to_peliculaDetailFragment"
+            app:destination="@id/peliculaDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_busquedaFragment_to_serieDetailFragment"
+            app:destination="@id/serieDetailFragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right" />
+    </fragment>
 </navigation>

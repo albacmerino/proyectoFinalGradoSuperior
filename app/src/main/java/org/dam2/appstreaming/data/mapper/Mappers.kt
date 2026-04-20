@@ -3,19 +3,19 @@ package org.dam2.appstreaming.data.mapper
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.data.remote.dto.RespuestaLista
+import org.dam2.appstreaming.data.remote.dto.ResultadoBusqueda
 
 /**
  * Convierte un objeto de la lista de favoritos en una Ficha de Película.
- * Los datos que falten (como la sinopsis) se cargarán luego desde la API en el detalle.
  */
 fun RespuestaLista.toFichaPelicula(): FichaPelicula {
     return FichaPelicula(
         id = this.idMultimedia,
         titulo = this.titulo,
         rutaPoster = this.rutaPoster,
-        rutaFondo = null, // Se cargará en el detalle
-        puntuacionMedia = 0.0, // Se cargará en el detalle
-        sinopsis = "", // Se cargará en el detalle
+        rutaFondo = null,
+        puntuacionMedia = 0.0,
+        sinopsis = "",
         fechaLanzamiento = "",
         idsGeneros = emptyList()
     )
@@ -36,3 +36,31 @@ fun RespuestaLista.toFichaSerie(): FichaSerie {
         idsGeneros = emptyList()
     )
 }
+
+/**
+ * Convierte un resultado de búsqueda en una [FichaPelicula].
+ */
+fun ResultadoBusqueda.toFichaPelicula(): FichaPelicula = FichaPelicula(
+    id = id,
+    titulo = tituloMostrar,
+    sinopsis = sinopsis ?: "",
+    rutaPoster = rutaPoster,
+    rutaFondo = rutaFondo,
+    fechaLanzamiento = fechaLanzamiento,
+    puntuacionMedia = puntuacion ?: 0.0,
+    idsGeneros = idsGeneros
+)
+
+/**
+ * Convierte un resultado de búsqueda en una [FichaSerie].
+ */
+fun ResultadoBusqueda.toFichaSerie(): FichaSerie = FichaSerie(
+    id = id,
+    titulo = tituloMostrar,
+    sinopsis = sinopsis ?: "",
+    rutaPoster = rutaPoster,
+    rutaFondo = rutaFondo,
+    fechaLanzamiento = fechaEmision,
+    puntuacionMedia = puntuacion ?: 0.0,
+    idsGeneros = idsGeneros
+)

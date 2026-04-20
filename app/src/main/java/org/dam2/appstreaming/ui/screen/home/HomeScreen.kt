@@ -44,7 +44,8 @@ fun HomeScreen(
     onLoadMore: (String) -> Unit,
     // Nuevos parámetros para la paginación del filtro de género
     resultadosFiltroGenero: List<Any>,
-    onCargarMasFiltro: () -> Unit
+    onCargarMasFiltro: () -> Unit,
+    onSearchClick: () -> Unit
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -66,7 +67,8 @@ fun HomeScreen(
                 StreamTopBar(
                     title = "SeaStream",
                     showBackButton = false,
-                    onMenuClick = { scope.launch { drawerState.open() } }
+                    onMenuClick = { scope.launch { drawerState.open() } },
+                    onSearchClick = onSearchClick
                 )
             },
             containerColor = Color.Transparent

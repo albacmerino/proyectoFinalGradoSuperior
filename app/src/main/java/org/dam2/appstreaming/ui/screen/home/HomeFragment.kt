@@ -96,7 +96,10 @@ class HomeFragment : Fragment() {
                                     viewModel.cargarMasContenido(seccion)
                                 },
                                 resultadosFiltroGenero = estado.resultadosFiltroGenero,
-                                onCargarMasFiltro = { viewModel.cargarMasFiltroGenero() }
+                                onCargarMasFiltro = { viewModel.cargarMasFiltroGenero() },onSearchClick = {
+                                    // 3. AQUÍ ES DONDE OCURRE LA NAVEGACIÓN REAL
+                                    findNavController().navigate(R.id.action_global_to_busqueda)
+                                },
                             )
                         }
                     }

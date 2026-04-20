@@ -180,4 +180,22 @@ interface TmdbApiService {
     suspend fun getTvGenres(
         @Query("language") lang: String = "es-ES"
     ): GeneroResponse
+    // =========================================================================
+    // BÚSQUEDA
+    // =========================================================================
+
+    /**
+     * Búsqueda multi: devuelve películas y series mezcladas en un solo resultado.
+     * Cada ítem tiene un campo "media_type" para distinguirlos.
+     *
+     * @param consulta Texto que escribe el usuario.
+     * @param page     Página de resultados (para carga infinita).
+     */
+    @GET("search/multi")
+    suspend fun buscarMulti(
+        @Query("query") consulta: String,
+        @Query("language") lang: String = "es-ES",
+        @Query("page") page: Int = 1
+    ): org.dam2.appstreaming.data.remote.dto.MultiSearchResponse
+
 }

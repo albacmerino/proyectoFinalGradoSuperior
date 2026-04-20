@@ -217,4 +217,21 @@ class TmdbRepository {
     } catch (_: Exception) {
         emptyList()
     }
+
+    // Dentro de TmdbRepository.kt
+
+    /**
+     * Realiza una búsqueda global (películas y series) usando el endpoint Multi-Search.
+     * Filtra los resultados para ignorar personas (sólo queremos "movie" y "tv").
+     */
+    suspend fun buscar(consulta: String): List<ResultadoBusqueda> {
+        return try {
+            val respuesta = api.buscarMulti(consulta)
+            // Filtramos para que sólo devuelva películas o series, ignorando actores/personas
+            respuesta.results.filter { it.mediaType == "movie" || it.mediaType == "tv" }
+        } catch (e: Exception) {
+            android.util.Log.e("TmdbRepository", "Error al buscar: ${e.message}")
+            emptyList()
+        }
+    }
 }
