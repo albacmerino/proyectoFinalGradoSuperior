@@ -45,6 +45,7 @@ class RegisterFragment : Fragment() {
                 var nombre by remember { mutableStateOf("") }
                 var usuario by remember { mutableStateOf("") }
                 var password by remember { mutableStateOf("") }
+                var confirmPassword by remember { mutableStateOf("") }
 
                 val estado by viewModel.estadoLogin.collectAsState()
 
@@ -54,6 +55,8 @@ class RegisterFragment : Fragment() {
                 val tieneMinuscula = password.any { it.isLowerCase() }
                 val tieneNumero = password.any { it.isDigit() }
                 val tieneEspecial = password.any { !it.isLetterOrDigit() }
+                val contrasenasCoinciden = password == confirmPassword && confirmPassword.isNotEmpty()
+
                 val passwordValida = tieneOchoCaracteres && tieneMayuscula && tieneMinuscula && tieneNumero && tieneEspecial
 
                 LaunchedEffect(estado) {
@@ -98,6 +101,14 @@ class RegisterFragment : Fragment() {
                             isPassword = true
                         )
 
+                        Spacer(modifier = Modifier.height(12.dp))
+                        CustomTextField(
+                            value = confirmPassword,
+                            onValueChange = { confirmPassword = it },
+                            label = "Confirmar Contraseña",
+                            isPassword = true
+                        )
+
                         // INDICADORES DE VALIDACIÓN EN TIEMPO REAL
                         if (password.isNotEmpty()) {
                             Column(
@@ -110,6 +121,7 @@ class RegisterFragment : Fragment() {
                                 ValidationText("Mayúsculas y minúsculas", tieneMayuscula && tieneMinuscula)
                                 ValidationText("Al menos un número", tieneNumero)
                                 ValidationText("Un carácter especial (@, #, $, etc.)", tieneEspecial)
+                                ValidationText("Las contraseñas coinciden", contrasenasCoinciden)
                             }
                         }
 
@@ -119,7 +131,9 @@ class RegisterFragment : Fragment() {
                             onClick = {
                                 if (nombre.isNotBlank() && usuario.contains("@") && passwordValida) {
                                     viewModel.registrarse(usuario, password, nombre)
-                                } else if (!passwordValida) {
+                                } else if (!contrasenasCoinciden) {
+                                    Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
+                                }else if (!passwordValida) {
                                     Toast.makeText(context, "La contraseña no es lo suficientemente segura", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Toast.makeText(context, "Rellena todos los campos correctamente", Toast.LENGTH_SHORT).show()
@@ -139,7 +153,7 @@ class RegisterFragment : Fragment() {
                             Box(modifier = Modifier
                                 .fillMaxSize()
                                 .background(
-                                    if (passwordValida && nombre.isNotBlank()) SeaGradient else Brush.linearGradient(
+                                    if (passwordValida && nombre.isNotBlank() && contrasenasCoinciden) SeaGradient else Brush.linearGradient(
                                         listOf(Color.Gray, Color.DarkGray)
                                     )
                                 ),
