@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -41,6 +42,7 @@ fun HomeScreen(
     idsFavoritos: List<Int>,
     onToggleFavorite: (Any) -> Unit,
     onNavigateToMisListas: () -> Unit,
+    onLoadMore: (String) -> Unit // Cambiado a String para saber qué sección cargar
 ) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -89,9 +91,10 @@ fun HomeScreen(
                 MainContent(
                     selectedTab, moviesNow, moviesPop, moviesTop,
                     seriesNow, seriesPop, seriesTop, generos,
-                    selectedGenreId, // Pasamos el ID del género para controlar la repetición
+                    selectedGenreId,
                     onMovieClick, onSerieClick,
-                    idsFavoritos, onToggleFavorite
+                    idsFavoritos, onToggleFavorite,
+                    onLoadMore = onLoadMore // Pasamos la función hacia abajo
                 )
             }
         }
@@ -112,11 +115,11 @@ private fun MainContent(
     onMovieClick: (FichaPelicula) -> Unit,
     onSerieClick: (FichaSerie) -> Unit,
     idsFavoritos: List<Int>,
-    onToggleFavorite: (Any) -> Unit
+    onToggleFavorite: (Any) -> Unit,
+    onLoadMore: (String) -> Unit // Recibimos la función
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(vertical = 16.dp)) {
 
-        // SI HAY UN GÉNERO SELECCIONADO: Mostramos solo una fila de resultados
         if (selectedGenreId != null) {
             val nombreGenero = generos.find { it.id == selectedGenreId }?.name ?: "Filtrados"
             item {
@@ -130,20 +133,56 @@ private fun MainContent(
                     },
                     isMovie = selectedTab == 0,
                     idsFavoritos = idsFavoritos,
-                    onToggleFavorite = onToggleFavorite
+                    onToggleFavorite = onToggleFavorite,
+                    onLoadMore = {}
                 )
             }
-        }
-        // SI NO HAY GÉNERO: Mostramos las 3 secciones normales (Novedades, Populares, Top)
-        else {
+        } else {
             if (selectedTab == 0) {
-                item { HomeSection("Novedades", moviesNow, generos, onMovieClick, true, idsFavoritos, onToggleFavorite) }
-                item { HomeSection("Populares", moviesPop, generos, onMovieClick, true, idsFavoritos, onToggleFavorite) }
-                item { HomeSection("Mejor valoradas", moviesTop, generos, onMovieClick, true, idsFavoritos, onToggleFavorite) }
+                item { HomeSection("Novedades",
+                    moviesNow,
+                    generos,
+                    onMovieClick,
+                    true, idsFavoritos,
+                    onToggleFavorite,
+                    { onLoadMore("peliculasEstreno") }) }
+                item { HomeSection("Populares",
+                    moviesPop, generos,
+                    onMovieClick,
+                    true, idsFavoritos, onToggleFavorite,
+                    { onLoadMore("peliculasPopulares") }) }
+                item { HomeSection("Mejor valoradas",
+                    moviesTop,
+                    generos,
+                    onMovieClick,
+                    true, idsFavoritos,
+                    onToggleFavorite,
+                    { onLoadMore("peliculasMejorValoradas") }) }
             } else {
-                item { HomeSection("Novedades TV", seriesNow, generos, onSerieClick, false, idsFavoritos, onToggleFavorite) }
-                item { HomeSection("Populares en TV", seriesPop, generos, onSerieClick, false, idsFavoritos, onToggleFavorite) }
-                item { HomeSection("Mejor valoradas", seriesTop, generos, onSerieClick, false, idsFavoritos, onToggleFavorite) }
+                item { HomeSection("Novedades TV",
+                    seriesNow,
+                    generos,
+                    onSerieClick,
+                    false,
+                    idsFavoritos,
+                    onToggleFavorite,
+                    { onLoadMore("seriesEstreno") }) }
+                item { HomeSection("Populares en TV",
+                    seriesPop,
+                    generos,
+                    onSerieClick,
+                    false,
+                    idsFavoritos,
+                    onToggleFavorite,
+                    { onLoadMore("seriesPopulares") }) }
+                item { HomeSection("Mejor valoradas",
+                    seriesTop,
+                    generos,
+                    onSerieClick,
+                    false,
+                    idsFavoritos,
+                    onToggleFavorite,
+                    { onLoadMore("seriesMejorValoradas") }) }
             }
         }
     }
@@ -157,9 +196,10 @@ private fun <T> HomeSection(
     onClick: (T) -> Unit,
     isMovie: Boolean,
     idsFavoritos: List<Int>,
-    onToggleFavorite: (Any) -> Unit
+    onToggleFavorite: (Any) -> Unit,
+    onLoadMore: () -> Unit // Parámetro añadido correctamente
 ) {
-    if (items.isEmpty()) return // No pintar sección si no hay datos
+    if (items.isEmpty()) return
 
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
         Text(
@@ -172,7 +212,12 @@ private fun <T> HomeSection(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(items) { item ->
+            itemsIndexed(items) { index, item ->
+                if (index >= items.size - 2 && items.size >= 20) {
+                    onLoadMore()
+                }
+
+
                 val itemId = if (item is FichaPelicula) item.id else (item as FichaSerie).id
                 val isFav = idsFavoritos.contains(itemId)
 

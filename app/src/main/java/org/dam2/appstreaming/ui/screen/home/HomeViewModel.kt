@@ -19,7 +19,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     // 1. Necesitamos los DOS repositorios
     private val tmdbRepo = TmdbRepository()
     private val backendRepo = RepositorioBackend(application)
-
+    // Mapa para llevar el control de qué página cargar en cada sección
+    private val paginasActuales = mutableMapOf<String, Int>()
     data class HomeState(
         val pestana: Int = 0,
         val peliculasEstreno: List<FichaPelicula> = emptyList(),
@@ -31,7 +32,8 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val generosPelicula: List<Genero> = emptyList(),
         val generosTv: List<Genero> = emptyList(),
         val idGeneroSeleccionado: Int? = null,
-        val cargando: Boolean = false
+        val cargando: Boolean = false,
+        val cargandoMas: Boolean = false
     ) {
         val generosActuales get() = if (pestana == 0) generosPelicula else generosTv
     }
@@ -65,45 +67,95 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private fun cargarDatos(idGenero: Int?) {
         viewModelScope.launch {
             _estado.update { it.copy(cargando = true) }
+            paginasActuales.clear() // Resetear páginas al cambiar de género o pestaña
             try {
                 if (idGenero == null) {
-                    // CARGA NORMAL: Cada categoría con su llamada correcta a TMDB
                     _estado.update {
                         it.copy(
-                            peliculasEstreno = tmdbRepo.obtenerPeliculasEnCine(),
-                            peliculasPopulares = tmdbRepo.obtenerPeliculasPopulares(),
-                            peliculasMejorValoradas = tmdbRepo.obtenerPeliculasMejorValoradas(),
-                            seriesEstreno = tmdbRepo.obtenerSeriesEnEmision(),
-                            seriesPopulares = tmdbRepo.obtenerSeriesPopulares(),
-                            seriesMejorValoradas = tmdbRepo.obtenerSeriesMejorValoradas()
+                            peliculasEstreno = tmdbRepo.obtenerPeliculasEnCine(1),
+                            peliculasPopulares = tmdbRepo.obtenerPeliculasPopulares(1),
+                            peliculasMejorValoradas = tmdbRepo.obtenerPeliculasMejorValoradas(1),
+                            seriesEstreno = tmdbRepo.obtenerSeriesEnEmision(1),
+                            seriesPopulares = tmdbRepo.obtenerSeriesPopulares(1),
+                            seriesMejorValoradas = tmdbRepo.obtenerSeriesMejorValoradas(1)
                         )
                     }
                 } else {
-                    // FILTRADO POR GÉNERO:
-                    if (_estado.value.pestana == 0) {
-                        val filtradas = tmdbRepo.descubrirPeliculasPorGenero(idGenero)
-                        _estado.update {
-                            it.copy(
-                                peliculasEstreno = filtradas,
-                                peliculasPopulares = emptyList(), // Vaciamos para que no se repitan
-                                peliculasMejorValoradas = emptyList()
-                            )
-                        }
+                    val esPeli = _estado.value.pestana == 0
+                    if (esPeli) {
+                        val filtradas = tmdbRepo.descubrirPeliculasPorGenero(idGenero, 1)
+                        _estado.update { it.copy(peliculasEstreno = filtradas, peliculasPopulares = emptyList(), peliculasMejorValoradas = emptyList()) }
                     } else {
-                        val filtradas = tmdbRepo.descubrirSeriesPorGenero(idGenero)
-                        _estado.update {
-                            it.copy(
-                                seriesEstreno = filtradas,
-                                seriesPopulares = emptyList(),
-                                seriesMejorValoradas = emptyList()
-                            )
-                        }
+                        val filtradas = tmdbRepo.descubrirSeriesPorGenero(idGenero, 1)
+                        _estado.update { it.copy(seriesEstreno = filtradas, seriesPopulares = emptyList(), seriesMejorValoradas = emptyList()) }
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
                 _estado.update { it.copy(cargando = false) }
+            }
+        }
+    }
+
+    fun cargarMasContenido(seccion: String) {
+        // Bloqueo de seguridad: No cargamos si ya está cargando, o si hay un género filtrado
+        // (TMDB no pagina igual los filtros de género simples, mejor dejarlo para carga normal)
+        if (_estado.value.cargando || _estado.value.cargandoMas || _estado.value.idGeneroSeleccionado != null) return
+
+        val proximaPagina = (paginasActuales[seccion] ?: 1) + 1
+
+        viewModelScope.launch {
+            _estado.update { it.copy(cargandoMas = true) }
+            try {
+                when (seccion) {
+                    "peliculasEstreno" -> {
+                        val nuevas = tmdbRepo.obtenerPeliculasEnCine(proximaPagina)
+                        if (nuevas.isNotEmpty()) {
+                            _estado.update { it.copy(peliculasEstreno = it.peliculasEstreno + nuevas) }
+                            paginasActuales[seccion] = proximaPagina
+                        }
+                    }
+                    "peliculasPopulares" -> {
+                        val nuevas = tmdbRepo.obtenerPeliculasPopulares(proximaPagina)
+                        if (nuevas.isNotEmpty()) {
+                            _estado.update { it.copy(peliculasPopulares = it.peliculasPopulares + nuevas) }
+                            paginasActuales[seccion] = proximaPagina
+                        }
+                    }
+                    "peliculasMejorValoradas" -> {
+                        val nuevas = tmdbRepo.obtenerPeliculasMejorValoradas(proximaPagina)
+                        if (nuevas.isNotEmpty()) {
+                            _estado.update { it.copy(peliculasMejorValoradas = it.peliculasMejorValoradas + nuevas) }
+                            paginasActuales[seccion] = proximaPagina
+                        }
+                    }
+                    "seriesEstreno" -> {
+                        val nuevas = tmdbRepo.obtenerSeriesEnEmision(proximaPagina)
+                        if (nuevas.isNotEmpty()) {
+                            _estado.update { it.copy(seriesEstreno = it.seriesEstreno + nuevas) }
+                            paginasActuales[seccion] = proximaPagina
+                        }
+                    }
+                    "seriesPopulares" -> {
+                        val nuevas = tmdbRepo.obtenerSeriesPopulares(proximaPagina)
+                        if (nuevas.isNotEmpty()) {
+                            _estado.update { it.copy(seriesPopulares = it.seriesPopulares + nuevas) }
+                            paginasActuales[seccion] = proximaPagina
+                        }
+                    }
+                    "seriesMejorValoradas" -> {
+                        val nuevas = tmdbRepo.obtenerSeriesMejorValoradas(proximaPagina)
+                        if (nuevas.isNotEmpty()) {
+                            _estado.update { it.copy(seriesMejorValoradas = it.seriesMejorValoradas + nuevas) }
+                            paginasActuales[seccion] = proximaPagina
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("HomeViewModel", "Error cargando página $proximaPagina de $seccion", e)
+            } finally {
+                _estado.update { it.copy(cargandoMas = false) }
             }
         }
     }

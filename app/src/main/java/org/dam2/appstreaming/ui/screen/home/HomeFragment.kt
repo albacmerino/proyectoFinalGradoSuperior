@@ -104,6 +104,10 @@ class HomeFragment : Fragment() {
                                     val prefs = PreferenciasUsuario(requireContext())
                                     prefs.guardarMantenerSesion(false)
                                     findNavController().navigate(R.id.action_homeFragment_to_loginFragment)
+                                },
+
+                                onLoadMore = { seccion ->
+                                    viewModel.cargarMasContenido(seccion)
                                 }
                             )
                         }

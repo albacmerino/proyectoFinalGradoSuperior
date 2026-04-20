@@ -21,17 +21,20 @@ interface TmdbApiService {
 
     @GET("movie/popular")
     suspend fun getPopularMovies(
-        @Query("language") lang: String = "es-ES"
+        @Query("language") lang: String = "es-ES",
+        @Query("page") page: Int
     ): MovieResponse
 
     @GET("movie/now_playing")
     suspend fun getNowPlayingMovies(
-        @Query("language") lang: String = "es-ES"
+        @Query("language") lang: String = "es-ES",
+        @Query("page") page: Int
     ): MovieResponse
 
     @GET("movie/top_rated")
     suspend fun getTopRatedMovies(
-        @Query("language") lang: String = "es-ES"
+        @Query("language") lang: String = "es-ES",
+        @Query("page") page: Int
     ): MovieResponse
 
     // Para obtener los detalles de una película
@@ -76,7 +79,8 @@ interface TmdbApiService {
     @GET("movie/{movie_id}/recommendations")
     suspend fun getMovieRecommendations(
         @Path("movie_id") movieId: Int,
-        @Query("language") lang: String = "es-ES"
+        @Query("language") lang: String = "es-ES",
+        @Query("page") page: Int
     ): MovieResponse
 
     //palabras clave
@@ -89,6 +93,7 @@ interface TmdbApiService {
     @GET("discover/movie")
     suspend fun discoverMovies(
         @Query("with_genres") genreId: Int,
+        @Query("page") page: Int,
         @Query("sort_by") sortBy: String = "popularity.desc",
         @Query("language") lang: String = "es-ES"
     ): MovieResponse
@@ -97,23 +102,27 @@ interface TmdbApiService {
 
     @GET("tv/popular")
     suspend fun getPopularSeries(
-        @Query("language") lang: String = "es-ES"
+        @Query("language") lang: String = "es-ES",
+        @Query("page") page: Int
     ): SeriesResponse
 
     @GET("tv/top_rated")
     suspend fun getTopRatedSeries(
-        @Query("language") lang: String = "es-ES"
+        @Query("language") lang: String = "es-ES",
+        @Query("page") page: Int
     ): SeriesResponse
 
     @GET("tv/on_the_air")
     suspend fun getOnTheAirSeries(
-        @Query("language") lang: String = "es-ES"
+        @Query("language") lang: String = "es-ES",
+        @Query("page") page: Int
     ): SeriesResponse
 
     @GET("tv/{series_id}")
     suspend fun getSeriesDetails(
         @Path("series_id") seriesId: Int,
-        @Query("language") lang: String = "es-ES"
+        @Query("language") lang: String = "es-ES",
+        @Query("page") page: Int
     ): FichaSerie
 
     @GET("tv/{series_id}/videos")
@@ -142,7 +151,8 @@ interface TmdbApiService {
     @GET("tv/{series_id}/recommendations")
     suspend fun getSeriesRecommendations(
         @Path("series_id") seriesId: Int,
-        @Query("language") lang: String = "es-ES"
+        @Query("language") lang: String = "es-ES",
+        @Query("page") page: Int
     ): SeriesResponse
 
     @GET("tv/{series_id}/keywords")
@@ -154,6 +164,7 @@ interface TmdbApiService {
     @GET("discover/tv")
     suspend fun discoverSeries(
         @Query("with_genres") genreId: Int,
+        @Query("page") page: Int,
         @Query("sort_by") sortBy: String = "popularity.desc",
         @Query("language") lang: String = "es-ES"
     ): SeriesResponse

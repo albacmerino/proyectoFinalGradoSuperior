@@ -32,18 +32,18 @@ class TmdbRepository {
         .create(TmdbApiService::class.java)
 
     // --- PELICULAS ---
-    suspend fun obtenerPeliculasPopulares(): List<FichaPelicula> = try {
-        api.getPopularMovies().listaPeliculas
+    suspend fun obtenerPeliculasPopulares(page: Int = 1): List<FichaPelicula> = try {
+        api.getPopularMovies(page = page).listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
-    suspend fun obtenerPeliculasEnCine(): List<FichaPelicula> = try {
-        api.getNowPlayingMovies().listaPeliculas
+    suspend fun obtenerPeliculasEnCine(page: Int = 1): List<FichaPelicula> = try {
+        api.getNowPlayingMovies(page = page).listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
-    suspend fun obtenerPeliculasMejorValoradas(): List<FichaPelicula> = try {
-        api.getTopRatedMovies().listaPeliculas
+    suspend fun obtenerPeliculasMejorValoradas(page: Int = 1): List<FichaPelicula> = try {
+        api.getTopRatedMovies(page = page).listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
@@ -109,8 +109,8 @@ class TmdbRepository {
         emptyList()
     }
 
-    suspend fun obtenerRecomendacionesPelicula(idPelicula: Int): List<FichaPelicula> = try {
-        api.getMovieRecommendations(idPelicula).listaPeliculas
+    suspend fun obtenerRecomendacionesPelicula(idPelicula: Int, page: Int = 1): List<FichaPelicula> = try {
+        api.getMovieRecommendations(idPelicula, page = page).listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
@@ -121,32 +121,32 @@ class TmdbRepository {
         emptyList()
     }
 
-    suspend fun descubrirPeliculasPorGenero(idGenero: Int): List<FichaPelicula> = try {
-        api.discoverMovies(idGenero).listaPeliculas
+    suspend fun descubrirPeliculasPorGenero(idGenero: Int, page: Int = 1): List<FichaPelicula> = try {
+        api.discoverMovies(idGenero, page = page).listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
 
     // --- SERIES ---
-    suspend fun obtenerSeriesPopulares(): List<FichaSerie> = try {
-        api.getPopularSeries().listaSeries
+    suspend fun obtenerSeriesPopulares(page: Int = 1): List<FichaSerie> = try {
+        api.getPopularSeries(page = page).listaSeries
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun obtenerSeriesEnEmision(): List<FichaSerie> = try {
-        api.getOnTheAirSeries().listaSeries
+    suspend fun obtenerSeriesEnEmision(page: Int = 1): List<FichaSerie> = try {
+        api.getOnTheAirSeries(page = page).listaSeries
     } catch (_: Exception) {
         emptyList()
     }
-    suspend fun obtenerSeriesMejorValoradas(): List<FichaSerie> = try {
-        api.getTopRatedSeries().listaSeries
+    suspend fun obtenerSeriesMejorValoradas(page: Int = 1): List<FichaSerie> = try {
+        api.getTopRatedSeries(page = page).listaSeries
     } catch (_: Exception) {
         emptyList()
     }
 
-    suspend fun obtenerDetallesSerie(idSerie: Int): FichaSerie? = try {
-        api.getSeriesDetails(idSerie)
+    suspend fun obtenerDetallesSerie(idSerie: Int, page: Int = 1): FichaSerie? = try {
+        api.getSeriesDetails(idSerie, page = page)
     } catch (_: Exception) {
         null
     }
@@ -187,8 +187,8 @@ class TmdbRepository {
         emptyList()
     }
 
-    suspend fun obtenerRecomendacionesSerie(idSerie: Int): List<FichaSerie> = try {
-        api.getSeriesRecommendations(idSerie).listaSeries
+    suspend fun obtenerRecomendacionesSerie(idSerie: Int, page: Int = 1): List<FichaSerie> = try {
+        api.getSeriesRecommendations(idSerie, page = page).listaSeries
     } catch (_: Exception) {
         emptyList()
     }
@@ -199,8 +199,8 @@ class TmdbRepository {
         emptyList()
     }
 
-    suspend fun descubrirSeriesPorGenero(idGenero: Int): List<FichaSerie> = try {
-        api.discoverSeries(idGenero).listaSeries
+    suspend fun descubrirSeriesPorGenero(idGenero: Int, page: Int = 1): List<FichaSerie> = try {
+        api.discoverSeries(idGenero, page = page).listaSeries
     } catch (_: Exception) {
         emptyList()
     }
