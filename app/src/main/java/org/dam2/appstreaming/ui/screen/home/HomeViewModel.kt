@@ -1,26 +1,29 @@
 package org.dam2.appstreaming.ui.screen.home
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.*
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.dam2.appstreaming.data.repository.TmdbRepository
-import org.dam2.appstreaming.data.repository.RepositorioBackend // Importamos tu repo de Room
-import org.dam2.appstreaming.data.model.*
+import org.dam2.appstreaming.data.model.FichaPelicula
+import org.dam2.appstreaming.data.model.FichaSerie
+import org.dam2.appstreaming.data.model.Genero
 import org.dam2.appstreaming.data.remote.dto.SolicitudLista
+import org.dam2.appstreaming.data.repository.RepositorioBackend
+import org.dam2.appstreaming.data.repository.TmdbRepository
 
-/**
- * ViewModel que gestiona la logica de la pantalla de inicio.
- * Cambiamos a AndroidViewModel para tener acceso a 'application' para el RepositorioBackend.
- */
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
-    // 1. Necesitamos los DOS repositorios
-    private val tmdbRepo = TmdbRepository()
-    private val backendRepo = RepositorioBackend(application)
-    // Mapa para llevar el control de qué página cargar en cada sección
-    private val paginasActuales = mutableMapOf<String, Int>()
+    private val tmdb = TmdbRepository()
+    private val backend = RepositorioBackend(application)
+
     data class HomeState(
         val pestana: Int = 0,
         val peliculasEstreno: List<FichaPelicula> = emptyList(),
@@ -31,175 +34,245 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val seriesMejorValoradas: List<FichaSerie> = emptyList(),
         val generosPelicula: List<Genero> = emptyList(),
         val generosTv: List<Genero> = emptyList(),
+        val generosActuales: List<Genero> = emptyList(),
         val idGeneroSeleccionado: Int? = null,
-        val cargando: Boolean = false,
-        val cargandoMas: Boolean = false
-    ) {
-        val generosActuales get() = if (pestana == 0) generosPelicula else generosTv
-    }
+        // Resultados del filtro por género (lista separada para no mezclar con el catálogo normal)
+        val resultadosFiltroGenero: List<Any> = emptyList(),
+        // Páginas para catálogo normal
+        val paginaEstreno: Int = 1,
+        val paginaPopulares: Int = 1,
+        val paginaMejorValoradas: Int = 1,
+        val paginaSeriesEstreno: Int = 1,
+        val paginaSeriesPopulares: Int = 1,
+        val paginaSeriesMejorValoradas: Int = 1,
+        // Página para el filtro de género (independiente del catálogo normal)
+        val paginaFiltroGenero: Int = 1,
+        val estaCargandoMasFiltro: Boolean = false
+    )
 
-    // 2. Observamos los IDs de favoritos desde Room en tiempo real
-    val idsFavoritos: StateFlow<List<Int>> = backendRepo.obtenerIdsFavoritos()
+    private val _estado = MutableStateFlow(HomeState())
+    val estado: StateFlow<HomeState> = _estado.asStateFlow()
+
+    val idsFavoritos: StateFlow<List<Int>> = backend.obtenerIdsFavoritos()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
 
-    private val _estado = MutableStateFlow(HomeState())
-    val estado = _estado.asStateFlow()
-
     init {
+        cargarTodo()
+    }
+
+    private fun cargarTodo() {
         viewModelScope.launch {
-            try {
-                val gPeliculas = tmdbRepo.obtenerGenerosPelicula()
-                val gTv = tmdbRepo.obtenerGenerosTv()
-                _estado.update {
-                    it.copy(generosPelicula = gPeliculas, generosTv = gTv)
-                }
-                cargarDatos(null)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            val generosPeli = tmdb.obtenerGenerosPelicula()
+            val generosTv = tmdb.obtenerGenerosTv()
+            _estado.update {
+                it.copy(
+                    generosPelicula = generosPeli,
+                    generosTv = generosTv,
+                    generosActuales = generosPeli
+                )
+            }
+        }
+        viewModelScope.launch {
+            val estreno = tmdb.obtenerPeliculasEnCine()
+            val populares = tmdb.obtenerPeliculasPopulares()
+            val topRated = tmdb.obtenerPeliculasMejorValoradas()
+            _estado.update {
+                it.copy(
+                    peliculasEstreno = estreno,
+                    peliculasPopulares = populares,
+                    peliculasMejorValoradas = topRated
+                )
+            }
+        }
+        viewModelScope.launch {
+            val estreno = tmdb.obtenerSeriesEnEmision()
+            val populares = tmdb.obtenerSeriesPopulares()
+            val topRated = tmdb.obtenerSeriesMejorValoradas()
+            _estado.update {
+                it.copy(
+                    seriesEstreno = estreno,
+                    seriesPopulares = populares,
+                    seriesMejorValoradas = topRated
+                )
             }
         }
     }
 
-    private fun cargarDatos(idGenero: Int?) {
-        viewModelScope.launch {
-            _estado.update { it.copy(cargando = true) }
-            paginasActuales.clear() // Resetear páginas al cambiar de género o pestaña
-            try {
-                if (idGenero == null) {
-                    _estado.update {
-                        it.copy(
-                            peliculasEstreno = tmdbRepo.obtenerPeliculasEnCine(1),
-                            peliculasPopulares = tmdbRepo.obtenerPeliculasPopulares(1),
-                            peliculasMejorValoradas = tmdbRepo.obtenerPeliculasMejorValoradas(1),
-                            seriesEstreno = tmdbRepo.obtenerSeriesEnEmision(1),
-                            seriesPopulares = tmdbRepo.obtenerSeriesPopulares(1),
-                            seriesMejorValoradas = tmdbRepo.obtenerSeriesMejorValoradas(1)
-                        )
-                    }
-                } else {
-                    val esPeli = _estado.value.pestana == 0
-                    if (esPeli) {
-                        val filtradas = tmdbRepo.descubrirPeliculasPorGenero(idGenero, 1)
-                        _estado.update { it.copy(peliculasEstreno = filtradas, peliculasPopulares = emptyList(), peliculasMejorValoradas = emptyList()) }
-                    } else {
-                        val filtradas = tmdbRepo.descubrirSeriesPorGenero(idGenero, 1)
-                        _estado.update { it.copy(seriesEstreno = filtradas, seriesPopulares = emptyList(), seriesMejorValoradas = emptyList()) }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                _estado.update { it.copy(cargando = false) }
-            }
+    fun alCambiarPestana(nuevaPestana: Int) {
+        _estado.update { estado ->
+            val generos = if (nuevaPestana == 0) estado.generosPelicula else estado.generosTv
+            estado.copy(
+                pestana = nuevaPestana,
+                generosActuales = generos,
+                idGeneroSeleccionado = null,
+                resultadosFiltroGenero = emptyList(),
+                paginaFiltroGenero = 1
+            )
         }
     }
 
-    fun cargarMasContenido(seccion: String) {
-        // Bloqueo de seguridad: No cargamos si ya está cargando, o si hay un género filtrado
-        // (TMDB no pagina igual los filtros de género simples, mejor dejarlo para carga normal)
-        if (_estado.value.cargando || _estado.value.cargandoMas || _estado.value.idGeneroSeleccionado != null) return
+    /**
+     * Selecciona un género y carga la primera página de resultados.
+     * Si se pulsa el mismo género activo, se limpia el filtro.
+     */
+    fun alSeleccionarGenero(idGenero: Int?) {
+        val esMismoGenero = idGenero == _estado.value.idGeneroSeleccionado
 
-        val proximaPagina = (paginasActuales[seccion] ?: 1) + 1
-
-        viewModelScope.launch {
-            _estado.update { it.copy(cargandoMas = true) }
-            try {
-                when (seccion) {
-                    "peliculasEstreno" -> {
-                        val nuevas = tmdbRepo.obtenerPeliculasEnCine(proximaPagina)
-                        if (nuevas.isNotEmpty()) {
-                            _estado.update { it.copy(peliculasEstreno = it.peliculasEstreno + nuevas) }
-                            paginasActuales[seccion] = proximaPagina
-                        }
-                    }
-                    "peliculasPopulares" -> {
-                        val nuevas = tmdbRepo.obtenerPeliculasPopulares(proximaPagina)
-                        if (nuevas.isNotEmpty()) {
-                            _estado.update { it.copy(peliculasPopulares = it.peliculasPopulares + nuevas) }
-                            paginasActuales[seccion] = proximaPagina
-                        }
-                    }
-                    "peliculasMejorValoradas" -> {
-                        val nuevas = tmdbRepo.obtenerPeliculasMejorValoradas(proximaPagina)
-                        if (nuevas.isNotEmpty()) {
-                            _estado.update { it.copy(peliculasMejorValoradas = it.peliculasMejorValoradas + nuevas) }
-                            paginasActuales[seccion] = proximaPagina
-                        }
-                    }
-                    "seriesEstreno" -> {
-                        val nuevas = tmdbRepo.obtenerSeriesEnEmision(proximaPagina)
-                        if (nuevas.isNotEmpty()) {
-                            _estado.update { it.copy(seriesEstreno = it.seriesEstreno + nuevas) }
-                            paginasActuales[seccion] = proximaPagina
-                        }
-                    }
-                    "seriesPopulares" -> {
-                        val nuevas = tmdbRepo.obtenerSeriesPopulares(proximaPagina)
-                        if (nuevas.isNotEmpty()) {
-                            _estado.update { it.copy(seriesPopulares = it.seriesPopulares + nuevas) }
-                            paginasActuales[seccion] = proximaPagina
-                        }
-                    }
-                    "seriesMejorValoradas" -> {
-                        val nuevas = tmdbRepo.obtenerSeriesMejorValoradas(proximaPagina)
-                        if (nuevas.isNotEmpty()) {
-                            _estado.update { it.copy(seriesMejorValoradas = it.seriesMejorValoradas + nuevas) }
-                            paginasActuales[seccion] = proximaPagina
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("HomeViewModel", "Error cargando página $proximaPagina de $seccion", e)
-            } finally {
-                _estado.update { it.copy(cargandoMas = false) }
+        if (idGenero == null || esMismoGenero) {
+            _estado.update {
+                it.copy(
+                    idGeneroSeleccionado = null,
+                    resultadosFiltroGenero = emptyList(),
+                    paginaFiltroGenero = 1
+                )
             }
+            return
         }
-    }
 
-    fun alCambiarPestana(indice: Int) {
+        // Nuevo género: reseteamos la lista y cargamos desde la página 1
         _estado.update {
-            it.copy(pestana = indice, idGeneroSeleccionado = null)
+            it.copy(
+                idGeneroSeleccionado = idGenero,
+                resultadosFiltroGenero = emptyList(),
+                paginaFiltroGenero = 1
+            )
         }
-        cargarDatos(null)
+
+        cargarPaginaFiltro(idGenero, pagina = 1, acumular = false)
     }
 
-    fun alSeleccionarGenero(id: Int?) {
-        _estado.update { it.copy(idGeneroSeleccionado = id) }
-        cargarDatos(id)
+    /**
+     * Carga más resultados del género activo (paginación infinita del filtro).
+     * Llamado desde la UI cuando el usuario llega al final de la lista filtrada.
+     */
+    fun cargarMasFiltroGenero() {
+        val estado = _estado.value
+        val idGenero = estado.idGeneroSeleccionado ?: return
+
+        // Evitamos lanzar varias peticiones simultáneas
+        if (estado.estaCargandoMasFiltro) return
+
+        val siguientePagina = estado.paginaFiltroGenero + 1
+        cargarPaginaFiltro(idGenero, pagina = siguientePagina, acumular = true)
     }
 
-    // 3. Función para añadir o quitar de favoritos (Room)
+    /**
+     * Petición real a TMDB para obtener una página del filtro.
+     *
+     * @param acumular si es true, añade los resultados a los existentes (paginación);
+     *                 si es false, los reemplaza (primera carga o cambio de género).
+     */
+    private fun cargarPaginaFiltro(idGenero: Int, pagina: Int, acumular: Boolean) {
+        viewModelScope.launch {
+            _estado.update { it.copy(estaCargandoMasFiltro = true) }
+
+            if (_estado.value.pestana == 0) {
+                val nuevas = tmdb.descubrirPeliculasPorGenero(idGenero, pagina)
+                _estado.update { estado ->
+                    val listaActualizada = if (acumular) {
+                        @Suppress("UNCHECKED_CAST")
+                        (estado.resultadosFiltroGenero as List<FichaPelicula>) + nuevas
+                    } else {
+                        nuevas
+                    }
+                    estado.copy(
+                        resultadosFiltroGenero = listaActualizada,
+                        paginaFiltroGenero = pagina,
+                        estaCargandoMasFiltro = false
+                    )
+                }
+            } else {
+                val nuevas = tmdb.descubrirSeriesPorGenero(idGenero, pagina)
+                _estado.update { estado ->
+                    val listaActualizada = if (acumular) {
+                        @Suppress("UNCHECKED_CAST")
+                        (estado.resultadosFiltroGenero as List<FichaSerie>) + nuevas
+                    } else {
+                        nuevas
+                    }
+                    estado.copy(
+                        resultadosFiltroGenero = listaActualizada,
+                        paginaFiltroGenero = pagina,
+                        estaCargandoMasFiltro = false
+                    )
+                }
+            }
+        }
+    }
+
+    // Paginación del catálogo normal (sin cambios respecto a la versión anterior)
+    fun cargarMasContenido(seccion: String) {
+        viewModelScope.launch {
+            val estado = _estado.value
+            when (seccion) {
+                "peliculasEstreno" -> {
+                    val p = estado.paginaEstreno + 1
+                    val nuevas = tmdb.obtenerPeliculasEnCine(p)
+                    _estado.update { it.copy(peliculasEstreno = it.peliculasEstreno + nuevas, paginaEstreno = p) }
+                }
+                "peliculasPopulares" -> {
+                    val p = estado.paginaPopulares + 1
+                    val nuevas = tmdb.obtenerPeliculasPopulares(p)
+                    _estado.update { it.copy(peliculasPopulares = it.peliculasPopulares + nuevas, paginaPopulares = p) }
+                }
+                "peliculasMejorValoradas" -> {
+                    val p = estado.paginaMejorValoradas + 1
+                    val nuevas = tmdb.obtenerPeliculasMejorValoradas(p)
+                    _estado.update { it.copy(peliculasMejorValoradas = it.peliculasMejorValoradas + nuevas, paginaMejorValoradas = p) }
+                }
+                "seriesEstreno" -> {
+                    val p = estado.paginaSeriesEstreno + 1
+                    val nuevas = tmdb.obtenerSeriesEnEmision(p)
+                    _estado.update { it.copy(seriesEstreno = it.seriesEstreno + nuevas, paginaSeriesEstreno = p) }
+                }
+                "seriesPopulares" -> {
+                    val p = estado.paginaSeriesPopulares + 1
+                    val nuevas = tmdb.obtenerSeriesPopulares(p)
+                    _estado.update { it.copy(seriesPopulares = it.seriesPopulares + nuevas, paginaSeriesPopulares = p) }
+                }
+                "seriesMejorValoradas" -> {
+                    val p = estado.paginaSeriesMejorValoradas + 1
+                    val nuevas = tmdb.obtenerSeriesMejorValoradas(p)
+                    _estado.update { it.copy(seriesMejorValoradas = it.seriesMejorValoradas + nuevas, paginaSeriesMejorValoradas = p) }
+                }
+            }
+        }
+    }
+
+    // Favoritos
     fun toggleFavorito(pelicula: FichaPelicula) {
         viewModelScope.launch {
-            val solicitud = SolicitudLista(
-                idMultimedia = pelicula.id,
-                titulo = pelicula.titulo,
-                rutaPoster = pelicula.rutaPoster,
-                esPelicula = true,
-                nombreUsuario = "",
-                tipoLista = "FAVORITO"
-            )
-            // Llamamos al repo de Backend/Room
-            backendRepo.agregarALista(solicitud)
+            val solicitud = buildSolicitudFavorito(pelicula.id, pelicula.titulo, pelicula.rutaPoster, true)
+            val exito = backend.agregarALista(solicitud)
+            if (!exito) Log.e("HomeViewModel", "Error al actualizar favorito: ${pelicula.titulo}")
         }
     }
 
-    // También para series
     fun toggleFavoritoSerie(serie: FichaSerie) {
         viewModelScope.launch {
-            val solicitud = SolicitudLista(
-                idMultimedia = serie.id,
-                titulo = serie.titulo,
-                rutaPoster = serie.rutaPoster,
-                esPelicula = false,
-                nombreUsuario = "",
-                tipoLista = "FAVORITO"
-            )
-            backendRepo.agregarALista(solicitud)
+            val solicitud = buildSolicitudFavorito(serie.id, serie.titulo, serie.rutaPoster, false)
+            val exito = backend.agregarALista(solicitud)
+            if (!exito) Log.e("HomeViewModel", "Error al actualizar favorito serie: ${serie.titulo}")
         }
+    }
+
+    private fun buildSolicitudFavorito(id: Int, titulo: String, poster: String?, esPelicula: Boolean): SolicitudLista {
+        val user = FirebaseAuth.getInstance().currentUser
+        val nombreUsuario = user?.displayName?.takeIf { it.isNotBlank() }
+            ?: user?.email?.substringBefore("@")
+            ?: user?.uid
+            ?: "anonimo"
+        return SolicitudLista(
+            idMultimedia = id,
+            titulo = titulo,
+            rutaPoster = poster,
+            esPelicula = esPelicula,
+            nombreUsuario = nombreUsuario,
+            tipoLista = "FAVORITO"
+        )
     }
 }

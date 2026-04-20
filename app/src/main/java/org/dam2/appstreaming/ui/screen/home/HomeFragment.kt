@@ -22,14 +22,11 @@ import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import org.dam2.appstreaming.R
 import org.dam2.appstreaming.data.local.prefs.PreferenciasUsuario
-import org.dam2.appstreaming.ui.screen.pelicula.PeliculaViewModel
-import org.dam2.appstreaming.ui.screen.serie.SerieViewModel
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.FichaSerie
-/**
- * Fragmento principal de la aplicación que actúa como contenedor para la UI de Compose.
- * Gestiona la comunicacion entre los ViewModels y la navegacion de Android Jetpack.
- */
+import org.dam2.appstreaming.ui.screen.pelicula.PeliculaViewModel
+import org.dam2.appstreaming.ui.screen.serie.SerieViewModel
+
 class HomeFragment : Fragment() {
 
     private val viewModel: HomeViewModel by viewModels()
@@ -44,8 +41,6 @@ class HomeFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 val estado by viewModel.estado.collectAsState()
-
-                // 1. RECOLECTAMOS LOS IDS DE FAVORITOS DESDE ROOM
                 val idsFavoritos by viewModel.idsFavoritos.collectAsState()
 
                 MaterialTheme {
@@ -84,31 +79,24 @@ class HomeFragment : Fragment() {
                                     findNavController().navigate(R.id.action_homeFragment_to_favoritosFragment)
                                 },
                                 onNavigateToMisListas = {
-                                    // Llamamos a la ACCIÓN GLOBAL
                                     findNavController().navigate(R.id.action_global_to_misListas)
                                 },
-
-                                // --- 2. PASAMOS LOS PARÁMETROS QUE FALTABAN ---
                                 idsFavoritos = idsFavoritos,
                                 onToggleFavorite = { item ->
-                                    // Detectamos si es película o serie y llamamos a la función correspondiente
-                                    if (item is FichaPelicula) {
-                                        viewModel.toggleFavorito(item)
-                                    } else if (item is FichaSerie) {
-                                        viewModel.toggleFavoritoSerie(item)
-                                    }
+                                    if (item is FichaPelicula) viewModel.toggleFavorito(item)
+                                    else if (item is FichaSerie) viewModel.toggleFavoritoSerie(item)
                                 },
-                                // ----------------------------------------------
                                 onLogoutClick = {
                                     FirebaseAuth.getInstance().signOut()
                                     val prefs = PreferenciasUsuario(requireContext())
                                     prefs.guardarMantenerSesion(false)
                                     findNavController().navigate(R.id.action_homeFragment_to_loginFragment)
                                 },
-
                                 onLoadMore = { seccion ->
                                     viewModel.cargarMasContenido(seccion)
-                                }
+                                },
+                                resultadosFiltroGenero = estado.resultadosFiltroGenero,
+                                onCargarMasFiltro = { viewModel.cargarMasFiltroGenero() }
                             )
                         }
                     }
