@@ -18,8 +18,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import org.dam2.appstreaming.data.remote.dto.Review
+import org.dam2.appstreaming.data.remote.dto.tmdb.Review
 
+/**
+ * PANTALLA DE RESEÑAS (Reviews Screen)
+ * 
+ * Implementa una interfaz de listado vertical para visualizar las críticas de la comunidad.
+ * Utiliza CenterAlignedTopAppBar para mantener la coherencia estética con el resto de la App.
+ *
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReviewsScreen(
@@ -47,11 +54,13 @@ fun ReviewsScreen(
         },
         containerColor = Color(0xFF000814)
     ) { padding ->
+        // Gestión de estado vacío
         if (reviews.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text("No hay reseñas disponibles.", color = Color.White.copy(alpha = 0.5f))
             }
         } else {
+            // Renderizado eficiente de la lista de críticas
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 contentPadding = PaddingValues(16.dp),
@@ -65,6 +74,10 @@ fun ReviewsScreen(
     }
 }
 
+/**
+ * ELEMENTO DE RESEÑA (ReviewItem)
+ * Representa visualmente una crítica individual, incluyendo autor, fecha, avatar y contenido.
+ */
 @Composable
 fun ReviewItem(resena: Review) {
     Card(
@@ -75,6 +88,7 @@ fun ReviewItem(resena: Review) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                // Carga de imagen de perfil con fallback para TMDB
                 val avatarUrl = resena.authorDetails.avatarPath?.let {
                     if (it.startsWith("http")) it else "https://image.tmdb.org/t/p/w185$it"
                 }
@@ -93,6 +107,7 @@ fun ReviewItem(resena: Review) {
                         fontSize = 16.sp
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Badge de puntuación si el autor ha dejado una nota
                         if (resena.authorDetails.rating != null) {
                             Surface(
                                 color = Color(0xFF01B4E4),
@@ -108,6 +123,7 @@ fun ReviewItem(resena: Review) {
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                         }
+                        // Formateo de fecha simple (extrayendo solo el día/mes/año)
                         Text(
                             text = resena.createdAt.take(10),
                             color = Color.White.copy(alpha = 0.5f),

@@ -26,10 +26,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import org.dam2.appstreaming.data.remote.dto.CastMember
-import org.dam2.appstreaming.data.remote.dto.Provider
-import org.dam2.appstreaming.data.remote.dto.Review
-import org.dam2.appstreaming.data.remote.dto.Keyword
+import org.dam2.appstreaming.data.remote.dto.tmdb.CastMember
+import org.dam2.appstreaming.data.remote.dto.tmdb.Provider
+import org.dam2.appstreaming.data.remote.dto.tmdb.Review
+import org.dam2.appstreaming.data.remote.dto.tmdb.Keyword
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.component.SeaRatingBar
@@ -38,7 +38,11 @@ import org.dam2.appstreaming.data.model.Genero
 import org.dam2.appstreaming.ui.component.common.AddToListSheet
 
 /**
- * Pantalla de detalle de película (Componente Composable principal).
+ * PANTALLA DE DETALLE DE PELÍCULA
+ * 
+ * Implementa una interfaz para mostrar la ficha completa de una película.
+ * Integra información de TMDB (reparto, reseñas, recomendaciones) y servicios de streaming externos.
+ *
  */
 @Composable
 fun PeliculaDetailScreen(
@@ -51,7 +55,7 @@ fun PeliculaDetailScreen(
     onAddClick: (FichaPelicula, String?) -> Unit,
     onCloseSheet: () -> Unit
 ) {
-    // Si los datos principales están cargando o no hay película, mostramos carga
+    // Gestión del estado de carga inicial
     if (state.isLoading || state.movie == null) {
         PantallaCargando()
     } else {
@@ -60,58 +64,60 @@ fun PeliculaDetailScreen(
 
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFF000814))) {
             Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
-                // Imagen de cabecera con botón de Play
+                // Cabecera visual con el backdrop de la película
                 CabeceraImagen(movie.rutaFondo) {
-                    state.trailerKey?.let { onPlayTrailerClick(it) }
+                    state.trailerKey?.let {
+                        onPlayTrailerClick(it)
+                    }
                 }
                 
-                // Banner de dónde ver la película
+                // Información sobre disponibilidad en plataformas (JustWatch API integration vía TMDB)
                 BannerStreaming(state.watchLink, state.directPlatformLink, state.mainProvider) {
                     val urlFinal = state.directPlatformLink ?: state.watchLink
-                    urlFinal?.let { onWatchNowClick(it) }
+                    urlFinal?.let {
+                        onWatchNowClick(it)
+                    }
                 }
 
                 Column(modifier = Modifier.padding(20.dp)) {
-                    // Título y metadatos (año, géneros, clasificación)
                     TituloSeccion(movie.titulo)
                     MetadatosPelicula(movie.fechaLanzamiento, movie.idsGeneros, state.allGenres, state.certification)
                     
-                    // Selector interactivo de opinión (emoji + nota)
+                    // Componente de interacción para feedback del usuario
                     SeccionOpinion()
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    // Estrellas de puntuación y botón de añadir a lista
+                    
+                    // Visualización de nota media y acción principal de guardado
                     PuntuacionYAcciones(
                         nota = movie.puntuacionMedia,
-                        onAddClick = { onAddClick(movie, null) }
+                        onAddClick = {
+                            onAddClick(movie, null)
+                        }
                     )
                     
                     Spacer(modifier = Modifier.height(32.dp))
-                    // Resumen de la película
+                    
                     SinopsisSeccion(movie.sinopsis)
-                    
-                    // Carrusel de actores
                     RepartoSeccion(state.cast)
-                    
-                    // Primera reseña destacada
                     SeccionSocial(state.reviews) { onSeeAllReviewsClick(movie.id) }
-                    
-                    // Etiquetas de palabras clave
                     PalabrasClaveSeccion(state.keywords)
                     
-                    // Carrusel de películas similares
+                    // Navegación a contenidos relacionados
                     RecomendacionesSeccion(state.recommendations, onRecommendationClick)
                 }
             }
 
-            // Botón flotante para volver atrás
             BotonIrAtras(onBackClick)
 
+            // Para organizar el contenido en listas personalizadas (Room)
             if (state.mostrarSheet) {
                 AddToListSheet(
                     listasExistentes = state.nombresListas,
-                    onNombreNuevaLista = { nombre -> onAddClick(movie, nombre) },
-                    onListaSeleccionada = { nombre -> onAddClick(movie, nombre) },
+                    onNombreNuevaLista = {
+                        nombre -> onAddClick(movie, nombre) },
+                    onListaSeleccionada = {
+                        nombre -> onAddClick(movie, nombre) },
                     onDismiss = onCloseSheet
                 )
             }
@@ -119,6 +125,9 @@ fun PeliculaDetailScreen(
     }
 }
 
+/**
+ * Componente de feedback visual durante la carga de datos.
+ */
 @Composable
 private fun PantallaCargando() {
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFF000814)), contentAlignment = Alignment.Center) {
@@ -126,6 +135,9 @@ private fun PantallaCargando() {
     }
 }
 
+/**
+ * Renderiza la imagen de fondo con un efecto de degradado y botón de reproducción.
+ */
 @Composable
 private fun CabeceraImagen(ruta: String?, alPulsarPlay: () -> Unit) {
     Box(modifier = Modifier.height(350.dp).fillMaxWidth()) {
@@ -135,11 +147,10 @@ private fun CabeceraImagen(ruta: String?, alPulsarPlay: () -> Unit) {
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
-        // Degradado oscuro en la parte inferior de la imagen
+        // Capa de degradado para asegurar el contraste de la UI superior
         Box(modifier = Modifier.fillMaxSize().background(
             Brush.verticalGradient(listOf(Color.Transparent, Color(0xFF000814).copy(alpha = 0.5f)), startY = 600f)
         ))
-        // Botón central de Play
         Surface(
             modifier = Modifier.align(Alignment.Center).clickable { alPulsarPlay() },
             shape = CircleShape,
@@ -151,12 +162,18 @@ private fun CabeceraImagen(ruta: String?, alPulsarPlay: () -> Unit) {
     }
 }
 
+/**
+ * Barra informativa sobre plataformas de streaming donde está disponible el título.
+ */
 @Composable
 private fun BannerStreaming(watchLink: String?, directLink: String?, proveedor: Provider?, alPulsar: () -> Unit) {
     if (watchLink != null || directLink != null) {
         Row(
-            modifier = Modifier.fillMaxWidth().background(Color(0xFF032541))
-                .clickable { alPulsar() }.padding(horizontal = 20.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth()
+                .background(Color(0xFF032541))
+                .clickable {
+                    alPulsar() }
+                .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             proveedor?.let {
@@ -185,9 +202,11 @@ private fun TituloSeccion(titulo: String) {
     Spacer(modifier = Modifier.height(12.dp))
 }
 
+/**
+ * Muestra información: año, géneros mapeados y certificación de edad.
+ */
 @Composable
 private fun MetadatosPelicula(fecha: String?, idsGeneros: List<Int>?, listaGeneros: List<Genero>, certification: String?) {
-    // Busca los nombres de los géneros a partir de sus IDs
     val nombres = idsGeneros?.mapNotNull { id -> listaGeneros.find { it.id == id }?.name }
         ?.joinToString(" • ") ?: "General"
 
@@ -218,6 +237,9 @@ private fun MetadatosPelicula(fecha: String?, idsGeneros: List<Int>?, listaGener
     }
 }
 
+/**
+ * Componente para que el usuario guarde su opinión (Emoji + Nota).
+ */
 @Composable
 private fun SeccionOpinion() {
     var mostrarSelector by remember { mutableStateOf(false) }
@@ -308,7 +330,7 @@ private fun PuntuacionYAcciones(nota: Double, onAddClick: () -> Unit) {
     }
     Spacer(modifier = Modifier.height(32.dp))
     Button(
-        onClick = onAddClick, // <--- AHORA EJECUTA LA LÓGICA
+        onClick = onAddClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
@@ -327,6 +349,9 @@ private fun SinopsisSeccion(texto: String) {
     Text(texto.ifEmpty { "No hay descripción disponible." }, color = Color.White.copy(alpha = 0.8f), lineHeight = 26.sp)
 }
 
+/**
+ * Carrusel de actores secundarios.
+ */
 @Composable
 private fun RepartoSeccion(reparto: List<CastMember>) {
     if (reparto.isNotEmpty()) {
@@ -355,6 +380,9 @@ private fun CardActor(actor: CastMember) {
     }
 }
 
+/**
+ * Sección de reseñas sociales. Muestra la más relevante y permite navegar al listado completo.
+ */
 @Composable
 private fun SeccionSocial(resenas: List<Review>, onSeeAllReviewsClick: () -> Unit) {
     Column(modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)) {
@@ -432,6 +460,9 @@ private fun PalabrasClaveSeccion(palabrasClave: List<Keyword>) {
     }
 }
 
+/**
+ * Carrusel de películas similares.
+ */
 @Composable
 private fun RecomendacionesSeccion(recomendaciones: List<FichaPelicula>, onPeliculaClick: (FichaPelicula) -> Unit) {
     if (recomendaciones.isNotEmpty()) {
@@ -454,10 +485,12 @@ private fun RecomendacionesSeccion(recomendaciones: List<FichaPelicula>, onPelic
     }
 }
 
+/**
+ * Botón flotante persistente para permitir la navegación hacia atrás en el stack.
+ */
 @Composable
 private fun BotonIrAtras(alPulsar: () -> Unit) {
     IconButton(onClick = alPulsar, modifier = Modifier.padding(top = 48.dp, start = 16.dp).size(45.dp).background(Color.Black.copy(alpha = 0.6f), CircleShape)) {
         Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
     }
-
 }

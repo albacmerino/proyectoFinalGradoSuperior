@@ -15,7 +15,11 @@ import org.dam2.appstreaming.ui.screen.pelicula.PeliculaViewModel
 import org.dam2.appstreaming.ui.screen.serie.SerieViewModel
 
 /**
- * Fragmento que muestra la lista completa de reseñas para una película o serie.
+ * RESEÑAS (ReviewsFragment)
+ * 
+ * Host para la visualización de críticas de usuarios. Para
+ * mostrar datos de películas o series basándose en los argumentos de navegación.
+ *
  */
 class ReviewsFragment : Fragment() {
 
@@ -29,7 +33,7 @@ class ReviewsFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 MaterialTheme {
-                    // Obtenemos el tipo de medio (película o serie) de los argumentos
+                    // Obtenemos el tipo de medio (película o serie)
                     val mediaType = arguments?.getString("mediaType") ?: "pelicula"
                     
                     if (mediaType == "pelicula") {

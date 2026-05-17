@@ -3,9 +3,14 @@ package org.dam2.appstreaming.data.model
 import com.google.gson.annotations.SerializedName
 
 /**
- * Representa la información de una serie desde la API de TMDB.
+ * FICHA SERIE
+ *
+ * Representa la entidad Serie de TV en la capa de negocio.
+ * Contiene atributos específicos que la diferencian de una película, como el país de origen.
+ *
  */
 data class FichaSerie(
+
     @SerializedName("id") override val id: Int,
     @SerializedName("name") override val titulo: String,
     @SerializedName("overview") override val sinopsis: String,

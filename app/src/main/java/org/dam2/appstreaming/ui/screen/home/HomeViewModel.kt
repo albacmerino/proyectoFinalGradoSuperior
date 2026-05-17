@@ -15,15 +15,25 @@ import kotlinx.coroutines.launch
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.data.model.Genero
-import org.dam2.appstreaming.data.remote.dto.SolicitudLista
 import org.dam2.appstreaming.data.repository.RepositorioBackend
 import org.dam2.appstreaming.data.repository.TmdbRepository
+import org.dam2.appstreaming.data.remote.dto.backend.SolicitudLista
 
+/**
+ * VIEWMODEL DE LA PANTALLA PRINCIPAL (HOME)
+ *
+ * Es el cerebro de la pantalla de inicio. Gestiona carruseles de películas y series,
+ * la lógica de filtrado por géneros y el estado de favoritos.
+ *
+ */
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val tmdb = TmdbRepository()
     private val backend = RepositorioBackend(application)
 
+    /**
+     * Representa toda la información visual de la pantalla Home.
+     */
     data class HomeState(
         val pestana: Int = 0,
         val peliculasEstreno: List<FichaPelicula> = emptyList(),
@@ -36,16 +46,13 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val generosTv: List<Genero> = emptyList(),
         val generosActuales: List<Genero> = emptyList(),
         val idGeneroSeleccionado: Int? = null,
-        // Resultados del filtro por género (lista separada para no mezclar con el catálogo normal)
         val resultadosFiltroGenero: List<Any> = emptyList(),
-        // Páginas para catálogo normal
         val paginaEstreno: Int = 1,
         val paginaPopulares: Int = 1,
         val paginaMejorValoradas: Int = 1,
         val paginaSeriesEstreno: Int = 1,
         val paginaSeriesPopulares: Int = 1,
         val paginaSeriesMejorValoradas: Int = 1,
-        // Página para el filtro de género (independiente del catálogo normal)
         val paginaFiltroGenero: Int = 1,
         val estaCargandoMasFiltro: Boolean = false
     )
@@ -53,6 +60,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _estado = MutableStateFlow(HomeState())
     val estado: StateFlow<HomeState> = _estado.asStateFlow()
 
+    /**
+     * Observa los IDs favoritos desde la BBDD local.
+     * Al ser un StateIn, mantiene el flujo activo mientras la UI esté visible.
+     */
     val idsFavoritos: StateFlow<List<Int>> = backend.obtenerIdsFavoritos()
         .stateIn(
             scope = viewModelScope,
@@ -64,6 +75,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         cargarTodo()
     }
 
+    /**
+     * Ejecuta las peticiones iniciales de carga de catálogo.
+     * Se disparan en corrutinas separadas para no bloquear el inicio de la App.
+     */
     private fun cargarTodo() {
         viewModelScope.launch {
             val generosPeli = tmdb.obtenerGenerosPelicula()
@@ -102,6 +117,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Cambia entre el catálogo de Películas y Series.
+     */
     fun alCambiarPestana(nuevaPestana: Int) {
         _estado.update { estado ->
             val generos = if (nuevaPestana == 0) estado.generosPelicula else estado.generosTv
@@ -116,8 +134,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Selecciona un género y carga la primera página de resultados.
-     * Si se pulsa el mismo género activo, se limpia el filtro.
+     * Gestiona la selección de un género para filtrar el catálogo.
      */
     fun alSeleccionarGenero(idGenero: Int?) {
         val esMismoGenero = idGenero == _estado.value.idGeneroSeleccionado
@@ -133,7 +150,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             return
         }
 
-        // Nuevo género: reseteamos la lista y cargamos desde la página 1
         _estado.update {
             it.copy(
                 idGeneroSeleccionado = idGenero,
@@ -146,26 +162,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Carga más resultados del género activo (paginación infinita del filtro).
-     * Llamado desde la UI cuando el usuario llega al final de la lista filtrada.
+     * Implementación de paginación para el filtro de géneros.
      */
     fun cargarMasFiltroGenero() {
         val estado = _estado.value
         val idGenero = estado.idGeneroSeleccionado ?: return
 
-        // Evitamos lanzar varias peticiones simultáneas
         if (estado.estaCargandoMasFiltro) return
 
         val siguientePagina = estado.paginaFiltroGenero + 1
         cargarPaginaFiltro(idGenero, pagina = siguientePagina, acumular = true)
     }
 
-    /**
-     * Petición real a TMDB para obtener una página del filtro.
-     *
-     * @param acumular si es true, añade los resultados a los existentes (paginación);
-     *                 si es false, los reemplaza (primera carga o cambio de género).
-     */
     private fun cargarPaginaFiltro(idGenero: Int, pagina: Int, acumular: Boolean) {
         viewModelScope.launch {
             _estado.update { it.copy(estaCargandoMasFiltro = true) }
@@ -204,7 +212,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // Paginación del catálogo normal (sin cambios respecto a la versión anterior)
+    /**
+     * Gestiona la carga de páginas adicionales para las distintas secciones del carrusel.
+     */
     fun cargarMasContenido(seccion: String) {
         viewModelScope.launch {
             val estado = _estado.value
@@ -212,38 +222,52 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 "peliculasEstreno" -> {
                     val p = estado.paginaEstreno + 1
                     val nuevas = tmdb.obtenerPeliculasEnCine(p)
-                    _estado.update { it.copy(peliculasEstreno = it.peliculasEstreno + nuevas, paginaEstreno = p) }
+                    _estado.update {
+                        it.copy(peliculasEstreno = it.peliculasEstreno + nuevas, paginaEstreno = p)
+                    }
                 }
                 "peliculasPopulares" -> {
                     val p = estado.paginaPopulares + 1
                     val nuevas = tmdb.obtenerPeliculasPopulares(p)
-                    _estado.update { it.copy(peliculasPopulares = it.peliculasPopulares + nuevas, paginaPopulares = p) }
+                    _estado.update {
+                        it.copy(peliculasPopulares = it.peliculasPopulares + nuevas, paginaPopulares = p)
+                    }
                 }
                 "peliculasMejorValoradas" -> {
                     val p = estado.paginaMejorValoradas + 1
                     val nuevas = tmdb.obtenerPeliculasMejorValoradas(p)
-                    _estado.update { it.copy(peliculasMejorValoradas = it.peliculasMejorValoradas + nuevas, paginaMejorValoradas = p) }
+                    _estado.update {
+                        it.copy(peliculasMejorValoradas = it.peliculasMejorValoradas + nuevas, paginaMejorValoradas = p)
+                    }
                 }
                 "seriesEstreno" -> {
                     val p = estado.paginaSeriesEstreno + 1
                     val nuevas = tmdb.obtenerSeriesEnEmision(p)
-                    _estado.update { it.copy(seriesEstreno = it.seriesEstreno + nuevas, paginaSeriesEstreno = p) }
+                    _estado.update {
+                        it.copy(seriesEstreno = it.seriesEstreno + nuevas, paginaSeriesEstreno = p)
+                    }
                 }
                 "seriesPopulares" -> {
                     val p = estado.paginaSeriesPopulares + 1
                     val nuevas = tmdb.obtenerSeriesPopulares(p)
-                    _estado.update { it.copy(seriesPopulares = it.seriesPopulares + nuevas, paginaSeriesPopulares = p) }
+                    _estado.update {
+                        it.copy(seriesPopulares = it.seriesPopulares + nuevas, paginaSeriesPopulares = p)
+                    }
                 }
                 "seriesMejorValoradas" -> {
                     val p = estado.paginaSeriesMejorValoradas + 1
                     val nuevas = tmdb.obtenerSeriesMejorValoradas(p)
-                    _estado.update { it.copy(seriesMejorValoradas = it.seriesMejorValoradas + nuevas, paginaSeriesMejorValoradas = p) }
+                    _estado.update {
+                        it.copy(seriesMejorValoradas = it.seriesMejorValoradas + nuevas, paginaSeriesMejorValoradas = p)
+                    }
                 }
             }
         }
     }
 
-    // Favoritos
+    /**
+     * Agrega o elimina una película de la lista de favoritos.
+     */
     fun toggleFavorito(pelicula: FichaPelicula) {
         viewModelScope.launch {
             val solicitud = buildSolicitudFavorito(pelicula.id, pelicula.titulo, pelicula.rutaPoster, true)
@@ -252,6 +276,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Agrega o elimina una serie de la lista de favoritos.
+     */
     fun toggleFavoritoSerie(serie: FichaSerie) {
         viewModelScope.launch {
             val solicitud = buildSolicitudFavorito(serie.id, serie.titulo, serie.rutaPoster, false)
@@ -260,6 +287,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    /**
+     * Construye un objeto DTO para las peticiones de listas, inyectando el usuario actual de Firebase.
+     */
     private fun buildSolicitudFavorito(id: Int, titulo: String, poster: String?, esPelicula: Boolean): SolicitudLista {
         val user = FirebaseAuth.getInstance().currentUser
         val nombreUsuario = user?.displayName?.takeIf { it.isNotBlank() }

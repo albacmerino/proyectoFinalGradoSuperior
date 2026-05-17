@@ -1,10 +1,13 @@
-package org.dam2.appstreaming.data.remote.dto
+package org.dam2.appstreaming.data.remote.dto.tmdb
 
 import com.google.gson.annotations.SerializedName
 
 /**
- * Respuesta del endpoint /search/multi de TMDB.
- * Contiene una lista de resultados mezclados (películas, series y personas).
+ * RESPUESTA DE BÚSQUEDA MÚLTIPLE
+ * 
+ * Clase que mapea el resultado del endpoint /search/multi de TMDB.
+ * Permite buscar películas y series de forma simultánea en una única petición.
+ *
  */
 data class MultiSearchResponse(
     @SerializedName("results") val results: List<ResultadoBusqueda>,
@@ -43,7 +46,6 @@ data class ResultadoBusqueda(
     // Solo en series
     @SerializedName("first_air_date") val fechaEmision: String?
 ) {
-    /** Nombre para mostrar: películas tienen "title", series tienen "name". */
     val tituloMostrar: String get() = titulo ?: nombre ?: "Sin título"
 
     /** true si es película, false si es serie. */

@@ -2,11 +2,21 @@ package org.dam2.appstreaming.data.mapper
 
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.FichaSerie
-import org.dam2.appstreaming.data.remote.dto.RespuestaLista
-import org.dam2.appstreaming.data.remote.dto.ResultadoBusqueda
+import org.dam2.appstreaming.data.remote.dto.backend.RespuestaLista
+import org.dam2.appstreaming.data.remote.dto.tmdb.ResultadoBusqueda
 
 /**
- * Convierte un objeto de la lista de favoritos en una Ficha de Película.
+ * ARCHIVO DE MAPEO DE DATOS
+ * 
+ * Este archivo contiene funciones encargadas de transformar objetos entre capas.
+ *
+ * - Desacoplamiento: Si la API de TMDB cambia, solo modificamos el mapper.
+ * - Limpieza de datos: La UI solo recibe lo que necesita, eliminando campos nulos o innecesarios.
+ */
+
+/**
+ * Mapea una respuesta de lista del backend a una Ficha de Película.
+ * Se utiliza para poder mostrar elementos guardados en los componentes de UI genéricos.
  */
 fun RespuestaLista.toFichaPelicula(): FichaPelicula {
     return FichaPelicula(
@@ -22,7 +32,7 @@ fun RespuestaLista.toFichaPelicula(): FichaPelicula {
 }
 
 /**
- * Convierte un objeto de la lista de favoritos en una Ficha de Serie.
+ * Mapea una respuesta de lista del backend a una Ficha de Serie.
  */
 fun RespuestaLista.toFichaSerie(): FichaSerie {
     return FichaSerie(
@@ -38,7 +48,8 @@ fun RespuestaLista.toFichaSerie(): FichaSerie {
 }
 
 /**
- * Convierte un resultado de búsqueda en una [FichaPelicula].
+ * Transforma un resultado genérico de la búsqueda Multi-Search de TMDB en una Ficha de Película.
+ * Extrae y unifica los campos que TMDB devuelve con nombres diferentes para películas y series.
  */
 fun ResultadoBusqueda.toFichaPelicula(): FichaPelicula = FichaPelicula(
     id = id,
@@ -52,7 +63,7 @@ fun ResultadoBusqueda.toFichaPelicula(): FichaPelicula = FichaPelicula(
 )
 
 /**
- * Convierte un resultado de búsqueda en una [FichaSerie].
+ * Transforma un resultado genérico de la búsqueda Multi-Search de TMDB en una Ficha de Serie.
  */
 fun ResultadoBusqueda.toFichaSerie(): FichaSerie = FichaSerie(
     id = id,

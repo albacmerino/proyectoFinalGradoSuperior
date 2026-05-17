@@ -30,6 +30,13 @@ import org.dam2.appstreaming.R
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
+/**
+ * REGISTRO
+ * 
+ * Gestiona la creación de nuevas cuentas de usuario. Destaca por implementar validaciones
+ * de seguridad robustas en el lado del cliente antes de enviar los datos a Firebase.
+ *
+ */
 class RegisterFragment : Fragment() {
 
     private val viewModel: AuthViewModel by viewModels()
@@ -49,7 +56,7 @@ class RegisterFragment : Fragment() {
 
                 val estado by viewModel.estadoLogin.collectAsState()
 
-                // Lógica de validación de contraseña
+                // Controlan el estado de la UI y la habilitación del registro.
                 val tieneOchoCaracteres = password.length >= 8
                 val tieneMayuscula = password.any { it.isUpperCase() }
                 val tieneMinuscula = password.any { it.isLowerCase() }
@@ -62,7 +69,6 @@ class RegisterFragment : Fragment() {
                 LaunchedEffect(estado) {
                     if (estado is AuthViewModel.ResultadoAuth.Exito) {
                         Toast.makeText(context, "¡Bienvenido, ${nombre}!", Toast.LENGTH_SHORT).show()
-                        // Corregido: Normalmente tras registro vas al Home o al Login
                         findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
                         viewModel.resetearEstado()
                     } else if (estado is AuthViewModel.ResultadoAuth.Error) {
@@ -109,7 +115,7 @@ class RegisterFragment : Fragment() {
                             isPassword = true
                         )
 
-                        // INDICADORES DE VALIDACIÓN EN TIEMPO REAL
+                        // Condiciones para la creación de la contraseña del usuario
                         if (password.isNotEmpty()) {
                             Column(
                                 modifier = Modifier
@@ -133,7 +139,7 @@ class RegisterFragment : Fragment() {
                                     viewModel.registrarse(usuario, password, nombre)
                                 } else if (!contrasenasCoinciden) {
                                     Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_SHORT).show()
-                                }else if (!passwordValida) {
+                                } else if (!passwordValida) {
                                     Toast.makeText(context, "La contraseña no es lo suficientemente segura", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Toast.makeText(context, "Rellena todos los campos correctamente", Toast.LENGTH_SHORT).show()
@@ -172,6 +178,9 @@ class RegisterFragment : Fragment() {
     }
 }
 
+/**
+ * INDICADOR DE VALIDACIÓN
+ */
 @Composable
 fun ValidationText(text: String, isValid: Boolean) {
     Text(
@@ -182,6 +191,9 @@ fun ValidationText(text: String, isValid: Boolean) {
     )
 }
 
+/**
+ * CAMPO DE TEXTO PERSONALIZADO
+ */
 @Composable
 fun CustomTextField(value: String, onValueChange: (String) -> Unit, label: String, isPassword: Boolean = false) {
     TextField(

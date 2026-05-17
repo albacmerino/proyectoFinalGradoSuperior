@@ -28,11 +28,19 @@ import org.dam2.appstreaming.data.mapper.toFichaSerie
 import org.dam2.appstreaming.ui.screen.pelicula.PeliculaViewModel
 import org.dam2.appstreaming.ui.screen.serie.SerieViewModel
 
+/**
+ * FAVORITOS
+ * 
+ * Pantalla de favoritos guardados por el usuario.
+ * Actúa como mediador entre la lógica de negocio (ViewModels) y la interfaz declarativa (Compose).
+ *
+ */
 class FavoritosFragment : Fragment() {
 
+    // ViewModel local para la gestión de los favoritos persistidos en Room
     private val viewModel: FavoritosViewModel by viewModels()
-
-    // Necesitamos estos para pasar los datos antes de navegar al detalle
+    
+    // ViewModels con ámbito de Activity para compartir datos entre fragmentos (Detail y Search)
     private val peliculaViewModel: PeliculaViewModel by activityViewModels()
     private val serieViewModel: SerieViewModel by activityViewModels()
 
@@ -43,9 +51,11 @@ class FavoritosFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 val favoritos by viewModel.listaFavoritos.collectAsState()
-                var tabSeleccionada by remember { mutableIntStateOf(0) }
+                var tabSeleccionada by remember {
+                    mutableIntStateOf(0)
+                }
 
-                // Cargar favoritos de Room al entrar
+                // Efecto de entrada para disparar la carga de datos desde Room
                 androidx.compose.runtime.LaunchedEffect(Unit) {
                     viewModel.cargarFavoritos()
                 }
@@ -58,15 +68,16 @@ class FavoritosFragment : Fragment() {
                     Box(modifier = Modifier.fillMaxSize().background(brush = gradienteFondoMar)) {
                         FavoritosScreen(
                             selectedTab = tabSeleccionada,
-                            onTabSelected = { tabSeleccionada = it },
+                            onTabSelected = {
+                                tabSeleccionada = it
+                                            },
                             listaContenido = favoritos,
                             onItemClick = { item ->
+                                // Navegación condicional basada en el tipo de contenido (Película o Serie)
                                 if (item.esPelicula) {
-                                    // Mapeamos RespuestaLista a FichaPelicula para que el detalle lo entienda
                                     peliculaViewModel.setSelectedItem(item.toFichaPelicula())
                                     findNavController().navigate(R.id.action_favoritosFragment_to_peliculaDetailFragment)
                                 } else {
-                                    // Mapeamos RespuestaLista a FichaSerie
                                     serieViewModel.establecerItemSeleccionado(item.toFichaSerie())
                                     findNavController().navigate(R.id.action_favoritosFragment_to_serieDetailFragment)
                                 }

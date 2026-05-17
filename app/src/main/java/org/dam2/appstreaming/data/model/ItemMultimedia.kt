@@ -1,8 +1,9 @@
 package org.dam2.appstreaming.data.model
 
 /**
- * Interfaz común para Películas y Series.
- * Permite que los componentes de UI traten ambos tipos de forma genérica.
+ * INTERFAZ ITEM MULTIMEDIA
+ *
+ * Define el contrato común para todos los elementos de contenido de la aplicación (Películas y Series).
  */
 interface ItemMultimedia {
     val id: Int

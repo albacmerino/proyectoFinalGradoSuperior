@@ -2,15 +2,7 @@ package org.dam2.appstreaming.ui.screen.favoritos
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -28,11 +20,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
-import org.dam2.appstreaming.data.remote.dto.RespuestaLista
 import org.dam2.appstreaming.ui.component.common.StreamTabs
 import org.dam2.appstreaming.ui.component.common.StreamTopBar
 import org.dam2.appstreaming.ui.component.common.HomeDrawer
+import org.dam2.appstreaming.data.remote.dto.backend.RespuestaLista
 
+/**
+ * FAVORITOS
+ * 
+ * Interfaz encargada de mostrar la colección de películas y series guardadas por el usuario.
+ * Implementa un diseño de cuadrícula (Grid) para optimizar el espacio en pantalla.
+ *
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritosScreen(
@@ -48,9 +47,11 @@ fun FavoritosScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Filtramos la lista según la pestaña (0: Películas, 1: Series)
+    // Se recalcula automáticamente si cambia la lista o la pestaña seleccionada
     val listaFiltrada = remember(listaContenido, selectedTab) {
-        listaContenido.filter { if (selectedTab == 0) it.esPelicula else !it.esPelicula }
+        listaContenido.filter {
+            if (selectedTab == 0) it.esPelicula else !it.esPelicula
+        }
     }
 
     ModalNavigationDrawer(
@@ -63,8 +64,9 @@ fun FavoritosScreen(
                         onNavigateToHome()
                     }
                 },
-                onPerfilClick = { scope.launch { drawerState.close() } },
-                onFavoritosClick = { scope.launch { drawerState.close() } },
+                onFavoritosClick = {
+                    scope.launch { drawerState.close() }
+                                   },
                 onMisListasClick = {
                     scope.launch {
                         drawerState.close()
@@ -96,16 +98,18 @@ fun FavoritosScreen(
             },
             containerColor = Color.Transparent
         ) { padding ->
+            // Gestión de estados vacíos
             if (listaFiltrada.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding),
-                    contentAlignment = androidx.compose.ui.Alignment.Center
+                    contentAlignment = Alignment.Center
                 ) {
                     Text("No tienes nada guardado aún", color = Color.Gray)
                 }
             } else {
+                // Cuadrícula de 3 columnas
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(3),
                     modifier = Modifier
@@ -124,7 +128,10 @@ fun FavoritosScreen(
     }
 }
 
-
+/**
+ * TARJETA DE FAVORITO
+ * Versión simplificada de la Card optimizada para visualización en cuadrícula.
+ */
 @Composable
 private fun CardFavorito(
     item: RespuestaLista,
@@ -133,9 +140,11 @@ private fun CardFavorito(
 ) {
     Box(
         modifier = Modifier
-            .aspectRatio(2f / 3f) // Proporción estándar de póster
+            .aspectRatio(2f / 3f)
             .clip(RoundedCornerShape(8.dp))
-            .clickable { onClick(item) }
+            .clickable {
+                onClick(item)
+            }
     ) {
         AsyncImage(
             model = "https://image.tmdb.org/t/p/w342${item.rutaPoster}",
@@ -143,6 +152,7 @@ private fun CardFavorito(
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+        // Botón de borrado rápido
         IconButton(
             onClick = onDelete,
             modifier = Modifier

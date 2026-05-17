@@ -11,7 +11,12 @@ import androidx.compose.ui.text.font.FontWeight
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.ui.colors.SeaGradient
 
-// HEMOS QUITADO LA CLASE.
+/**
+ * COMPONENTE: BARRA SUPERIOR PERSONALIZADA
+ * 
+ * Actúa como la cabecera global de la aplicación.
+ *
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StreamTopBar(
@@ -23,6 +28,7 @@ fun StreamTopBar(
 ) {
     CenterAlignedTopAppBar(
         actions = {
+            // Acción de búsqueda accesible desde cualquier pantalla que use esta barra
             IconButton(onClick = onSearchClick) {
                 Icon(
                     imageVector = Icons.Default.Search,
@@ -32,22 +38,35 @@ fun StreamTopBar(
             }
         },
         title = {
-            Text(title, style = MaterialTheme.typography.titleLarge.copy(
-                brush = SeaGradient, fontWeight = FontWeight.ExtraBold
-            ))
+            Text(
+                text = title, 
+                style = MaterialTheme.typography.titleLarge.copy(
+                    brush = SeaGradient, 
+                    fontWeight = FontWeight.ExtraBold
+                )
+            )
         },
         navigationIcon = {
+            // Navegación jerárquica (atrás) y lateral (menú)
             if (showBackButton) {
                 IconButton(onClick = onBackClick) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null, tint = SeaBlueLight)
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack, 
+                        contentDescription = "Volver", 
+                        tint = SeaBlueLight
+                    )
                 }
             } else {
                 IconButton(onClick = onMenuClick) {
-                    Icon(Icons.Default.Menu, contentDescription = null, tint = SeaBlueLight)
+                    Icon(
+                        imageVector = Icons.Default.Menu, 
+                        contentDescription = "Menú lateral", 
+                        tint = SeaBlueLight
+                    )
                 }
             }
         },
+        // Mantenemos el fondo transparente para que se vea el gradiente de fondo de la App
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
-
     )
 }

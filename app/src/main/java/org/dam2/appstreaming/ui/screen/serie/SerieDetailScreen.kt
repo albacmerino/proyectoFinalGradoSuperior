@@ -26,11 +26,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import org.dam2.appstreaming.data.model.FichaPelicula
-import org.dam2.appstreaming.data.remote.dto.CastMember
-import org.dam2.appstreaming.data.remote.dto.Provider
-import org.dam2.appstreaming.data.remote.dto.Review
-import org.dam2.appstreaming.data.remote.dto.Keyword
+import org.dam2.appstreaming.data.remote.dto.tmdb.CastMember
+import org.dam2.appstreaming.data.remote.dto.tmdb.Provider
+import org.dam2.appstreaming.data.remote.dto.tmdb.Review
+import org.dam2.appstreaming.data.remote.dto.tmdb.Keyword
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.component.SeaRatingBar
@@ -38,7 +37,11 @@ import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.data.model.Genero
 
 /**
- * Pantalla de detalle de serie (Componente Composable principal).
+ * PANTALLA DE DETALLE DE SERIE
+ * 
+ * Interfaz de usuario diseñada para presentar la información completa de una serie.
+ * Sigue los mismos patrones de diseño que la pantalla de películas para mantener la consistencia visual.
+ *
  */
 @Composable
 fun SerieDetailScreen(
@@ -51,6 +54,7 @@ fun SerieDetailScreen(
     onAddClick: (FichaSerie, String?) -> Unit,
     onCloseSheet: () -> Unit
 ) {
+    // Solo renderiza el contenido cuando los datos están listos
     if (state.isLoading || state.serie == null) {
         PantallaCargando()
     } else {
@@ -59,40 +63,54 @@ fun SerieDetailScreen(
 
         Box(modifier = Modifier.fillMaxSize().background(Color(0xFF000814))) {
             Column(modifier = Modifier.fillMaxSize().verticalScroll(scrollState)) {
+                // Cabecera visual con el póster de fondo (backdrop)
                 CabeceraImagen(serie.rutaFondo) {
-                    state.trailerKey?.let { onPlayTrailerClick(it) }
+                    state.trailerKey?.let {
+                        onPlayTrailerClick(it) }
                 }
                 
+                // Banner informativo sobre plataformas de streaming disponibles
                 BannerStreaming(state.watchLink, state.directPlatformLink, state.mainProvider) {
                     val urlFinal = state.directPlatformLink ?: state.watchLink
-                    urlFinal?.let { onWatchNowClick(it) }
+                    urlFinal?.let {
+                        onWatchNowClick(it) }
                 }
 
                 Column(modifier = Modifier.padding(20.dp)) {
                     TituloSeccion(serie.titulo)
+                    
+                    // Fecha de emisión y géneros
                     MetadatosSerie(serie.fechaLanzamiento, serie.idsGeneros, state.allGenres)
                     
                     SeccionOpinion()
 
                     Spacer(modifier = Modifier.height(24.dp))
-                    PuntuacionYAcciones(serie.puntuacionMedia, onAddClick = { onAddClick(serie, null) }
+                    PuntuacionYAcciones(serie.puntuacionMedia, onAddClick = {
+                        onAddClick(serie, null) }
                     )
                     
                     Spacer(modifier = Modifier.height(32.dp))
                     SinopsisSeccion(serie.sinopsis)
-                    
                     RepartoSeccion(state.cast)
-                    SeccionSocial(state.reviews) { onSeeAllReviewsClick(serie.id) }
+                    SeccionSocial(state.reviews) {
+                        onSeeAllReviewsClick(serie.id) }
                     PalabrasClaveSeccion(state.keywords)
+                    
+                    // Carrusel de series recomendadas
                     RecomendacionesSeccion(state.recommendations, onRecommendationClick)
                 }
             }
+            
             BotonIrAtras(onBackClick)
+            
+            // Selector de listas (BottomSheet): Permite al usuario organizar su contenido
             if (state.mostrarSheet) {
                 org.dam2.appstreaming.ui.component.common.AddToListSheet(
                     listasExistentes = state.nombresListas,
-                    onNombreNuevaLista = { nombre -> onAddClick(serie, nombre) },
-                    onListaSeleccionada = { nombre -> onAddClick(serie, nombre) },
+                    onNombreNuevaLista = {
+                        nombre -> onAddClick(serie, nombre) },
+                    onListaSeleccionada = {
+                        nombre -> onAddClick(serie, nombre) },
                     onDismiss = onCloseSheet
                 )
             }
@@ -100,6 +118,9 @@ fun SerieDetailScreen(
     }
 }
 
+/**
+ * Indicador de progreso centralizado para mejorar la percepción de carga de la App.
+ */
 @Composable
 private fun PantallaCargando() {
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFF000814)), contentAlignment = Alignment.Center) {
@@ -107,6 +128,9 @@ private fun PantallaCargando() {
     }
 }
 
+/**
+ * Renderiza la imagen principal de la serie con una máscara de degradado.
+ */
 @Composable
 private fun CabeceraImagen(ruta: String?, alPulsarPlay: () -> Unit) {
     Box(modifier = Modifier.height(350.dp).fillMaxWidth()) {
@@ -116,6 +140,7 @@ private fun CabeceraImagen(ruta: String?, alPulsarPlay: () -> Unit) {
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+        // Capa de oscurecimiento inferior para legibilidad de textos
         Box(modifier = Modifier.fillMaxSize().background(
             Brush.verticalGradient(listOf(Color.Transparent, Color(0xFF000814).copy(alpha = 0.5f)), startY = 600f)
         ))
@@ -130,12 +155,18 @@ private fun CabeceraImagen(ruta: String?, alPulsarPlay: () -> Unit) {
     }
 }
 
+/**
+ * Implementación del banner de "Donde Ver", integrando logos de plataformas externas.
+ */
 @Composable
 private fun BannerStreaming(watchLink: String?, directLink: String?, proveedor: Provider?, alPulsar: () -> Unit) {
     if (watchLink != null || directLink != null) {
         Row(
-            modifier = Modifier.fillMaxWidth().background(Color(0xFF032541))
-                .clickable { alPulsar() }.padding(horizontal = 20.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth()
+                .background(Color(0xFF032541))
+                .clickable {
+                    alPulsar() }
+                .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             proveedor?.let {
@@ -164,6 +195,9 @@ private fun TituloSeccion(titulo: String) {
     Spacer(modifier = Modifier.height(12.dp))
 }
 
+/**
+ * Muestra información sobre la serie: año de inicio y géneros cinematográficos.
+ */
 @Composable
 private fun MetadatosSerie(fecha: String?, idsGeneros: List<Int>?, listaGeneros: List<Genero>) {
     val nombres = idsGeneros?.mapNotNull { id -> listaGeneros.find { it.id == id }?.name }
@@ -186,6 +220,9 @@ private fun MetadatosSerie(fecha: String?, idsGeneros: List<Int>?, listaGeneros:
     }
 }
 
+/**
+ * Módulo para que el usuario califique la serie.
+ */
 @Composable
 private fun SeccionOpinion() {
     var mostrarSelector by remember { mutableStateOf(false) }
@@ -295,6 +332,9 @@ private fun SinopsisSeccion(texto: String) {
     Text(texto.ifEmpty { "No hay descripción disponible." }, color = Color.White.copy(alpha = 0.8f), lineHeight = 26.sp)
 }
 
+/**
+ * Muestra la lista de actores principales.
+ */
 @Composable
 private fun RepartoSeccion(reparto: List<CastMember>) {
     if (reparto.isNotEmpty()) {
@@ -323,6 +363,9 @@ private fun CardActor(actor: CastMember) {
     }
 }
 
+/**
+ * Muestra las reseñas de los usuarios, fomentando la parte social de la App.
+ */
 @Composable
 private fun SeccionSocial(resenas: List<Review>, onSeeAllReviewsClick: () -> Unit) {
     Column(modifier = Modifier.padding(top = 24.dp, bottom = 12.dp)) {

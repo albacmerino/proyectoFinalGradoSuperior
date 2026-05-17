@@ -17,34 +17,36 @@ import org.dam2.appstreaming.R
 import org.dam2.appstreaming.data.repository.RepositorioBackend
 
 /**
- * Fragmento que actúa como contenedor para la pantalla de detalle de serie.
+ * DETALLE DE SERIE
+ * 
+ * Actúa como host de la pantalla de detalles de series en Jetpack Compose.
+ * Facilita la integración con el sistema de navegación de Android y la gestión de recursos del sistema.
+ *
  */
-class  SerieDetailFragment : Fragment() {
+class SerieDetailFragment : Fragment() {
 
-    // Usamos activityViewModels para compartir el ViewModel con el HomeFragment
     private val viewModel: SerieViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Inicializamos el repositorio para que Room funcione
+        // Inicialización del repositorio inyectando el contexto necesario para Room
         val repo = RepositorioBackend(requireContext())
         viewModel.iniciarRepositorio(repo)
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                // Observamos el estado unificado del ViewModel
                 val state by viewModel.state.collectAsState()
 
                 MaterialTheme {
-                    // Invocamos la Screen (UI modularizada), pasando el estado y los eventos
                     SerieDetailScreen(
                         state = state,
-                        onBackClick = { 
-                            findNavController().popBackStack() 
+                        onBackClick = {
+                            findNavController().popBackStack()
                         },
                         onPlayTrailerClick = { key ->
                             val intent = Intent(Intent.ACTION_VIEW, "https://www.youtube.com/watch?v=$key".toUri())
@@ -55,7 +57,6 @@ class  SerieDetailFragment : Fragment() {
                             startActivity(intent)
                         },
                         onSeeAllReviewsClick = {
-                            // Navegamos a la pantalla de reseñas propia en lugar de abrir la web
                             val bundle = Bundle().apply {
                                 putString("mediaType", "serie")
                             }
@@ -68,11 +69,12 @@ class  SerieDetailFragment : Fragment() {
                             if (nombreLista == null) {
                                 viewModel.abrirSheet()
                             } else {
+                                // Persistencia en Room mediante el ViewModel
                                 viewModel.guardarEnLista(
                                     id = serie.id,
-                                    titulo = serie.titulo, // O serie.titulo, según tu modelo
+                                    titulo = serie.titulo,
                                     rutaPoster = serie.rutaPoster,
-                                    esPelicula = false, // <--- AQUÍ pones false
+                                    esPelicula = false,
                                     nombreLista = nombreLista
                                 )
                             }

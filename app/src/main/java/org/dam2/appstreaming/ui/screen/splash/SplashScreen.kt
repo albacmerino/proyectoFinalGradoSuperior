@@ -25,6 +25,13 @@ import org.dam2.appstreaming.R
 import org.dam2.appstreaming.data.local.prefs.PreferenciasUsuario
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
+/**
+ * PANTALLA DE CARGA
+ * 
+ * Es la pantalla de bienvenida de la aplicación. Su función principal es gestionar
+ * el enrutamiento inicial del usuario basándose en su estado de sesión.
+ *
+ */
 class SplashFragment : Fragment() {
 
     override fun onCreateView(
@@ -40,15 +47,13 @@ class SplashFragment : Fragment() {
                         val prefs = PreferenciasUsuario(requireContext())
                         val currentUser = auth.currentUser
 
-                        // LÓGICA DE DECISIÓN:
+                        // Se aplica el principio de persistencia de sesión configurada por el usuario.
                         if (currentUser != null && prefs.obtenerMantenerSesion()) {
-                            // Si el usuario existe Y marcó "Mantener sesión" -> HOME
+                            // Usuario autenticado y con preferencia de sesión activa -> Pantalla Principal
                             findNavController().navigate(R.id.action_splashFragment_to_homeFragment)
                         } else {
-                            // Si NO hay usuario o NO marcó el check -> LOGIN
-                            // Por seguridad, si el usuario existe pero no quería persistencia, cerramos sesión
+                            // En caso contrario, se fuerza el login por seguridad.
                             if (currentUser != null) auth.signOut()
-
                             findNavController().navigate(R.id.action_splashFragment_to_loginFragment)
                         }
                     })
@@ -58,8 +63,13 @@ class SplashFragment : Fragment() {
     }
 }
 
+/**
+ * COMPONENTE VISUAL DEL SPLASH
+ * Centraliza la UI de la pantalla de bienvenida.
+ */
 @Composable
 fun SplashScreenContent(onTimeout: () -> Unit) {
+    // Animación Lottie (JSON)
     val composition by rememberLottieComposition(
         LottieCompositionSpec.RawRes(R.raw.loading_animation_blue)
     )
@@ -68,6 +78,7 @@ fun SplashScreenContent(onTimeout: () -> Unit) {
         iterations = LottieConstants.IterateForever
     )
 
+    // Lanzamos un efecto secundario de temporización para la transición de pantalla
     LaunchedEffect(Unit) {
         delay(2000)
         onTimeout()
@@ -93,7 +104,6 @@ fun SplashScreenContent(onTimeout: () -> Unit) {
         )
     }
 }
-
 
 @Preview(
     showBackground = true,

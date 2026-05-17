@@ -24,6 +24,12 @@ import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.data.model.Genero
 
+/**
+ * COMPONENTE: TARJETA DE SERIE
+ * 
+ * Representa visualmente una serie en las listas y carruseles.
+ *
+ */
 @Composable
 fun SerieCard(
     serie: FichaSerie,
@@ -32,9 +38,10 @@ fun SerieCard(
     onToggleFavorite: () -> Unit,
     onClick: () -> Unit
 ) {
-    // Construcción de la URL y búsqueda del nombre del género
+    // URL de la imagen basada en la configuración de TMDB (w500 para calidad media)
     val imageUrl = "https://image.tmdb.org/t/p/w500${serie.rutaPoster}"
 
+    // Mapeo de ID de género a nombre legible
     val nombreGenero = allGenres.find {
         it.id == serie.idsGeneros?.firstOrNull()
     }?.name ?: "Serie"
@@ -44,8 +51,8 @@ fun SerieCard(
             .width(130.dp)
             .clickable { onClick() }
     ) {
-        // Contenedor de Imagen + Puntuación + Corazón
         Box(modifier = Modifier.height(180.dp)) {
+            // Imagen del póster con bordes redondeados
             AsyncImage(
                 model = imageUrl,
                 contentDescription = serie.titulo,
@@ -56,7 +63,7 @@ fun SerieCard(
                 contentScale = ContentScale.Crop
             )
 
-            // --- ICONO DE CORAZÓN (Favoritos) ---
+            // Botón favoritos
             IconButton(
                 onClick = onToggleFavorite,
                 modifier = Modifier
@@ -72,7 +79,7 @@ fun SerieCard(
                 )
             }
 
-            // Anillo de puntuación neón posicionado abajo a la derecha
+            // Anillo de puntuación
             ScoreRing(
                 score = serie.puntuacionMedia,
                 modifier = Modifier
@@ -86,13 +93,13 @@ fun SerieCard(
         Text(
             text = serie.titulo,
             color = Color.White,
-            maxLines = 1,
+            maxLines = 1, // Garantiza que los carruseles mantengan una altura uniforme
             fontSize = 13.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 12.dp, start = 4.dp)
         )
 
-        // Nombre del Género
+        // Genero principal
         Text(
             text = nombreGenero,
             color = SeaBlueLight.copy(alpha = 0.7f),

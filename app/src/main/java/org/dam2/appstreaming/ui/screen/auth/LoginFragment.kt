@@ -27,7 +27,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
@@ -37,12 +36,17 @@ import androidx.navigation.navOptions
 import org.dam2.appstreaming.R
 import org.dam2.appstreaming.data.local.prefs.PreferenciasUsuario
 import org.dam2.appstreaming.ui.colors.SeaGradient
-import org.dam2.appstreaming.ui.colors.SeaBlueDark
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
+/**
+ * LOGIN
+ * 
+ * Gestiona la interfaz de acceso del usuario. Implementa la lógica de validación frontal
+ * y la comunicación con el AuthViewModel para validar credenciales en Firebase.
+ *
+ */
 class LoginFragment : Fragment() {
 
-    // Vinculamos el ViewModel
     private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreateView(
@@ -55,7 +59,6 @@ class LoginFragment : Fragment() {
                 val estado by viewModel.estadoLogin.collectAsState()
                 val context = LocalContext.current
 
-                // 1. ESTA ES LA ÚNICA VÍA DE ENTRADA AL HOME
                 LaunchedEffect(estado) {
                     when (estado) {
                         is AuthViewModel.ResultadoAuth.Exito -> {
@@ -70,7 +73,7 @@ class LoginFragment : Fragment() {
                              viewModel.resetearEstado()
                         }
                         is AuthViewModel.ResultadoAuth.Error -> {
-                            // Si los datos están mal, Firebase lanza error y mostramos Toast
+                            // Si los datos están mal, Firebase lanza error
                             Toast.makeText(context, (estado as AuthViewModel.ResultadoAuth.Error).mensaje, Toast.LENGTH_SHORT).show()
                         }
                         else -> {}
@@ -81,23 +84,18 @@ class LoginFragment : Fragment() {
                     LoginScreen(
                         onLoginClick = { usuario, password ->
                             if (usuario.isNotBlank() && password.isNotBlank()) {
+                                // Formateo de email automático si el usuario solo introduce el nombre
                                 val emailFinal = if (usuario.contains("@")) usuario else "$usuario@seastream.com"
-
-                                // CAMBIO AQUÍ: Añadimos 'usuario' como tercer parámetro (nombreUsuario)
                                 viewModel.iniciarSesion(emailFinal, password, usuario)
-
                             } else {
                                 Toast.makeText(context, "Por favor, rellena todos los campos", Toast.LENGTH_SHORT).show()
                             }
                         },
-
                         onForgotPasswordClick = { u ->
                             // Creamos un bundle por si queremos pasar el usuario que ya escribió
                             val bundle = Bundle().apply {
                                 putString("email_previa", if (u.contains("@")) u else "$u@seastream.com")
                             }
-
-                            // Navegamos a la nueva pantalla (Asegúrate de tener este ID en tu nav_graph.xml)
                             findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment, bundle)
                         },
                         onCreateAccountClick = {
@@ -110,19 +108,24 @@ class LoginFragment : Fragment() {
     }
 }
 
+/**
+ * COMPONENTE: PANTALLA DE LOGIN
+ * 
+ * Implementación de la UI de login con Compose. Destaca por el uso de campos personalizados
+ * y visualización de contraseña.
+ */
 @Composable
-fun LoginScreen(onLoginClick: (String, String) -> Unit,
-                onForgotPasswordClick: (String) -> Unit, // <--- CAMBIA ESTO (añade String)
-                onCreateAccountClick: () -> Unit
+fun LoginScreen(
+    onLoginClick: (String, String) -> Unit,
+    onForgotPasswordClick: (String) -> Unit,
+    onCreateAccountClick: () -> Unit
 ) {
-
     val context = LocalContext.current
     var usuario by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var mantenerSesion by remember { mutableStateOf(true) }
-    var passwordVisible by remember { mutableStateOf(false) } // Estado para la visibilidad
+    var passwordVisible by remember { mutableStateOf(false) }
 
-    // Fondo oscuro para que el neón brille
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFF000814)
@@ -134,7 +137,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-
+            // Logotipo de la App con gradiente corporativo
             Text(
                 text = "SeaStream",
                 style = MaterialTheme.typography.displayMedium.copy(
@@ -153,7 +156,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
                 textAlign = TextAlign.Center
             )
 
-            // CAMPO USUARIO (Actualizado)
+            // CAMPO: EMAIL / USUARIO
             TextField(
                 value = usuario,
                 onValueChange = { usuario = it },
@@ -183,8 +186,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
 
             Spacer(modifier = Modifier.height(20.dp))
 
-
-            // CAMPO CONTRASEÑA
+            // CAMPO: CONTRASEÑA con lógica de visibilidad
             TextField(
                 value = password,
                 onValueChange = { password = it },
@@ -200,14 +202,12 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
                         shape = RoundedCornerShape(12.dp)
                     ),
                 shape = RoundedCornerShape(12.dp),
-                // Lógica de transformación
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 singleLine = true,
-                // AÑADIMOS EL ICONO DEL OJO AQUÍ
                 trailingIcon = {
                     val image = if (passwordVisible)
-                        painterResource(id = R.drawable.ic_visibility_on) // Necesitas estos iconos en res/drawable
+                        painterResource(id = R.drawable.ic_visibility_on)
                     else
                         painterResource(id = R.drawable.ic_visibility_off)
 
@@ -240,7 +240,7 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
 
             Spacer(modifier = Modifier.height(48.dp))
 
-
+            // Opción de persistencia de sesión
             Row(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -262,13 +262,12 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
                 )
             }
 
+            // Botón principal de acción
             Button(
                 onClick = {
                     if (usuario.isNotBlank() && password.isNotBlank()) {
-                        // 2. Instanciamos usando el context de Compose
                         val prefs = PreferenciasUsuario(context)
                         prefs.guardarMantenerSesion(mantenerSesion)
-
                         onLoginClick(usuario, password)
                     }
                 },
@@ -310,14 +309,4 @@ fun LoginScreen(onLoginClick: (String, String) -> Unit,
             }
         }
     }
-}
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun LoginPreview() {
-    // Añadimos { _ -> } para que coincida con la nueva firma (String) -> Unit
-    LoginScreen(
-        onLoginClick = { _, _ -> },
-        onForgotPasswordClick = { _ -> },
-        onCreateAccountClick = {}
-    )
 }

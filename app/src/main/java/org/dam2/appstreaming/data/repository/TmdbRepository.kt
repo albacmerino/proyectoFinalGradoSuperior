@@ -1,6 +1,6 @@
 package org.dam2.appstreaming.data.repository
 
-import org.dam2.appstreaming.data.remote.dto.*
+import org.dam2.appstreaming.data.remote.dto.tmdb.*
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.data.model.Genero
@@ -9,13 +9,28 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+/**
+ * CONFIGURACIÓN DE TMDB
+ * Objeto que centraliza las constantes de configuración para la API de TMDB.
+ */
 object TmdbConfig {
     const val ACCESS_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmNWQ4OWI4NmUyMzcxZWFjZWQ3YTNkNjJkYjRkMjg2YyIsIm5iZiI6MTc2OTY0MzE1NS4xNSwic3ViIjoiNjk3YTljOTMwODNhZWExMzBiYjE2OGFiIiwic2NvcGVzIjpbImFwaV9yZWFkIl0sInZlcnNpb24iOjF9.AJH7nc1wL_3zjMu_JLjgqV_ryGdxT_8d1MdrIb7TR5A"
     const val BASE_URL = "https://api.themoviedb.org/3/"
 }
 
+/**
+ * CLASE TMDB REPOSITORY
+ * 
+ * Implementa el patrón Repository para la gestión de datos provenientes de TMDB.
+ * En arquitectura MVVM, esta clase se encarga de abstraer la lógica de obtención de datos
+ * del resto de la aplicación, proporcionando una interfaz limpia a los ViewModels.
+ */
 class TmdbRepository {
 
+    /**
+     * Cliente HTTP configurado con un Interceptor para añadir las cabeceras de autorización
+     * necesarias para todas las peticiones a TMDB.
+     */
     private val cliente = OkHttpClient.Builder().addInterceptor { chain ->
         val nuevaRequest = chain.request().newBuilder()
             .addHeader("Authorization", "Bearer ${TmdbConfig.ACCESS_TOKEN}")
@@ -24,6 +39,9 @@ class TmdbRepository {
         chain.proceed(nuevaRequest)
     }.build()
 
+    /**
+     * Instancia de Retrofit configurada con el cliente personalizado y convertidor GSON.
+     */
     private val api = Retrofit.Builder()
         .baseUrl(TmdbConfig.BASE_URL)
         .client(cliente)
@@ -31,17 +49,19 @@ class TmdbRepository {
         .build()
         .create(TmdbApiService::class.java)
 
-    // --- PELICULAS ---
+    // Peliculas
     suspend fun obtenerPeliculasPopulares(page: Int = 1): List<FichaPelicula> = try {
         api.getPopularMovies(page = page).listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
+    
     suspend fun obtenerPeliculasEnCine(page: Int = 1): List<FichaPelicula> = try {
         api.getNowPlayingMovies(page = page).listaPeliculas
     } catch (_: Exception) {
         emptyList()
     }
+    
     suspend fun obtenerPeliculasMejorValoradas(page: Int = 1): List<FichaPelicula> = try {
         api.getTopRatedMovies(page = page).listaPeliculas
     } catch (_: Exception) {
@@ -54,6 +74,9 @@ class TmdbRepository {
         null
     }
 
+    /**
+     * Busca y devuelve el ID de vídeo de YouTube para el trailer de una película.
+     */
     suspend fun obtenerTrailerPelicula(idPelicula: Int): String? {
         return try {
             val respuesta = api.getMovieVideos(idPelicula)
@@ -127,7 +150,7 @@ class TmdbRepository {
         emptyList()
     }
 
-    // --- SERIES ---
+    // Series
     suspend fun obtenerSeriesPopulares(page: Int = 1): List<FichaSerie> = try {
         api.getPopularSeries(page = page).listaSeries
     } catch (_: Exception) {
@@ -139,6 +162,7 @@ class TmdbRepository {
     } catch (_: Exception) {
         emptyList()
     }
+    
     suspend fun obtenerSeriesMejorValoradas(page: Int = 1): List<FichaSerie> = try {
         api.getTopRatedSeries(page = page).listaSeries
     } catch (_: Exception) {
@@ -205,29 +229,25 @@ class TmdbRepository {
         emptyList()
     }
 
-
-    // --- GENEROS ---
+    // Generos y busquedas
     suspend fun obtenerGenerosPelicula(): List<Genero> = try {
         api.getMovieGenres().genres
     } catch (_: Exception) {
         emptyList()
     }
+    
     suspend fun obtenerGenerosTv(): List<Genero> = try {
         api.getTvGenres().genres
     } catch (_: Exception) {
         emptyList()
     }
 
-    // Dentro de TmdbRepository.kt
-
     /**
      * Realiza una búsqueda global (películas y series) usando el endpoint Multi-Search.
-     * Filtra los resultados para ignorar personas (sólo queremos "movie" y "tv").
      */
     suspend fun buscar(consulta: String): List<ResultadoBusqueda> {
         return try {
             val respuesta = api.buscarMulti(consulta)
-            // Filtramos para que sólo devuelva películas o series, ignorando actores/personas
             respuesta.results.filter { it.mediaType == "movie" || it.mediaType == "tv" }
         } catch (e: Exception) {
             android.util.Log.e("TmdbRepository", "Error al buscar: ${e.message}")

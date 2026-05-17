@@ -8,28 +8,36 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.dam2.appstreaming.data.repository.TmdbRepository
-import org.dam2.appstreaming.data.remote.dto.CastMember
-import org.dam2.appstreaming.data.remote.dto.Provider
-import org.dam2.appstreaming.data.remote.dto.Review
-import org.dam2.appstreaming.data.remote.dto.Keyword
+import org.dam2.appstreaming.data.remote.dto.tmdb.CastMember
+import org.dam2.appstreaming.data.remote.dto.tmdb.Provider
+import org.dam2.appstreaming.data.remote.dto.tmdb.Review
+import org.dam2.appstreaming.data.remote.dto.tmdb.Keyword
+import org.dam2.appstreaming.data.remote.dto.backend.SolicitudLista
 import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.data.model.Genero
-import org.dam2.appstreaming.data.remote.dto.SolicitudLista
 import org.dam2.appstreaming.data.repository.RepositorioBackend
 
 /**
- * ViewModel que gestiona el estado de la pantalla de detalles de una serie.
+ * VIEWMODEL DE DETALLE DE SERIE
+ *
+ * Gestiona el estado y la lógica de negocio para la pantalla de información detallada de una serie.
+ * Al igual que películas, coordina múltiples fuentes de datos de TMDB.
+ *
  */
 class SerieViewModel : ViewModel() {
     private val repository = TmdbRepository()
     private var repositorioBackend: RepositorioBackend? = null
 
+    /**
+     * Inyección manual de dependencias para el repositorio de persistencia local.
+     */
     fun iniciarRepositorio(repo: RepositorioBackend) {
         this.repositorioBackend = repo
         observarListasDeRoom()
     }
+
     /**
-     * Estado unificado para la pantalla de detalle de serie.
+     * UI State que encapsula toda la información necesaria para renderizar la pantalla de series.
      */
     data class SerieState(
         val serie: FichaSerie? = null,
@@ -54,6 +62,9 @@ class SerieViewModel : ViewModel() {
         cargarGeneros()
     }
 
+    /**
+     * Obtiene la lista de géneros de TV para la traducción de IDs en la UI.
+     */
     private fun cargarGeneros() {
         viewModelScope.launch {
             try {
@@ -72,7 +83,7 @@ class SerieViewModel : ViewModel() {
     }
 
     /**
-     * Establece la serie seleccionada e inicia la carga de detalles.
+     * Inicializa el estado con la serie seleccionada y dispara la carga de detalles.
      */
     fun establecerItemSeleccionado(item: FichaSerie) {
         _state.update { 
@@ -93,7 +104,7 @@ class SerieViewModel : ViewModel() {
     }
 
     /**
-     * Carga toda la información adicional de la serie desde el repositorio.
+     * Realiza las llamadas a la API para completar la ficha de la serie (reparto, trailer, etc.).
      */
     private fun cargarDetalles(idSerie: Int) {
         viewModelScope.launch {
@@ -131,6 +142,9 @@ class SerieViewModel : ViewModel() {
         }
     }
 
+    /**
+     * Sincronización con los nombres de las listas del usuario en Room.
+     */
     private fun observarListasDeRoom() {
         viewModelScope.launch {
             repositorioBackend?.obtenerNombresDeListas()?.collect { listaDeNombres ->
@@ -147,7 +161,9 @@ class SerieViewModel : ViewModel() {
         _state.update { it.copy(mostrarSheet = false) }
     }
 
-    // 4. Función genérica de guardado
+    /**
+     * Persiste la serie en una lista personalizada del usuario.
+     */
     fun guardarEnLista(id: Int, titulo: String, rutaPoster: String?, esPelicula: Boolean, nombreLista: String) {
         viewModelScope.launch {
             val solicitud = SolicitudLista(

@@ -3,9 +3,14 @@ package org.dam2.appstreaming.data.model
 import com.google.gson.annotations.SerializedName
 
 /**
- * Representa la información de una película desde la API de TMDB.
+ * FICHA PELÍCULA
+ *
+ * Representa la entidad Película dentro de la lógica de negocio de la aplicación.
+ * A diferencia de los DTOs, esta clase es independiente de la implementación de la API (TMDB).
+ *
  */
 data class FichaPelicula(
+
     @SerializedName("id") override val id: Int,
     @SerializedName("title") override val titulo: String,
     @SerializedName("overview") override val sinopsis: String,

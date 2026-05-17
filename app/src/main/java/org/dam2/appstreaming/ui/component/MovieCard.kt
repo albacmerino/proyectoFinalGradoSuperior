@@ -17,20 +17,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import org.dam2.appstreaming.ui.colors.SeaBlueLight
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.Genero
+import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
+/**
+ * COMPONENTE: FICHA DE PELÍCULA
+ * 
+ * Representa visualmente una película en las listas y carruseles.
+ *
+ */
 @Composable
 fun MovieCard(
     movie: FichaPelicula,
     allGenres: List<Genero>,
-    isFavorite: Boolean, // <--- AÑADIR ESTO
+    isFavorite: Boolean,
     onClick: () -> Unit,
     onToggleFavorite: () -> Unit,
 ) {
+    // URL de la imagen basada en la configuración de TMDB (w500 para calidad media)
     val imageUrl = "https://image.tmdb.org/t/p/w500${movie.rutaPoster ?: ""}"
 
+    // Mapeo de ID de género a nombre legible
     val nombreGenero = allGenres.find {
         it.id == movie.idsGeneros?.firstOrNull()
     }?.name ?: "Cine"
@@ -41,6 +49,7 @@ fun MovieCard(
             .clickable { onClick() }
     ) {
         Box(modifier = Modifier.height(180.dp)) {
+            // Imagen del póster con bordes redondeados
             AsyncImage(
                 model = imageUrl,
                 contentDescription = movie.titulo,
@@ -51,11 +60,11 @@ fun MovieCard(
                 contentScale = ContentScale.Crop
             )
 
-            // --- ESTO ES LO NUEVO: EL CORAZÓN ---
+            // Botón favorito
             androidx.compose.material3.IconButton(
                 onClick = onToggleFavorite,
                 modifier = Modifier
-                    .align(Alignment.TopEnd) // Arriba a la derecha
+                    .align(Alignment.TopEnd)
                     .padding(4.dp)
             ) {
                 androidx.compose.material3.Icon(
@@ -69,6 +78,7 @@ fun MovieCard(
                 )
             }
 
+            // Anillo de puntuación
             ScoreRing(
                 score = movie.puntuacionMedia,
                 modifier = Modifier
@@ -78,6 +88,7 @@ fun MovieCard(
             )
         }
 
+        // Título de la película
         Text(
             text = movie.titulo,
             color = Color.White,
@@ -86,6 +97,14 @@ fun MovieCard(
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 12.dp, start = 4.dp)
         )
-        // ... (resto del código igual)
+
+        // Género principal
+        Text(
+            text = nombreGenero,
+            color = SeaBlueLight.copy(alpha = 0.7f),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(start = 4.dp)
+        )
     }
 }

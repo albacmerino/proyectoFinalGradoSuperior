@@ -13,15 +13,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * COMPONENTE: ANILLO DE PUNTUACIÓN
+ * 
+ * Representa de forma gráfica la calificación de una película o serie.
+ *
+ */
 @Composable
 fun ScoreRing(score: Double, modifier: Modifier = Modifier) {
     val progress = (score / 10).toFloat()
 
-    // Lógica de colores SeaStream para la puntuación
     val color = when {
-        score >= 7.0 -> Color(0xFF4CAF50) // Verde
-        score >= 5.0 -> Color(0xFFFFEB3B) // Amarillo
-        else -> Color(0xFFF44336)         // Rojo
+        score >= 7.0 -> Color(0xFF4CAF50) // Excelente (Verde)
+        score >= 5.0 -> Color(0xFFFFEB3B) // Aceptable (Amarillo)
+        else -> Color(0xFFF44336)         // Bajo (Rojo)
     }
 
     Box(
@@ -31,6 +36,7 @@ fun ScoreRing(score: Double, modifier: Modifier = Modifier) {
             .padding(2.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Indicador de progreso que visualiza la nota media
         CircularProgressIndicator(
             progress = progress,
             modifier = Modifier.fillMaxSize(),
@@ -38,6 +44,7 @@ fun ScoreRing(score: Double, modifier: Modifier = Modifier) {
             strokeWidth = 3.dp,
             trackColor = color.copy(alpha = 0.2f),
         )
+        // Representación textual del porcentaje
         Text(
             text = "${(score * 10).toInt()}%",
             color = Color.White,
@@ -46,4 +53,3 @@ fun ScoreRing(score: Double, modifier: Modifier = Modifier) {
         )
     }
 }
-

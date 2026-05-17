@@ -3,22 +3,26 @@ package org.dam2.appstreaming.data.remote.api
 import org.dam2.appstreaming.data.model.FichaPelicula
 import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.data.model.GeneroResponse
-import org.dam2.appstreaming.data.remote.dto.CreditsResponse
-import org.dam2.appstreaming.data.remote.dto.KeywordResponse
-import org.dam2.appstreaming.data.remote.dto.MovieResponse
-import org.dam2.appstreaming.data.remote.dto.ReleaseDatesResponse
-import org.dam2.appstreaming.data.remote.dto.ReviewResponse
-import org.dam2.appstreaming.data.remote.dto.SeriesResponse
-import org.dam2.appstreaming.data.remote.dto.VideoResponse
-import org.dam2.appstreaming.data.remote.dto.WatchProvidersResponse
+import org.dam2.appstreaming.data.remote.dto.tmdb.*
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
+/**
+ * INTERFAZ TMDB API SERVICE
+ * 
+ * Esta interfaz define el contrato de comunicación con la API externa de The Movie Database (TMDB).
+ * Utiliza la librería Retrofit para convertir las definiciones de los métodos en llamadas HTTP.
+ *
+ */
 interface TmdbApiService {
 
-    // --- PELÍCULAS ---
-
+    // SECCIÓN DE PELÍCULAS
+    /**
+     * Obtiene una lista de películas populares.
+     * @param lang Idioma de los resultados (por defecto español de España).
+     * @param page Número de página para la paginación de la API.
+     */
     @GET("movie/popular")
     suspend fun getPopularMovies(
         @Query("language") lang: String = "es-ES",
@@ -37,21 +41,21 @@ interface TmdbApiService {
         @Query("page") page: Int
     ): MovieResponse
 
-    // Para obtener los detalles de una película
+    /**
+     * Obtiene los detalles completos de una película específica.
+     */
     @GET("movie/{movie_id}")
     suspend fun getMovieDetails(
         @Path("movie_id") movieId: Int,
         @Query("language") lang: String = "es-ES"
     ): FichaPelicula
 
-    // Para obtener los videos de una película
     @GET("movie/{movie_id}/videos")
     suspend fun getMovieVideos(
         @Path("movie_id") movieId: Int,
         @Query("language") lang: String = "es-ES"
     ): VideoResponse
 
-    // Para consultar en que plataformas de streaming esta disponible una película
     @GET("movie/{movie_id}/watch/providers")
     suspend fun getMovieWatchProviders(
         @Path("movie_id") movieId: Int
@@ -68,14 +72,12 @@ interface TmdbApiService {
         @Query("language") lang: String = "es-ES"
     ): CreditsResponse
 
-    //consultar reseñas
     @GET("movie/{movie_id}/reviews")
     suspend fun getMovieReviews(
         @Path("movie_id") movieId: Int,
         @Query("language") lang: String = "es-ES"
     ): ReviewResponse
 
-    //recomendaciones
     @GET("movie/{movie_id}/recommendations")
     suspend fun getMovieRecommendations(
         @Path("movie_id") movieId: Int,
@@ -83,13 +85,11 @@ interface TmdbApiService {
         @Query("page") page: Int
     ): MovieResponse
 
-    //palabras clave
     @GET("movie/{movie_id}/keywords")
     suspend fun getMovieKeywords(
         @Path("movie_id") movieId: Int
     ): KeywordResponse
 
-    // Descubrir películas por género
     @GET("discover/movie")
     suspend fun discoverMovies(
         @Query("with_genres") genreId: Int,
@@ -98,8 +98,7 @@ interface TmdbApiService {
         @Query("language") lang: String = "es-ES"
     ): MovieResponse
 
-    // --- SERIES ---
-
+    // SECCIÓN DE SERIES
     @GET("tv/popular")
     suspend fun getPopularSeries(
         @Query("language") lang: String = "es-ES",
@@ -160,7 +159,6 @@ interface TmdbApiService {
         @Path("series_id") seriesId: Int
     ): KeywordResponse
 
-    // Descubrir series por género
     @GET("discover/tv")
     suspend fun discoverSeries(
         @Query("with_genres") genreId: Int,
@@ -169,8 +167,7 @@ interface TmdbApiService {
         @Query("language") lang: String = "es-ES"
     ): SeriesResponse
 
-    // --- GENEROS ---
-
+    // SECCIÓN DE GÉNEROS Y BÚSQUEDA
     @GET("genre/movie/list")
     suspend fun getMovieGenres(
         @Query("language") lang: String = "es-ES"
@@ -180,22 +177,11 @@ interface TmdbApiService {
     suspend fun getTvGenres(
         @Query("language") lang: String = "es-ES"
     ): GeneroResponse
-    // =========================================================================
-    // BÚSQUEDA
-    // =========================================================================
 
-    /**
-     * Búsqueda multi: devuelve películas y series mezcladas en un solo resultado.
-     * Cada ítem tiene un campo "media_type" para distinguirlos.
-     *
-     * @param consulta Texto que escribe el usuario.
-     * @param page     Página de resultados (para carga infinita).
-     */
     @GET("search/multi")
     suspend fun buscarMulti(
         @Query("query") consulta: String,
         @Query("language") lang: String = "es-ES",
         @Query("page") page: Int = 1
-    ): org.dam2.appstreaming.data.remote.dto.MultiSearchResponse
-
+    ): MultiSearchResponse
 }

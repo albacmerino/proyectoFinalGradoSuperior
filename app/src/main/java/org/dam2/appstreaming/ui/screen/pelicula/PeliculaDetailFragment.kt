@@ -17,17 +17,21 @@ import org.dam2.appstreaming.R
 import org.dam2.appstreaming.data.repository.RepositorioBackend
 
 /**
- * Fragmento que actúa como contenedor para la pantalla de detalle de película.
+ * DETALLE DE PELÍCULA
+ * 
+ * Actúa como el host de Android para la pantalla de detalles desarrollada en Compose.
+ * Se encarga de gestionar el ciclo de vida y la integración con componentes del sistema (Intents, Navegación).
+ *
  */
 class PeliculaDetailFragment : Fragment() {
 
-    // Usamos activityViewModels para compartir el ViewModel con el HomeFragment
+    // Recuperamos el ViewModel para compartir datos entre pantallas
     private val viewModel: PeliculaViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Inicializamos el repositorio y se lo pasamos al ViewModel
+        // Inicialización del repositorio de backend
         val repo = RepositorioBackend(requireContext())
         viewModel.iniciarRepositorio(repo)
     }
@@ -38,15 +42,12 @@ class PeliculaDetailFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                // Observamos el estado unificado del ViewModel
                 val state by viewModel.state.collectAsState()
 
                 MaterialTheme {
-                    // Invocamos la Screen (UI modularizada), pasando el estado y los eventos
                     PeliculaDetailScreen(
                         state = state,
                         onBackClick = { 
-                            // Navegación hacia atrás
                             findNavController().popBackStack() 
                         },
                         onPlayTrailerClick = { key ->
@@ -60,7 +61,6 @@ class PeliculaDetailFragment : Fragment() {
                             startActivity(intent)
                         },
                         onSeeAllReviewsClick = {
-                            // Navegamos a la pantalla de reseñas propia en lugar de abrir la web
                             val bundle = Bundle().apply {
                                 putString("mediaType", "pelicula")
                             }
@@ -72,24 +72,18 @@ class PeliculaDetailFragment : Fragment() {
                         },
                         onAddClick = { pelicula, nombreLista ->
                             if (nombreLista == null) {
-                                // 1. Si el nombre es nulo, el usuario solo pulsó el botón "Añadir"
-                                // y queremos abrir el menú.
                                 viewModel.abrirSheet()
                             } else {
-                                // 2. Si el nombre NO es nulo, el usuario eligió una lista dentro del menú.
-                                // Llamamos a la nueva función genérica pasando todos los parámetros.
                                 viewModel.guardarEnLista(
                                     id = pelicula.id,
                                     titulo = pelicula.titulo,
                                     rutaPoster = pelicula.rutaPoster,
-                                    esPelicula = true, // Es película porque estamos en PeliculaDetailFragment
+                                    esPelicula = true,
                                     nombreLista = nombreLista
                                 )
                             }
                         },
-
                         onCloseSheet = { viewModel.cerrarSheet() }
-
                     )
                 }
             }

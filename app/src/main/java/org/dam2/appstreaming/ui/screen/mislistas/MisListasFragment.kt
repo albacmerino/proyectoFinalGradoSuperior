@@ -1,6 +1,5 @@
 package org.dam2.appstreaming.ui.screen.mislistas
 
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -25,9 +24,17 @@ import org.dam2.appstreaming.data.mapper.toFichaSerie
 import org.dam2.appstreaming.ui.screen.pelicula.PeliculaViewModel
 import org.dam2.appstreaming.ui.screen.serie.SerieViewModel
 
+/**
+ * GESTOR DE LISTAS PERSONALIZADAS
+ * 
+ * Actúa como el puente entre la arquitectura tradicional
+ * de Android (basada en Fragmentos y Navigation Component) y la interfaz declarativa 
+ * desarrollada con Jetpack Compose.
+ *
+ */
 class MisListasFragment : Fragment() {
 
-    // ViewModel específico de esta pantalla
+    // ViewModel de ámbito local para la lógica de negocio específica de las listas personalizadas
     private val viewModel: MisListasViewModel by viewModels()
 
     // ViewModels compartidos para preparar los datos de la pantalla de detalle
@@ -41,11 +48,11 @@ class MisListasFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                // Observamos el mapa de listas agrupadas (Nombre -> Lista de items)
+                // Observación del Mapa de listas proveniente de la BBDD (Room)
                 val listasAgrupadas by viewModel.listas.collectAsState()
 
                 MaterialTheme {
-                    // Aplicamos el fondo degradado azul marino constante en tu App
+                    // Fondo degradado azul marino
                     val gradienteFondoMar = Brush.verticalGradient(
                         colors = listOf(Color(0xFF001D3D), Color(0xFF000814))
                     )
@@ -58,7 +65,7 @@ class MisListasFragment : Fragment() {
                         MisListasScreen(
                             listasAgrupadas = listasAgrupadas,
                             onItemClick = { item ->
-                                // Lógica de navegación inteligente
+                                // Detecta el tipo de contenido y prepara el ViewModel correspondiente
                                 if (item.esPelicula) {
                                     // Preparamos el ViewModel de Películas y navegamos
                                     peliculaViewModel.setSelectedItem(item.toFichaPelicula())
@@ -73,8 +80,9 @@ class MisListasFragment : Fragment() {
                             onNavigateToHome = { findNavController().navigate(R.id.homeFragment) },
                             onNavigateToFavoritos = { findNavController().navigate(R.id.favoritosFragment) },
                             onLogoutClick = {
+                                // Cierre de sesión y limpieza de navegación
                                 com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
-                                findNavController().navigate(R.id.action_global_to_loginFragment) // Asegúrate de tener esta acción global
+                                findNavController().navigate(R.id.action_global_to_loginFragment)
                             }
                         )
                     }

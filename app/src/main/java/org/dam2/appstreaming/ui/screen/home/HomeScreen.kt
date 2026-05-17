@@ -20,6 +20,13 @@ import org.dam2.appstreaming.ui.component.common.HomeDrawer
 import org.dam2.appstreaming.ui.component.common.StreamTopBar
 import org.dam2.appstreaming.ui.component.common.StreamTabs
 
+/**
+ * PANTALLA PRINCIPAL
+ * 
+ * Punto más importante de la aplicación, donde se presenta el catálogo multimedia.
+ * Organiza el contenido en pestañas (Películas/Series) y categorías mediante carruseles.
+ *
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -46,6 +53,7 @@ fun HomeScreen(
     onCargarMasFiltro: () -> Unit,
     onSearchClick: () -> Unit
 ) {
+    // Gestión del estado del menú lateral
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -54,7 +62,6 @@ fun HomeScreen(
         drawerContent = {
             HomeDrawer(
                 onHomeClick = { scope.launch { drawerState.close() } },
-                onPerfilClick = { scope.launch { drawerState.close() } },
                 onFavoritosClick = { scope.launch { drawerState.close(); onNavigateToFavoritos() } },
                 onLogoutClick = { scope.launch { drawerState.close(); onLogoutClick() } },
                 onMisListasClick = { scope.launch { drawerState.close(); onNavigateToMisListas() } }
@@ -66,16 +73,22 @@ fun HomeScreen(
                 StreamTopBar(
                     title = "SeaStream",
                     showBackButton = false,
-                    onMenuClick = { scope.launch { drawerState.open() } },
+                    onMenuClick = {
+                        scope.launch { drawerState.open() }
+                    },
                     onSearchClick = onSearchClick
                 )
             },
             containerColor = Color.Transparent
         ) { padding ->
             Column(modifier = Modifier.padding(padding)) {
+                // Pestañas superiores
                 StreamTabs(selectedTab, onTabSelected)
+                
+                // Filtro horizontal de géneros cinematográficos
                 GenreSelector(generos, selectedGenreId, onGeneroClick)
 
+                // Contenedor principal de los carruseles de datos
                 MainContent(
                     selectedTab = selectedTab,
                     moviesNow = moviesNow,
@@ -99,6 +112,10 @@ fun HomeScreen(
     }
 }
 
+/**
+ * GESTOR DE CONTENIDO PRINCIPAL
+ * Alterna dinámicamente entre la vista de catálogo general y la vista filtrada por género.
+ */
 @Composable
 private fun MainContent(
     selectedTab: Int,
@@ -123,9 +140,7 @@ private fun MainContent(
         contentPadding = PaddingValues(vertical = 16.dp)
     ) {
         if (selectedGenreId != null) {
-            // ---------------------------------------------------------------
-            // MODO FILTRO: una sola sección con los resultados del género
-            // ---------------------------------------------------------------
+            // Muestra una lista infinita del género seleccionado
             val nombreGenero = generos.find { it.id == selectedGenreId }?.name ?: "Filtrados"
 
             item {
@@ -138,7 +153,6 @@ private fun MainContent(
                         onClick = onMovieClick,
                         idsFavoritos = idsFavoritos,
                         onToggleFavorite = onToggleFavorite,
-                        // Aquí sí conectamos la carga infinita del filtro
                         onLoadMore = onCargarMasFiltro
                     )
                 } else {
@@ -155,10 +169,9 @@ private fun MainContent(
                 }
             }
         } else {
-            // ---------------------------------------------------------------
-            // MODO CATÁLOGO NORMAL: tres secciones por tab
-            // ---------------------------------------------------------------
+            // Muestra las secciones predefinidas por TMDB
             if (selectedTab == 0) {
+                // Secciones para Películas
                 item {
                     HomeSectionPeliculas(
                         title = "Novedades",
@@ -193,6 +206,7 @@ private fun MainContent(
                     )
                 }
             } else {
+                // Secciones para Series
                 item {
                     HomeSectionSeries(
                         title = "Novedades TV",
@@ -231,10 +245,10 @@ private fun MainContent(
     }
 }
 
-// -----------------------------------------------------------------------------
-// Secciones tipadas
-// -----------------------------------------------------------------------------
-
+/**
+ * SECCIÓN DE PELÍCULAS
+ * Renderiza un carrusel horizontal (LazyRow) con lógica de paginación infinita.
+ */
 @Composable
 private fun HomeSectionPeliculas(
     title: String,
@@ -259,7 +273,8 @@ private fun HomeSectionPeliculas(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             itemsIndexed(items) { index, pelicula ->
-                // Pedimos más cuando quedan 2 elementos para el final
+                // Detecta cuando el usuario se acerca al final
+                // del carrusel para solicitar más datos al repositorio.
                 if (index >= items.size - 2 && items.size >= 20) {
                     onLoadMore()
                 }
@@ -275,6 +290,9 @@ private fun HomeSectionPeliculas(
     }
 }
 
+/**
+ * SECCIÓN DE SERIES
+ */
 @Composable
 private fun HomeSectionSeries(
     title: String,

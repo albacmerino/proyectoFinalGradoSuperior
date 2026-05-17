@@ -20,11 +20,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import kotlinx.coroutines.launch // ESTE ES EL IMPORT QUE TE FALTABA
-import org.dam2.appstreaming.data.remote.dto.RespuestaLista
+import kotlinx.coroutines.launch
+import org.dam2.appstreaming.data.remote.dto.backend.RespuestaLista
 
+/**
+ * GESTIÓN DE MIS LISTAS
+ * 
+ * Interfaz desarrollada íntegramente con Jetpack Compose que permite al usuario 
+ * visualizar y gestionar sus colecciones personalizadas de contenido multimedia.
+ *
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MisListasScreen(
@@ -43,7 +49,6 @@ fun MisListasScreen(
         drawerContent = {
             org.dam2.appstreaming.ui.component.common.HomeDrawer(
                 onHomeClick = { scope.launch { drawerState.close(); onNavigateToHome() } },
-                onPerfilClick = { scope.launch { drawerState.close() } },
                 onFavoritosClick = { scope.launch { drawerState.close(); onNavigateToFavoritos() } },
                 onMisListasClick = { scope.launch { drawerState.close() } },
                 onLogoutClick = { scope.launch { drawerState.close(); onLogoutClick() } }
@@ -52,14 +57,18 @@ fun MisListasScreen(
     ) {
         Scaffold(
             topBar = {
+                // Barra superior modular configurable para cada sección
                 org.dam2.appstreaming.ui.component.common.StreamTopBar(
                     title = "Mis Listas",
                     showBackButton = false,
-                    onMenuClick = { scope.launch { drawerState.open() } }
+                    onMenuClick = {
+                        scope.launch { drawerState.open() }
+                    }
                 )
             },
             containerColor = Color.Transparent
         ) { padding ->
+            // Si no hay listas, informamos al usuario
             if (listasAgrupadas.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize().padding(padding),
@@ -68,6 +77,7 @@ fun MisListasScreen(
                     Text("Aún no tienes listas creadas", color = Color.Gray)
                 }
             } else {
+                // Renderizado dinámico de secciones basado en las claves del mapa
                 LazyColumn(
                     modifier = Modifier.fillMaxSize().padding(padding),
                     contentPadding = PaddingValues(bottom = 20.dp)
@@ -83,6 +93,10 @@ fun MisListasScreen(
     }
 }
 
+/**
+ * SECCIÓN POR CATEGORÍA
+ * Implementa una fila horizontal de elementos multimedia con un encabezado descriptivo.
+ */
 @Composable
 fun SeccionPersonalizada(
     titulo: String,
@@ -113,6 +127,10 @@ fun SeccionPersonalizada(
     }
 }
 
+/**
+ * CARD DE GESTIÓN RÁPIDA
+ * Visualización compacta optimizada para operaciones de borrado mediante iconos de acción superpuestos.
+ */
 @Composable
 private fun CardMiniatura(
     item: RespuestaLista,
@@ -126,6 +144,7 @@ private fun CardMiniatura(
             .clip(RoundedCornerShape(8.dp))
             .clickable { onClick() }
     ) {
+        // Integración con Coil para carga de recursos remotos
         AsyncImage(
             model = "https://image.tmdb.org/t/p/w342${item.rutaPoster}",
             contentDescription = item.titulo,
@@ -133,7 +152,7 @@ private fun CardMiniatura(
             contentScale = ContentScale.Crop
         )
 
-        // Botón de eliminar (X)
+        // Botón de borrado persistente con feedback visual de contraste
         IconButton(
             onClick = onDelete,
             modifier = Modifier

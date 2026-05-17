@@ -13,6 +13,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
+/**
+ * COMPONENTE: BARRA DE CALIFICACIÓN
+ * 
+ * Implementa una visualización de puntuación basada en estrellas.
+ *
+ */
 @Composable
 fun SeaRatingBar(
     rating: Int,          // Valor actual (de 0 a maxRating)
@@ -28,10 +34,11 @@ fun SeaRatingBar(
                 contentDescription = "Estrella $i",
                 modifier = Modifier
                     .size(28.dp)
-                    .clickable { onRatingChange(i) }
+                    .clickable { 
+                        // Invoca el callback solo si se ha proporcionado una acción
+                        onRatingChange(i) 
+                    }
                     .padding(horizontal = 2.dp),
-                // COLOR NEÓN: Si está seleccionada usa tu azul claro brillante,
-                // si no, un gris oscuro para que parezca "apagada"
                 tint = if (isSelected) SeaBlueLight else Color.DarkGray.copy(alpha = 0.5f)
             )
         }

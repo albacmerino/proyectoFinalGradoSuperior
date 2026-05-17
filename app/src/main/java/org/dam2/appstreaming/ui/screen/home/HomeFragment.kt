@@ -27,9 +27,19 @@ import org.dam2.appstreaming.data.model.FichaSerie
 import org.dam2.appstreaming.ui.screen.pelicula.PeliculaViewModel
 import org.dam2.appstreaming.ui.screen.serie.SerieViewModel
 
+/**
+ * FRAGMENTO PRINCIPAL
+ * 
+ * Actúa como el contenedor de la pantalla de inicio (HomeScreen). 
+ * Se encarga de la interoperabilidad entre el sistema de Fragmentos tradicional y Jetpack Compose.
+ *
+ */
 class HomeFragment : Fragment() {
 
+    // ViewModel específico de la pantalla de inicio
     private val viewModel: HomeViewModel by viewModels()
+
+    // ViewModels compartidos para pasar datos a las pantallas de detalle sin duplicar peticiones de red
     private val peliculaViewModel: PeliculaViewModel by activityViewModels()
     private val serieViewModel: SerieViewModel by activityViewModels()
 
@@ -40,6 +50,7 @@ class HomeFragment : Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
+                // Observación de flujos de estado del ViewModel
                 val estado by viewModel.estado.collectAsState()
                 val idsFavoritos by viewModel.idsFavoritos.collectAsState()
 
@@ -55,7 +66,9 @@ class HomeFragment : Fragment() {
                         ) {
                             HomeScreen(
                                 selectedTab = estado.pestana,
-                                onTabSelected = { viewModel.alCambiarPestana(it) },
+                                onTabSelected = {
+                                    viewModel.alCambiarPestana(it)
+                                                },
                                 moviesNow = estado.peliculasEstreno,
                                 moviesPop = estado.peliculasPopulares,
                                 moviesTop = estado.peliculasMejorValoradas,
@@ -64,8 +77,11 @@ class HomeFragment : Fragment() {
                                 seriesTop = estado.seriesMejorValoradas,
                                 generos = estado.generosActuales,
                                 selectedGenreId = estado.idGeneroSeleccionado,
-                                onGeneroClick = { viewModel.alSeleccionarGenero(it) },
+                                onGeneroClick = {
+                                    viewModel.alSeleccionarGenero(it)
+                                                },
                                 onMovieClick = { pelicula ->
+                                    // Inyecta la película seleccionada en el ViewModel compartido antes de navegar
                                     peliculaViewModel.setSelectedItem(pelicula)
                                     peliculaViewModel.setGenres(estado.generosPelicula)
                                     findNavController().navigate(R.id.action_homeFragment_to_peliculaDetailFragment)
@@ -83,10 +99,12 @@ class HomeFragment : Fragment() {
                                 },
                                 idsFavoritos = idsFavoritos,
                                 onToggleFavorite = { item ->
+                                    // Gestiona favoritos según el tipo de contenido
                                     if (item is FichaPelicula) viewModel.toggleFavorito(item)
                                     else if (item is FichaSerie) viewModel.toggleFavoritoSerie(item)
                                 },
                                 onLogoutClick = {
+                                    // Gestión completa de cierre de sesión: Firebase + Persistencia de preferencias
                                     FirebaseAuth.getInstance().signOut()
                                     val prefs = PreferenciasUsuario(requireContext())
                                     prefs.guardarMantenerSesion(false)

@@ -11,6 +11,13 @@ import androidx.compose.ui.unit.dp
 import org.dam2.appstreaming.data.model.Genero
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
+/**
+ * COMPONENTE: SELECTOR DE GÉNEROS
+ * 
+ * Permite al usuario filtrar el contenido multimedia por categorías cinematográficas.
+ * Utiliza un carrusel horizontal de chips interactivos (FilterChips) siguiendo las directrices de Material 3.
+ *
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GenreSelector(
@@ -19,7 +26,9 @@ fun GenreSelector(
     onClick: (Int?) -> Unit
 ) {
     LazyRow(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -35,6 +44,8 @@ fun GenreSelector(
                 )
             )
         }
+        
+        // Generación dinámica de chips basados en la lista de géneros de la API
         items(generos) { genero ->
             FilterChip(
                 selected = selectedId == genero.id,

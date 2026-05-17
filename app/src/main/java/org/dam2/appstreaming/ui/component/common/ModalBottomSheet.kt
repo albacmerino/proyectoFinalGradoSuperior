@@ -32,6 +32,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * COMPONENTE: MENÚ DESPLEGABLE DE LISTAS
+ * 
+ * Implementa un ModalBottomSheet de Material 3 para permitir al usuario organizar 
+ * contenidos multimedia en diferentes categorías o listas personalizadas.
+ *
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddToListSheet(
@@ -40,22 +47,29 @@ fun AddToListSheet(
     onListaSeleccionada: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
+    // Estado local para el campo de texto de nueva lista
     var nuevoNombre by remember { mutableStateOf("") }
     val sheetState = rememberModalBottomSheetState()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color(0xFF001D3D) // Azul oscuro como tu app
+        containerColor = Color(0xFF001D3D)
     ) {
         Column(modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth()) {
-            Text("Añadir a una lista", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            
+            Text(
+                text = "Añadir a una lista", 
+                color = Color.White, 
+                fontSize = 20.sp, 
+                fontWeight = FontWeight.Bold
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // CAMPO PARA NUEVA LISTA
+            // Campo para crear una nueva lista
             OutlinedTextField(
                 value = nuevoNombre,
                 onValueChange = { nuevoNombre = it },
@@ -77,14 +91,20 @@ fun AddToListSheet(
             Spacer(modifier = Modifier.height(24.dp))
             Text("Tus listas actuales:", color = Color.Gray, fontSize = 14.sp)
 
-            // LISTADO DE EXISTENTES
+            // Listado de categorías existentes
             LazyColumn {
                 items(listasExistentes) { nombre ->
                     ListItem(
                         headlineContent = { Text(nombre, color = Color.White) },
                         modifier = Modifier.clickable { onListaSeleccionada(nombre) },
                         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        leadingContent = { Icon(Icons.Default.List, contentDescription = null, tint = Color.Cyan) }
+                        leadingContent = { 
+                            Icon(
+                                imageVector = Icons.Default.List, 
+                                contentDescription = null, 
+                                tint = Color.Cyan
+                            ) 
+                        }
                     )
                 }
             }

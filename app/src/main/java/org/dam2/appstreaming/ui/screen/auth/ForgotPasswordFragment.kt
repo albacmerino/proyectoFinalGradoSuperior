@@ -20,14 +20,19 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import org.dam2.appstreaming.R
 import org.dam2.appstreaming.ui.colors.SeaGradient
 import org.dam2.appstreaming.ui.colors.SeaBlueLight
 
+/**
+ * RECUPERACIÓN DE CONTRASEÑA
+ * 
+ * Gestiona el flujo de soporte para usuarios que han olvidado sus credenciales.
+ * Conecta con la funcionalidad nativa de Firebase para el restablecimiento de contraseñas vía email.
+ *
+ */
 class ForgotPasswordFragment : Fragment() {
 
     private val viewModel: AuthViewModel by viewModels()
@@ -35,12 +40,12 @@ class ForgotPasswordFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
+        // Recuperamos el email que el usuario pudo haber escrito en la pantalla de Login
         val emailRecuperado = arguments?.getString("email_previa") ?: ""
 
         return ComposeView(requireContext()).apply {
             setContent {
                 var email by remember { mutableStateOf(emailRecuperado) }
-
 
                 Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF000814)) {
                     Column(
@@ -61,6 +66,7 @@ class ForgotPasswordFragment : Fragment() {
                             modifier = Modifier.padding(vertical = 16.dp)
                         )
 
+                        // CAMPO: EMAIL DE REGISTRO
                         TextField(
                             value = email,
                             onValueChange = { email = it },
@@ -79,12 +85,13 @@ class ForgotPasswordFragment : Fragment() {
 
                         Spacer(modifier = Modifier.height(32.dp))
 
+                        // Acción principal de envío
                         Button(
                             onClick = {
                                 if (email.contains("@")) {
                                     viewModel.recuperarPassword(email)
                                     Toast.makeText(context, "Si el email existe, recibirás un correo en breve.", Toast.LENGTH_LONG).show()
-                                    findNavController().popBackStack() // Volver al login
+                                    findNavController().popBackStack() 
                                 }
                             },
                             modifier = Modifier.fillMaxWidth().height(56.dp),
