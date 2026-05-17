@@ -13,7 +13,7 @@ Aplicación Android desarrollada como Proyecto Final de Ciclo (DAM) que consume 
 
 > Si solo quieres probar la app sin compilar el proyecto, descarga directamente la APK precompilada.
 - Ve a la sección Releases de este repositorio.
-- Descarga el archivo `.apk` de la última versión disponible.
+- Descarga el archivo `.apk` de la última versión disponible (https://github.com/albacmerino/proyectoFinalGradoSuperior/releases/tag/Final).
 - En tu dispositivo Android, ve a Ajustes → Seguridad y activa "Instalar aplicaciones de fuentes desconocidas" (o "Instalar apps desconocidas", según tu versión de Android).
 - Abre el archivo `.apk` descargado y sigue los pasos del instalador.
 ¡Listo! Inicia sesión con las credenciales de prueba o crea tu cuenta.
