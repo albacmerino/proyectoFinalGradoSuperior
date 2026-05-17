@@ -90,7 +90,7 @@ Para facilitar la evaluación sin necesidad de registro previo, se han habilitad
 ---
 ## 👩‍💻 Autoría
 
-👩‍💻 Autoras: Alba Carrobles, Sergio Gárgoles, Emilio Abril
-🎓 Ciclo: Grado Superior — Desarrollo de Aplicaciones Multiplataforma (DAM)
-🏫 Centro: IES Villablanca
-🎬 API utilizada: The Movie Database (TMDB)
+- 👩‍💻 Autoras: Alba Carrobles, Sergio Gárgoles, Emilio Abril
+- 🎓 Ciclo: Grado Superior — Desarrollo de Aplicaciones Multiplataforma (DAM)
+- 🏫 Centro: IES Villablanca
+- 🎬 API utilizada: The Movie Database (TMDB)
