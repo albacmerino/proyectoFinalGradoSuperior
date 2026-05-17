@@ -42,7 +42,6 @@ fun HomeScreen(
     onToggleFavorite: (Any) -> Unit,
     onNavigateToMisListas: () -> Unit,
     onLoadMore: (String) -> Unit,
-    // Nuevos parámetros para la paginación del filtro de género
     resultadosFiltroGenero: List<Any>,
     onCargarMasFiltro: () -> Unit,
     onSearchClick: () -> Unit

@@ -6,17 +6,13 @@ import androidx.fragment.app.add
 import kotlinx.coroutines.flow.Flow
 
 import kotlinx.coroutines.flow.map
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import org.dam2.appstreaming.data.local.AppDatabase
 import org.dam2.appstreaming.data.local.entities.ListaEntity
 import org.dam2.appstreaming.data.local.prefs.GestorToken
-import org.dam2.appstreaming.data.remote.api.ServicioApiBackend
 import org.dam2.appstreaming.data.remote.dto.*
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
-import java.util.concurrent.TimeUnit
+
+
 
 class RepositorioBackend(contexto: Context) {
 
@@ -24,23 +20,10 @@ class RepositorioBackend(contexto: Context) {
     private val listaDao = database.listaDao()
     private val gestorToken = GestorToken(contexto)
 
-    private val client = OkHttpClient.Builder()
-        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .build()
-
-    private val api = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .client(client)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(ServicioApiBackend::class.java)
 
     // --- 1. SINCRONIZACIÓN (El nuevo "Login/Registro" para PostgreSQL) ---
 
-    suspend fun sincronizarUsuario(uid: String, nombre: String, email: String?): Boolean {
-        // Ya no llamamos a api.sincronizarUsuario(solicitud)
-        // Simplemente devolvemos true para que la App avance al Home sin errores de red
+    fun sincronizarUsuario(uid: String, nombre: String, email: String?): Boolean {
         Log.d("RepositorioBackend", "Sincronización local completada para $nombre")
         gestorToken.guardarToken(uid)
         return true
